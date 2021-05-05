@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+      "target": "es2020",
+      "module": "commonjs",
+      "sourceMap": true,
+      "outDir": "./dist",
+      "strict": true,
+      "allowUnreachableCode": false,
+      "strictNullChecks": true,
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true,
+
+      "baseUrl": "./src",
+      "esModuleInterop": true,
+      "forceConsistentCasingInFileNames": true
+    }
+}

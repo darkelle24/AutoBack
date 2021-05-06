@@ -7,15 +7,14 @@ export enum TypeRoute {
 
 export interface allRoutes {
   originRoutePath: string,
-  get: Route[],
-  post: Route[],
-  put: Route[],
-  delete: Route[]
+  get: RouteGet[],
+  post: RoutePost[],
+  put: RoutePut[],
+  delete: RouteDelete[]
 }
 
-export interface Route {
+interface RouteBasic {
   path: string,
-  type: TypeRoute,
   /**
      * If columsAccept undefined accept all columns execpt primaryKey
      * 
@@ -23,3 +22,21 @@ export interface Route {
   */
   columsAccept?: string[] | null
 }
+
+export type RouteGet = {
+  readonly type: TypeRoute.GET
+} & RouteBasic
+
+export type RoutePost = {
+  readonly type: TypeRoute.POST
+} & RouteBasic
+
+export type RoutePut = {
+  readonly type: TypeRoute.PUT,
+} & RouteBasic
+
+export type RouteDelete = {
+  readonly type: TypeRoute.DELETE
+} & RouteBasic
+
+export type Route = RouteGet | RoutePost | RoutePut | RouteDelete

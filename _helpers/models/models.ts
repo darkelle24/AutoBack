@@ -43,6 +43,7 @@ export interface dataTableInfo {
   comment?: string,
   allowNull?: allowNullParams | boolean,
   initValue?: any,
+  defaultValue?: any
 }
 
 export interface allowNullParams {
@@ -60,6 +61,7 @@ export interface saveDataTableInfo {
   comment: string | null,
   allowNull: allowNullParams,
   initValue: any | null,
+  defaultValue?: any
 }
 
 export interface allTables {

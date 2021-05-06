@@ -34,13 +34,13 @@ class AutoBack {
   }
 
   /**
-     * Call after you init all your routes
+     * Call after you init all your routes and tables
   */
 
   async start(port: number = 8080) {
     await this.sequelize.sync().then(() => console.log('Created all Tables'))
     this.server.listen(port, () => {
-      console.log('Server listenning on port ' + port)
+      console.log('Server listening on port ' + port)
     });
     this.error404()
   }
@@ -109,13 +109,13 @@ class AutoBack {
       return true
     } else if (allowNull === true) {
       table[key].allowNull = { keepOldValue: false }
-      return false
+      return true
     }
     return false
   }
 
   private saveDataInfo(dataInfo: dataTableInfo, type: dataTypeInfo): saveDataTableInfo {
-    let temp = _.merge(this.defaultSaveDataInfo, dataInfo)
+    let temp = _.merge({}, this.defaultSaveDataInfo, dataInfo)
     temp.allowNull = dataInfo.allowNull as allowNullParams
     temp.type = type
 
@@ -129,25 +129,16 @@ class AutoBack {
       console.error(data + " type in " + this.DB.dbName + " is not supported")
     } else {
       type.autobackDataType = data
-      if (!type.DBToJson) {
-        type.DBToJson = defaultDBToJson
-      }
-      if (!type.JsonToDB) {
-        type.JsonToDB = defaultJsonToDB
-      }
     }
     return type
   }
 }
 
 let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test")
-autoback.defineTable('test', {
-  id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
-  bonjour: { type: DataType.BOOLEAN }
-})
+//let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
 let test = autoback.defineTable('lol', {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
-  bonjour: { type: DataType.BOOLEAN }
+  bonjour: { type: DataType.BOOLEAN, allowNull: {keepOldValue: true}, defaultValue: true }
 }, 'dab')
 
 if (test)

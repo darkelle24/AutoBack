@@ -37,8 +37,8 @@ class AutoBack {
      * Call after you init all your routes
   */
 
-  start(port: number = 8080) {
-    this.sequelize.sync()
+  async start(port: number = 8080) {
+    await this.sequelize.sync().then(() => console.log('Created all Tables'))
     this.server.listen(port, () => {
       console.log('Server listenning on port ' + port)
     });

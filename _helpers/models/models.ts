@@ -1,5 +1,5 @@
 import { DataTypeAbstract } from "sequelize"
-import { TableClass } from "./class"
+import { TableClass } from "../../back/table"
 
 export type dataType = {
   [key: string]: dataTypeInfo
@@ -42,6 +42,7 @@ export interface dataTableInfo {
   autoIncrement?: boolean,
   comment?: string,
   allowNull?: allowNullParams | boolean,
+  initValue?: any,
 }
 
 export interface allowNullParams {
@@ -54,10 +55,11 @@ export interface saveTable {
 
 export interface saveDataTableInfo {
   type: dataTypeInfo,
-  primaryKey?: boolean,
-  autoIncrement?: boolean,
-  comment?: string,
-  allowNull?: allowNullParams
+  primaryKey: boolean,
+  autoIncrement: boolean,
+  comment: string | null,
+  allowNull: allowNullParams,
+  initValue: any | null,
 }
 
 export interface allTables {

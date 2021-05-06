@@ -1,13 +1,14 @@
-import { TableClass } from './../_helpers/class';
+import { TableClass } from './table';
 import { PostgresDb } from './db/postgres/postgres';
-import { DB, Table, DBInterface, DataType, dataTypeInfo, allowNullParams, saveDataTableInfo, dataTableInfo, saveTable, allTables } from './../_helpers/models';
+import { DB, Table, DBInterface, DataType, dataTypeInfo, allowNullParams, saveDataTableInfo, dataTableInfo, saveTable, allTables } from '../_helpers/models/models';
 import express from "express";
 import {
 	ReasonPhrases,
 	StatusCodes,
 } from 'http-status-codes';
 import { Sequelize } from 'sequelize';
-import { defaultDBToJson, defaultJsonToDB } from '../_helpers/fn';
+import { defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo } from '../_helpers/fn';
+import * as _ from "lodash"
 
 class AutoBack {
 
@@ -16,6 +17,7 @@ class AutoBack {
   private startTime = Date.now()
   private sequelize: Sequelize
   tables: allTables = {}
+  private defaultSaveDataInfo: any = defaultSaveDataInfo()
 
   constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true) {
     this.server.use(express.urlencoded({ extended: false }))
@@ -31,13 +33,19 @@ class AutoBack {
       this.health()
   }
 
-  public start(port: number = 8080) {
+  /**
+     * Call after you init all your routes
+  */
+
+  start(port: number = 8080) {
+    this.sequelize.sync()
     this.server.listen(port, () => {
       console.log('Server listenning on port ' + port)
     });
+    this.error404()
   }
 
-  public loadDb(db: DB, connnectionStr: string) {
+  loadDb(db: DB, connnectionStr: string) {
     if (db === DB.POSTGRES) {
       this.DB = new PostgresDb();
     }
@@ -60,7 +68,13 @@ class AutoBack {
     })
   }
 
-  defineTable(nameTable: string, table: Table) {
+  private error404() {
+    this.server.use(function(req, res, next){
+      res.status(StatusCodes.NOT_FOUND).json({message: "This route doesn't exist"})
+    });
+  }
+
+  defineTable(nameTable: string, table: Table, originRoutePath?: string): TableClass<any> | undefined {
     let tableSequelize = undefined
     let saveTableInfo: any = {}
     let tableSequelizeInfo = this.createTableSequelizeInfo(table, saveTableInfo)
@@ -68,10 +82,11 @@ class AutoBack {
     if (this.sequelize)
       tableSequelize = this.sequelize.define(nameTable, tableSequelizeInfo)
     if (tableSequelize)
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo, tableSequelize)
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo, tableSequelize, this.server, originRoutePath)
+    return this.tables[nameTable]
   }
 
-  createTableSequelizeInfo(table: Table, saveTableInfo: any): any {
+  private createTableSequelizeInfo(table: Table, saveTableInfo: any): any {
     let tableSequelizeInfo: any = {}
 
     Object.keys(table).forEach((key) => {
@@ -88,7 +103,7 @@ class AutoBack {
     return tableSequelizeInfo
   }
 
-  gestParametersTableAllowNull(table: Table, key: string, allowNull: any = false): boolean {
+  private gestParametersTableAllowNull(table: Table, key: string, allowNull: any = false): boolean {
     if (allowNull && typeof allowNull !== "boolean" && allowNull.keepOldValue === true) {
       table[key].allowNull = { keepOldValue: true }
       return true
@@ -96,21 +111,18 @@ class AutoBack {
       table[key].allowNull = { keepOldValue: false }
       return false
     }
-    table[key].allowNull = undefined
     return false
   }
 
-  saveDataInfo(dataInfo: dataTableInfo, type: dataTypeInfo): saveDataTableInfo {
-    return {
-      type: type,
-      primaryKey: dataInfo.primaryKey || false,
-      autoIncrement: dataInfo.autoIncrement || false,
-      comment: dataInfo.comment,
-      allowNull: dataInfo.allowNull as allowNullParams
-    }
+  private saveDataInfo(dataInfo: dataTableInfo, type: dataTypeInfo): saveDataTableInfo {
+    let temp = _.merge(this.defaultSaveDataInfo, dataInfo)
+    temp.allowNull = dataInfo.allowNull as allowNullParams
+    temp.type = type
+
+    return temp
   }
 
-  getDataType(data: DataType): dataTypeInfo | undefined {
+  private getDataType(data: DataType): dataTypeInfo | undefined {
     let type = this.DB.dataType[data]
 
     if (type === undefined) {
@@ -128,13 +140,16 @@ class AutoBack {
   }
 }
 
-let autoback = new AutoBack("postgres://postgres:password@postgres/test")
-autoback.start(8081)
+let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test")
 autoback.defineTable('test', {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
   bonjour: { type: DataType.BOOLEAN }
 })
-autoback.defineTable('lol', {
+let test = autoback.defineTable('lol', {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
   bonjour: { type: DataType.BOOLEAN }
-})
+}, 'dab')
+
+if (test)
+  test.basicRouting()
+autoback.start(8081)

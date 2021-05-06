@@ -9,6 +9,7 @@ import {
 import { Sequelize } from 'sequelize';
 import { defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo } from '../_helpers/fn';
 import * as _ from "lodash"
+import { TypeRoute } from '../_helpers/models/routeModels';
 
 class AutoBack {
 
@@ -138,9 +139,23 @@ let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test")
 //let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
 let test = autoback.defineTable('lol', {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
-  bonjour: { type: DataType.BOOLEAN, allowNull: {keepOldValue: true}, defaultValue: true }
+  bonjour: { type: DataType.BOOLEAN, allowNull: { keepOldValue: true }, defaultValue: true },
+  comment: { type: DataType.TEXT, defaultValue: 'No comment' },
 }, 'dab')
 
-if (test)
+if (test) {
   test.basicRouting()
+  test.addRoute({
+    type: TypeRoute.POST,
+    path: '/lol',
+    columsAccept: {
+      inverse: true,
+      whitelist: ["comment", "id"]
+    },
+    returnColumns: {
+      whitelist: ["id"],
+      inverse: true
+    }
+  })
+}
 autoback.start(8081)

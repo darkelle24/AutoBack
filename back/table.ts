@@ -1,4 +1,4 @@
-import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost } from './../_helpers/models/routeModels';
+import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteBasic, acceptData } from './../_helpers/models/routeModels';
 import { StatusCodes } from "http-status-codes";
 import { Model, ModelCtor } from "sequelize";
 import { saveDataTableInfo, saveTable } from "../_helpers/models/models";
@@ -94,6 +94,12 @@ export class TableClass<M extends Model> {
     return value
   }
 
+  getAllValue(data: any) {
+    Object.entries(this.table).forEach(([key, value]) => {
+      data[key] = this.getValue(data[key], value)
+    })
+  }
+
   addRoute(route: Route) {
     switch (route.type) {
       case TypeRoute.POST: {
@@ -126,49 +132,70 @@ export class TableClass<M extends Model> {
     }
   }
 
-  gestPutRoute(req: any, res: any, route: RoutePut): any {
+  private gestPutRoute(req: any, res: any, route: RoutePut): any {
     return this.sequelizeData.findOne({ where: { id: req.params.id } }).then(data => {
       if (!data) {
         return res.status(404).json({ message: "Treatment " + req.params.id + " not found" })
       }
 
       let toReturn: any = {}
+      let body: any = req.body
+
+      if (route.columsAccept && req.body)
+        body = this.list(req.body, route.columsAccept)
 
       Object.entries(this.table).forEach(([key, value]) => {
         if (value.primaryKey === false) {
-          toReturn[key] = this.setValue(req.body[key], value, false, data.getDataValue(key))
+          toReturn[key] = this.setValue(body[key], value, false, data.getDataValue(key))
         }
       })
 
       return data.update(toReturn).then(updatedObject => {
+        updatedObject = updatedObject.get()
+        if (route.returnColumns && updatedObject)
+          updatedObject = this.list(updatedObject, route.returnColumns)
         return res.status(200).json(updatedObject)
       })
     })
   }
 
-  gestGetRoute(req: any, res: any, route: RouteGet): any {
+  private gestGetRoute(req: any, res: any, route: RouteGet): any {
+
     return this.sequelizeData.findAll().then(datas => {
+      datas.every((value, index) => {
+        value = value.get()
+        if (route.columsAccept)
+          datas[index] = this.list(value, route.columsAccept)
+        this.getAllValue(datas[index])
+        return true
+      })
       return res.status(StatusCodes.OK).json(datas)
     })
   }
 
-  gestPostRoute(req: any, res: any, route: RoutePost): any {
+  private gestPostRoute(req: any, res: any, route: RoutePost): any {
     let toReturn: any = {}
+    let body: any = req.body
 
+    if (route.columsAccept && req.body)
+      body = this.list(req.body, route.columsAccept)
     Object.entries(this.table).forEach(([key, value]) => {
       if (value.primaryKey === false) {
-        toReturn[key] = this.setValue(req.body[key], value)
+        toReturn[key] = this.setValue(body[key], value)
       }
     })
 
     return this.sequelizeData.create(
       toReturn
     ).then(data => {
+      data = data.get()
+      if (route.returnColumns && data)
+        data = this.list(data, route.returnColumns)
       return res.status(200).json(data)
     })
   }
 
-  gestDeleteRoute(req: any, res: any, route: RouteDelete): any {
+  private gestDeleteRoute(req: any, res: any, route: RouteDelete): any {
     return this.sequelizeData.findOne({ where: { id: req.params.id } }).then(data => {
       if (!data) {
         return res.status(404).json({ message: "Treatment " + req.params.id + " not found" })
@@ -180,5 +207,45 @@ export class TableClass<M extends Model> {
         })
       }))
     })
+  }
+
+  private list(data: any, accept: acceptData): any {
+    if (accept.inverse)
+      return this.blackList(data, accept)
+    return this.whiteList(data, accept)
+  }
+
+  private blackList(data: any, accept: acceptData): any {
+    if (accept.whitelist && accept.whitelist.length !== 0) {
+      let toReturn: any = data
+      let list: string[] = accept.whitelist
+
+      Object.entries(data).forEach(([key, value]) => {
+        if (list.find(element => element === key))
+          delete toReturn[key]
+      })
+      return toReturn
+    } else if (accept.whitelist !== undefined && (accept.whitelist === null || accept.whitelist.length === 0)) {
+      return data
+    } else if (accept.whitelist === undefined) {
+      return {}
+    }
+  }
+
+  private whiteList(data: any, accept: acceptData): any {
+    if (accept.whitelist && accept.whitelist.length !== 0) {
+      let toReturn: any = {}
+      let list: string[] = accept.whitelist
+
+      Object.entries(data).forEach(([key, value]) => {
+        if (list.find(element => element === key))
+          toReturn[key] = value
+      })
+      return toReturn
+    } else if (accept.whitelist !== undefined && (accept.whitelist === null || accept.whitelist.length === 0)) {
+      return {}
+    } else if (accept.whitelist === undefined) {
+      return data
+    }
   }
 }

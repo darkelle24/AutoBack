@@ -13,14 +13,25 @@ export interface allRoutes {
   delete: RouteDelete[]
 }
 
-interface RouteBasic {
+export interface RouteBasic {
   path: string,
   /**
      * If columsAccept undefined accept all columns execpt primaryKey
-     * 
-     * If columsAccept null accept no columns
   */
-  columsAccept?: string[] | null
+  columsAccept?: acceptData
+}
+
+export interface acceptData {
+    /**
+     * If whitelist undefined accept all columns execpt primaryKey
+     *
+     * If whitelist null accept no columns
+    */
+    whitelist?: string[] | null,
+    /**
+     * If inverse is true whitelist became blacklist
+    */
+    inverse?: boolean
 }
 
 export type RouteGet = {
@@ -28,15 +39,18 @@ export type RouteGet = {
 } & RouteBasic
 
 export type RoutePost = {
-  readonly type: TypeRoute.POST
+  readonly type: TypeRoute.POST,
+  returnColumns?: acceptData
 } & RouteBasic
 
 export type RoutePut = {
   readonly type: TypeRoute.PUT,
+  returnColumns?: acceptData
 } & RouteBasic
 
 export type RouteDelete = {
-  readonly type: TypeRoute.DELETE
+  readonly type: TypeRoute.DELETE,
+  columsAccept?: undefined
 } & RouteBasic
 
 export type Route = RouteGet | RoutePost | RoutePut | RouteDelete

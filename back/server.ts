@@ -61,7 +61,7 @@ class AutoBack {
         await this.startFn(port)
       })
     } else {
-      this.startFn(port)
+      await this.startFn(port)
     }
   }
 

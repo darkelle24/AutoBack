@@ -1,9 +1,12 @@
-import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteBasic, acceptData } from './../_helpers/models/routeModels';
-import { StatusCodes } from "http-status-codes";
+import { RoutePostClass } from './route/routePost';
+import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass } from './../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize";
-import { saveDataTableInfo, saveTable } from "../_helpers/models/models";
+import { saveTable } from "../_helpers/models/models";
 import { Route, TypeRoute } from "../_helpers/models/routeModels";
 import { addPath } from '../_helpers/fn';
+import { RouteGetClass } from './route/routeGet';
+import { RoutePutClass } from './route/routePut';
+import { RouteDeleteClass } from './route/routeDelete';
 
 export class TableClass<M extends Model> {
   readonly name: string
@@ -68,188 +71,31 @@ export class TableClass<M extends Model> {
     })
   }
 
-  private setValue(value: any, info: saveDataTableInfo, created: boolean = true, olderValue?: any): any {
-    let toReturn: any
-
-    if (value !== undefined && value !== null) {
-      toReturn = value
-      if (info.type.JsonToDB)
-        toReturn = info.type.JsonToDB(toReturn)
-    } else if (created === false && olderValue !== undefined && olderValue !== null && info.allowNull.keepOldValue) {
-      toReturn = olderValue
-    } else if (info.defaultValue !== undefined) {
-      toReturn = info.defaultValue
-      if (info.type.JsonToDB)
-        toReturn = info.type.JsonToDB(toReturn)
-    } else {
-      toReturn = null
-    }
-    return toReturn
-  }
-
-  private getValue(value: any, info: saveDataTableInfo): any {
-    if (info.type.DBToJson) {
-      return info.type.DBToJson(value)
-    }
-    return value
-  }
-
-  private getAllValue(data: any) {
-    Object.entries(this.table).forEach(([key, value]) => {
-      data[key] = this.getValue(data[key], value)
-    })
-  }
-
-  addRoute(route: Route) {
+  addRoute(route: Route): RouteClass | undefined {
     switch (route.type) {
       case TypeRoute.POST: {
-        this.routes.post.push((route as RoutePost))
-        this.server.post(addPath(this.routes.originRoutePath, route.path), (req: any, res: any) => {
-          return this.gestPostRoute(req, res, (route as RoutePost))
-        })
-        break;
+        let routeClass = new RoutePostClass(this.table, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost))
+        this.routes.post.push(routeClass)
+        return routeClass
       }
       case TypeRoute.GET: {
-        this.routes.get.push((route as RouteGet))
-        this.server.get(addPath(this.routes.originRoutePath, route.path), (req: any, res: any) => {
-          return this.gestGetRoute(req, res, (route as RouteGet))
-        })
-        break;
+        let routeClass = new RouteGetClass(this.table, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet))
+        this.routes.get.push(routeClass)
+        return routeClass
       }
       case TypeRoute.PUT: {
-        this.routes.put.push((route as RoutePut))
-        this.server.put(addPath(this.routes.originRoutePath, route.path), (req: any, res: any) => {
-          return this.gestPutRoute(req, res, (route as RoutePut))
-        })
-        break;
+        let routeClass = new RoutePutClass(this.table, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut))
+        this.routes.put.push(routeClass)
+        return routeClass
       }
       case TypeRoute.DELETE: {
-        this.routes.delete.push((route as RouteDelete))
-        this.server.delete(addPath(this.routes.originRoutePath, route.path), (req: any, res: any) => {
-          return this.gestDeleteRoute(req, res, (route as RouteDelete))
-        })
-        break;
+        let routeClass = new RouteDeleteClass(this.table, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete))
+        this.routes.delete.push(routeClass)
+        return routeClass
       }
       default: {
-        break;
+        return undefined
       }
-    }
-  }
-
-  private gestPutRoute(req: any, res: any, route: RoutePut): any {
-    return this.sequelizeData.findOne({ where: { id: req.params.id } }).then(data => {
-      if (!data) {
-        return res.status(404).json({ message: "Treatment " + req.params.id + " not found" })
-      }
-
-      let toReturn: any = {}
-      let body: any = req.body
-
-      if (route.columsAccept && req.body)
-        body = this.list(req.body, route.columsAccept)
-
-      Object.entries(this.table).forEach(([key, value]) => {
-        if (value.primaryKey === false) {
-          toReturn[key] = this.setValue(body[key], value, false, data.getDataValue(key))
-        }
-      })
-
-      return data.update(toReturn).then(updatedObject => {
-        updatedObject = updatedObject.get()
-        if (route.returnColumns && updatedObject)
-          updatedObject = this.list(updatedObject, route.returnColumns)
-        return res.status(200).json(updatedObject)
-      })
-    })
-  }
-
-  private gestGetRoute(req: any, res: any, route: RouteGet): any {
-
-    return this.sequelizeData.findAll().then(datas => {
-      datas.every((value, index) => {
-        value = value.get()
-        if (route.columsAccept)
-          datas[index] = this.list(value, route.columsAccept)
-        this.getAllValue(datas[index])
-        return true
-      })
-      return res.status(StatusCodes.OK).json(datas)
-    })
-  }
-
-  private gestPostRoute(req: any, res: any, route: RoutePost): any {
-    let toReturn: any = {}
-    let body: any = req.body
-
-    if (route.columsAccept && req.body)
-      body = this.list(req.body, route.columsAccept)
-    Object.entries(this.table).forEach(([key, value]) => {
-      if (value.primaryKey === false) {
-        toReturn[key] = this.setValue(body[key], value)
-      }
-    })
-
-    return this.sequelizeData.create(
-      toReturn
-    ).then(data => {
-      data = data.get()
-      if (route.returnColumns && data)
-        data = this.list(data, route.returnColumns)
-      return res.status(200).json(data)
-    })
-  }
-
-  private gestDeleteRoute(req: any, res: any, route: RouteDelete): any {
-    return this.sequelizeData.findOne({ where: { id: req.params.id } }).then(data => {
-      if (!data) {
-        return res.status(404).json({ message: "Treatment " + req.params.id + " not found" })
-      }
-
-      return (data.destroy().then(() => {
-        return res.status(200).json({
-            message: this.name + " deleted"
-        })
-      }))
-    })
-  }
-
-  private list(data: any, accept: acceptData): any {
-    if (accept.inverse)
-      return this.blackList(data, accept)
-    return this.whiteList(data, accept)
-  }
-
-  private blackList(data: any, accept: acceptData): any {
-    if (accept.whitelist && accept.whitelist.length !== 0) {
-      let toReturn: any = data
-      let list: string[] = accept.whitelist
-
-      Object.entries(data).forEach(([key, value]) => {
-        if (list.find(element => element === key))
-          delete toReturn[key]
-      })
-      return toReturn
-    } else if (accept.whitelist !== undefined && (accept.whitelist === null || accept.whitelist.length === 0)) {
-      return data
-    } else if (accept.whitelist === undefined) {
-      return {}
-    }
-  }
-
-  private whiteList(data: any, accept: acceptData): any {
-    if (accept.whitelist && accept.whitelist.length !== 0) {
-      let toReturn: any = {}
-      let list: string[] = accept.whitelist
-
-      Object.entries(data).forEach(([key, value]) => {
-        if (list.find(element => element === key))
-          toReturn[key] = value
-      })
-      return toReturn
-    } else if (accept.whitelist !== undefined && (accept.whitelist === null || accept.whitelist.length === 0)) {
-      return {}
-    } else if (accept.whitelist === undefined) {
-      return data
     }
   }
 }

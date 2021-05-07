@@ -71,45 +71,45 @@ export interface FilterOperators {
   /**
      * Check if this filter operator is available for this columns type's
   */
-  equal: FilterInfo,
+  equal?: FilterInfo,
   /**
      * Check if this filter operator is available for this columns type's
   */
-  negatif: FilterInfo,
+  negatif?: FilterInfo,
   /**
      * Check if this filter operator is available for this columns type's
   */
-  is: FilterInfo,
+  is?: FilterInfo,
   /**
      * Check if this filter operator is available for this columns type's
   */
-  not: FilterInfo,
+  not?: FilterInfo,
 
   /**
      * Check if this filter operator is available for this columns type's
   */
-  greater_than: FilterInfo,
+  greater_than?: FilterInfo,
   /**
      * Check if this filter operator is available for this columns type's
   */
-  greater_than_equals: FilterInfo,
+  greater_than_equals?: FilterInfo,
   /**
      * Check if this filter operator is available for this columns type's
   */
-  smaller_than: FilterInfo,
+  smaller_than?: FilterInfo,
   /**
      * Check if this filter operator is available for this columns type's
   */
-  smaller_than_equals: FilterInfo,
+  smaller_than_equals?: FilterInfo,
 
   /**
      * Check if this filter operator is available for this columns type's
   */
-  substring: FilterInfo,
+  substring?: FilterInfo,
   /**
      * Check if this filter operator is available for this columns type's
   */
-  regexp: FilterInfo,
+  regexp?: FilterInfo,
 }
 
 export interface FilterInfo {
@@ -124,6 +124,14 @@ export interface FilterInfo {
   */
    where: InfoPlace,
    transformValue?(value: any): any
+}
+
+export interface RealListFilter {
+   [columnsName: string]: RealListFilterInfo
+}
+
+export interface RealListFilterInfo {
+   [infoName: string]: RealFilterInfo
 }
 
 export interface RealFilterInfo {

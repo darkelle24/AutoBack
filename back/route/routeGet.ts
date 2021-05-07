@@ -11,6 +11,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     super(table, sequelizeData, server, path)
 
     this.routeInfo = routeInfo
+    this.changeFilterList(routeInfo.filters)
     server.get(path, (req: any, res: any) => {
       return this.gestGetRoute(req, res, routeInfo)
     })

@@ -1,5 +1,6 @@
 import { DataTypeAbstract } from "sequelize"
 import { TableClass } from "../../back/table"
+import { FilterInfoType } from "./routeModels"
 
 export type dataType = {
   [key: string]: dataTypeInfo
@@ -9,7 +10,49 @@ export interface dataTypeInfo {
   sequelizeType: DataTypeAbstract,
   autobackDataType?: DataType,
   JsonToDB?(data: any): any,
-  DBToJson?(data: any): any
+  DBToJson?(data: any): any,
+  /**
+    * If filterOperator undefined accept all basic operator
+  */
+  filterOperator?: {
+    /**
+    * If whitelist undefined accept all operator
+    *
+    * If whitelist null accept no operator
+    */
+    whitelist?: string[] | null,
+    /**
+    * If inverse is true whitelist became blacklist
+    */
+    inverse?: boolean
+  }
+}
+
+export type realDataType = {
+  [key: string]: realDataTypeInfo
+}
+
+export interface realDataTypeInfo {
+  name: string,
+  sequelizeType: DataTypeAbstract,
+  autobackDataType: DataType,
+  JsonToDB?(data: any): any,
+  DBToJson?(data: any): any,
+  /**
+    * If filterOperator undefined accept all basic operator
+  */
+  filterOperator: {
+    /**
+    * If whitelist undefined accept all operator
+    *
+    * If whitelist null accept no operator
+    */
+    whitelist?: FilterInfoType[] | null,
+    /**
+    * If inverse is true whitelist became blacklist
+    */
+    inverse: boolean
+  }
 }
 
 export enum DB {
@@ -18,7 +61,7 @@ export enum DB {
 
 export interface DBInterface {
   readonly dbName: string,
-  readonly dataType: dataType;
+  readonly dataType: realDataType;
 }
 
 export enum DataType {
@@ -55,7 +98,7 @@ export interface saveTable {
 }
 
 export interface saveDataTableInfo {
-  type: dataTypeInfo,
+  type: realDataTypeInfo,
   primaryKey: boolean,
   autoIncrement: boolean,
   comment: string | null,

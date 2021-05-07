@@ -10,6 +10,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
     super(table, sequelizeData, server, path)
 
     this.routeInfo = routeInfo
+    this.changeFilterList(routeInfo.filters)
     server.delete(path, (req: any, res: any) => {
       return this.gestDeleteRoute(req, res, routeInfo)
     })

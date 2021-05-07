@@ -1,6 +1,7 @@
+import { RealListFilter } from './../../_helpers/models/routeModels';
 import { StatusCodes } from "http-status-codes"
 import { Model, ModelCtor } from "sequelize/types"
-import { filterOperatorToSequelizeOperator } from "../../_helpers/fn"
+import { autorizeFilterOperator, filterOperatorToSequelizeOperator } from "../../_helpers/fn"
 import { saveDataTableInfo, saveTable } from "../../_helpers/models/models"
 import { acceptData, ListFilter, FilterInfo, InfoPlace } from "../../_helpers/models/routeModels"
 
@@ -10,6 +11,7 @@ export class RouteBasicClass<M extends Model> {
   sequelizeData: ModelCtor<M>
   table: saveTable
   protected server: any
+  protected filterlist?: RealListFilter = undefined
 
   constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string) {
     this.sequelizeData = sequelizeData
@@ -91,7 +93,36 @@ export class RouteBasicClass<M extends Model> {
     }
   }
 
-  protected getFilterInfoForSequilizeFind(req: any, filters?: ListFilter): any | undefined {
+  public changeFilterList(filters?: ListFilter) {
+    if (filters) {
+      let toReturn: RealListFilter = {}
+
+      Object.entries(filters).forEach(([keyCol, valueCol]) => {
+        if (this.table.hasOwnProperty(keyCol)) {
+
+          Object.entries(valueCol).forEach(([key, value]) => {
+            let type = filterOperatorToSequelizeOperator(key)
+            if (type !== undefined && autorizeFilterOperator(type, this.table[keyCol].type)) {
+              if (toReturn[keyCol] === undefined)
+                toReturn[keyCol] = {}
+              toReturn[keyCol][type.name] = {
+                info: type,
+                name: value.name ? value.name : keyCol + '_' + type.reduce_name,
+                where: value.where,
+                transformValue: value.transformValue
+              }
+            }
+          })
+
+        }
+      })
+      this.filterlist = toReturn
+    } else {
+      this.filterlist = undefined
+    }
+  }
+
+  /* protected getFilterInfoForSequilizeFind(req: any, filters?: ListFilter): any | undefined {
     if (filters) {
       let toReturn: any = {}
 
@@ -115,5 +146,5 @@ export class RouteBasicClass<M extends Model> {
     if (info.where === InfoPlace.BODY) {
       //return req.body[info.name]
     }
-  }
+  } */
 }

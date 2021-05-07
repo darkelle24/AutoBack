@@ -10,6 +10,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     super(table, sequelizeData, server, path)
 
     this.routeInfo = routeInfo
+    this.changeFilterList(routeInfo.filters)
     server.put(path, (req: any, res: any) => {
       return this.gestPutRoute(req, res, routeInfo)
     })

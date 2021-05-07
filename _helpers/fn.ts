@@ -1,6 +1,7 @@
 import { DataTypes, Op } from "sequelize"
-import { saveDataTableInfo } from "./models/models"
+import { DataType, dataType, dataTypeInfo, realDataType, realDataTypeInfo, saveDataTableInfo } from "./models/models"
 import { FilterInfoType, RealFilterInfo } from "./models/routeModels"
+import * as _ from "lodash"
 
 export function defaultJsonToDB(data: any): any {
   return data
@@ -28,8 +29,8 @@ export function addPath(path1: string, path2: string): string {
   return path1 + '/' + path2
 }
 
-export function basicDataType() {
-  return {
+export function basicDataType(): dataType {
+  let basic: dataType = {
     date: {
       sequelizeType: DataTypes.STRING,
       JsonToDB: (data: string | number | Date): any => {
@@ -42,9 +43,17 @@ export function basicDataType() {
         return date.toJSON()
       },
       DBToJson: (data: any): any => { return data ? new Date(data) : null },
+      filterOperator: {
+        inverse: false,
+        whitelist: getNumberOperatorFilter()
+      }
     },
     int: {
       sequelizeType: DataTypes.INTEGER,
+      filterOperator: {
+        inverse: false,
+        whitelist: getNumberOperatorFilter()
+      }
     },
     text: {
       sequelizeType: DataTypes.TEXT,
@@ -56,17 +65,54 @@ export function basicDataType() {
     },
     float: {
       sequelizeType: DataTypes.FLOAT,
+      filterOperator: {
+        inverse: false,
+        whitelist: getNumberOperatorFilter()
+      }
     },
     boolean: {
       sequelizeType: DataTypes.BOOLEAN,
     },
     bigInt: {
       sequelizeType: DataTypes.BIGINT,
+      filterOperator: {
+        inverse: false,
+        whitelist: getNumberOperatorFilter()
+      }
     },
     string: {
       sequelizeType: DataTypes.STRING,
     }
   }
+
+  return basic
+}
+
+export function applyDefaultValueOnDataType(basic: dataType): realDataType {
+  let toReturn: realDataType = {}
+
+  Object.entries(basic).forEach(([key, value]) => {
+    if ((<any>Object).values(DataType).includes(key)) {
+      let temp: any = _.merge({}, value)
+
+      temp.name = key
+      temp.autobackDataType = <DataType> key
+      if (temp.filterOperator === undefined) {
+        temp.filterOperator = {
+          inverse: false,
+          whitelist: getStringToOperatorFilterList(getBasicOperatorFilter())
+        }
+      } else {
+        if (temp.filterOperator.inverse === undefined)
+          temp.filterOperator.inverse = false
+        if (temp.filterOperator.whitelist && temp.filterOperator.whitelist.lenght !== 0) {
+          temp.filterOperator.whitelist = getStringToOperatorFilterList(temp.filterOperator.whitelist)
+        }
+      }
+      toReturn[key] = temp
+    }
+  })
+  return toReturn
 }
 
 export function filterOperatorToSequelizeOperator(filterOperatorName: string): FilterInfoType | undefined {
@@ -147,3 +193,46 @@ export function filterOperatorToSequelizeOperator(filterOperatorName: string): F
   }
 }
 
+export function getBasicOperatorFilter(): string[] {
+  return ["equal", "negatif", "is", "not"]
+}
+
+export function getNumberOperatorFilter(): string[] {
+  return getBasicOperatorFilter().concat(["greater_than", "greater_than_equals", "smaller_than", "smaller_than_equals"])
+}
+
+export function getStringToOperatorFilterList(list: string[]): FilterInfoType[] {
+  let toReturn: FilterInfoType[] = []
+
+  if (list.length !== 0) {
+    list.forEach((value) => {
+      let type = filterOperatorToSequelizeOperator(value)
+      if (type !== undefined && !toReturn.find((element) => {
+        if (type && element.name === type.name)
+          return true
+        return false
+      })) {
+        toReturn.push(type)
+      }
+    })
+  }
+  return toReturn
+}
+
+export function autorizeFilterOperator(type: FilterInfoType, info: realDataTypeInfo): boolean {
+  let toReturn: boolean = false
+
+  if (info.filterOperator.whitelist === undefined)
+    toReturn = true
+  else if (info.filterOperator.whitelist === null)
+    toReturn = false
+  else if (Object.values(info.filterOperator.whitelist).find((element: any) => {
+    return (type.name === element.name && type.reduce_name === element.reduce_name)
+  })) {
+    toReturn = true
+  }
+
+  if (info.filterOperator.inverse)
+    toReturn = !toReturn
+  return toReturn
+}

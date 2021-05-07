@@ -1,6 +1,6 @@
 import { TableClass } from './table';
 import { PostgresDb } from './db/postgres/postgres';
-import { DB, Table, DBInterface, DataType, dataTypeInfo, allowNullParams, saveDataTableInfo, dataTableInfo, saveTable, allTables } from '../_helpers/models/models';
+import { DB, Table, DBInterface, DataType, dataTypeInfo, allowNullParams, saveDataTableInfo, dataTableInfo, saveTable, allTables, realDataTypeInfo } from '../_helpers/models/models';
 import express from "express";
 import {
 	ReasonPhrases,
@@ -9,7 +9,7 @@ import {
 import { Sequelize } from 'sequelize';
 import { defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo } from '../_helpers/fn';
 import * as _ from "lodash"
-import { TypeRoute } from '../_helpers/models/routeModels';
+import { InfoPlace, TypeRoute } from '../_helpers/models/routeModels';
 
 class AutoBack {
 
@@ -96,7 +96,7 @@ class AutoBack {
 
   defineTable(nameTable: string, table: Table, originRoutePath?: string): TableClass<any> | undefined {
     let tableSequelize = undefined
-    let saveTableInfo: any = {}
+    let saveTableInfo: saveTable = {}
     let tableSequelizeInfo = this.createTableSequelizeInfo(table, saveTableInfo)
 
     if (this.sequelize)
@@ -106,7 +106,7 @@ class AutoBack {
     return this.tables[nameTable]
   }
 
-  private createTableSequelizeInfo(table: Table, saveTableInfo: any): any {
+  private createTableSequelizeInfo(table: Table, saveTableInfo: saveTable): any {
     let tableSequelizeInfo: any = {}
 
     Object.keys(table).forEach((key) => {
@@ -134,7 +134,7 @@ class AutoBack {
     return false
   }
 
-  private saveDataInfo(dataInfo: dataTableInfo, type: dataTypeInfo): saveDataTableInfo {
+  private saveDataInfo(dataInfo: dataTableInfo, type: realDataTypeInfo): saveDataTableInfo {
     let temp = _.merge({}, this.defaultSaveDataInfo, dataInfo)
     temp.allowNull = dataInfo.allowNull as allowNullParams
     temp.type = type
@@ -142,13 +142,11 @@ class AutoBack {
     return temp
   }
 
-  private getDataType(data: DataType): dataTypeInfo | undefined {
+  private getDataType(data: DataType): realDataTypeInfo | undefined {
     let type = this.DB.dataType[data]
 
     if (type === undefined) {
       console.error(data + " type in " + this.DB.dbName + " is not supported")
-    } else {
-      type.autobackDataType = data
     }
     return type
   }
@@ -175,6 +173,24 @@ if (test) {
     returnColumns: {
       whitelist: ["id"],
       inverse: true
+    },
+    filters: {
+      comment: {
+        equal: {
+          name: 'lol',
+          where: InfoPlace.QUERYPARAMS
+        },
+        greater_than: {
+          name: 'lol',
+          where: InfoPlace.QUERYPARAMS
+        }
+      },
+      date: {
+        greater_than: {
+          name: 'lol',
+          where: InfoPlace.QUERYPARAMS
+        }
+      }
     }
   })
 }

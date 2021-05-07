@@ -19,8 +19,9 @@ class AutoBack {
   private sequelize: Sequelize
   tables: allTables = {}
   private defaultSaveDataInfo: any = defaultSaveDataInfo()
+  private waitDestroyDb?: Promise<void>
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, resetDb: boolean = false) {
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
 
@@ -30,20 +31,38 @@ class AutoBack {
       this.DB = new PostgresDb();
     }
     this.sequelize = new Sequelize(connnectionStr, { logging: false });
+    if (resetDb) {
+      this.waitDestroyDb = this.resetDb()
+    }
     if (activeHealthRoute)
       this.health()
+  }
+
+  private async resetDb() {
+    await this.sequelize.drop()
+    await this.sequelize.sync().then(() => console.log('All tables dropped'))
   }
 
   /**
      * Call after you init all your routes and tables
   */
 
-  async start(port: number = 8080) {
+  private async startFn(port: number = 8080) {
     await this.sequelize.sync().then(() => console.log('Created all Tables'))
     this.server.listen(port, () => {
       console.log('Server listening on port ' + port)
     });
     this.error404()
+  }
+
+  async start(port: number = 8080) {
+    if (this.waitDestroyDb) {
+      this.waitDestroyDb.finally(async () => {
+        await this.startFn(port)
+      })
+    } else {
+      this.startFn(port)
+    }
   }
 
   loadDb(db: DB, connnectionStr: string) {
@@ -135,7 +154,7 @@ class AutoBack {
   }
 }
 
-let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test")
+let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, true, true)
 //let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
 let test = autoback.defineTable('lol', {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },

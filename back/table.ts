@@ -47,7 +47,9 @@ export class TableClass<M extends Model> {
     this.addRoute({
       path: '/',
       type: TypeRoute.GET,
-      filters: activeAllFiltersForAllCols(this.table)
+      filters: activeAllFiltersForAllCols(this.table),
+      limit: {},
+      offset: {}
     })
   }
 

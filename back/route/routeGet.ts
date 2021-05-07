@@ -1,7 +1,8 @@
+import { RealFilterInfo } from './../../_helpers/models/routeModels';
 import { StatusCodes } from "http-status-codes";
 import { Model, ModelCtor } from "sequelize";
 import { saveTable } from "../../_helpers/models/models";
-import { RouteGet } from "../../_helpers/models/routeModels";
+import { InfoPlace, RouteGet } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 
 export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
@@ -12,14 +13,38 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
 
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
+    if (routeInfo.limit) {
+      routeInfo.limit.name = routeInfo.limit.name ? routeInfo.limit.name : 'limit',
+      routeInfo.limit.where = routeInfo.limit.where ? routeInfo.limit.where : InfoPlace.QUERYPARAMS
+      routeInfo.limit.transformValue = routeInfo.limit.transformValue ? routeInfo.limit.transformValue : (value: any) => {
+        if (typeof value === 'string')
+          return parseInt(value)
+        return value
+      }
+    }
+    if (routeInfo.offset) {
+      routeInfo.offset.name = routeInfo.offset.name ? routeInfo.offset.name : 'offset',
+      routeInfo.offset.where = routeInfo.offset.where ? routeInfo.offset.where : InfoPlace.QUERYPARAMS
+      routeInfo.offset.transformValue = routeInfo.offset.transformValue ? routeInfo.offset.transformValue : (value: any) => {
+        if (typeof value === 'string')
+          return parseInt(value)
+        return value
+      }
+    }
     server.get(path, (req: any, res: any) => {
       return this.gestGetRoute(req, res, routeInfo)
     })
   }
 
   private gestGetRoute(req: any, res: any, route: RouteGet): any {
+    let filter = this.getFilter(req, this.filterlist)
 
-    return this.sequelizeData.findAll(this.getFilter(req, this.filterlist)).then(datas => {
+    if (route.limit)
+      filter['limit'] = this.getValueFromRequest(req, (route.limit as RealFilterInfo))
+    if (route.offset)
+      filter['offset'] = this.getValueFromRequest(req, (route.offset as RealFilterInfo))
+
+    return this.sequelizeData.findAll(filter).then(datas => {
       datas.every((value, index) => {
         value = value.get()
         if (route.columsAccept)

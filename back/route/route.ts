@@ -165,4 +165,15 @@ export class RouteBasicClass<M extends Model> {
     })
     return toReturn
   }
+
+  protected getValueFromRequest(req: any, info: RealFilterInfo): any | undefined {
+    let filterValue = this.getValueFrom(req, info)
+
+    if (filterValue !== undefined) {
+      if (info.transformValue)
+        filterValue = info.transformValue(filterValue)
+      return filterValue
+    }
+    return undefined
+  }
 }

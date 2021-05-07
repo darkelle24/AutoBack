@@ -41,7 +41,9 @@ export interface acceptData {
 }
 
 export type RouteGet = {
-  readonly type: TypeRoute.GET
+   readonly type: TypeRoute.GET,
+   limit?: FilterInfo,
+   offset?: FilterInfo
 } & RouteBasic
 
 export type RoutePost = {

@@ -68,7 +68,7 @@ export class TableClass<M extends Model> {
     })
   }
 
-  setValue(value: any, info: saveDataTableInfo, created: boolean = true, olderValue?: any): any {
+  private setValue(value: any, info: saveDataTableInfo, created: boolean = true, olderValue?: any): any {
     let toReturn: any
 
     if (value !== undefined && value !== null) {
@@ -87,14 +87,14 @@ export class TableClass<M extends Model> {
     return toReturn
   }
 
-  getValue(value: any, info: saveDataTableInfo): any {
+  private getValue(value: any, info: saveDataTableInfo): any {
     if (info.type.DBToJson) {
       return info.type.DBToJson(value)
     }
     return value
   }
 
-  getAllValue(data: any) {
+  private getAllValue(data: any) {
     Object.entries(this.table).forEach(([key, value]) => {
       data[key] = this.getValue(data[key], value)
     })
@@ -107,24 +107,28 @@ export class TableClass<M extends Model> {
         this.server.post(addPath(this.routes.originRoutePath, route.path), (req: any, res: any) => {
           return this.gestPostRoute(req, res, (route as RoutePost))
         })
+        break;
       }
       case TypeRoute.GET: {
         this.routes.get.push((route as RouteGet))
         this.server.get(addPath(this.routes.originRoutePath, route.path), (req: any, res: any) => {
           return this.gestGetRoute(req, res, (route as RouteGet))
         })
+        break;
       }
       case TypeRoute.PUT: {
         this.routes.put.push((route as RoutePut))
         this.server.put(addPath(this.routes.originRoutePath, route.path), (req: any, res: any) => {
           return this.gestPutRoute(req, res, (route as RoutePut))
         })
+        break;
       }
       case TypeRoute.DELETE: {
         this.routes.delete.push((route as RouteDelete))
         this.server.delete(addPath(this.routes.originRoutePath, route.path), (req: any, res: any) => {
           return this.gestDeleteRoute(req, res, (route as RouteDelete))
         })
+        break;
       }
       default: {
         break;

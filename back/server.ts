@@ -141,6 +141,7 @@ let test = autoback.defineTable('lol', {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
   bonjour: { type: DataType.BOOLEAN, allowNull: { keepOldValue: true }, defaultValue: true },
   comment: { type: DataType.TEXT, defaultValue: 'No comment' },
+  date: {type: DataType.DATE, allowNull: { keepOldValue: true } }
 }, 'dab')
 
 if (test) {

@@ -40,7 +40,7 @@ export function basicDataType() {
           date = data
         return date.toJSON()
       },
-      DBToJson: (data: any): any => { return new Date(data) },
+      DBToJson: (data: any): any => { return data ? new Date(data) : null },
     },
     int: {
       sequelizeType: DataTypes.INTEGER,

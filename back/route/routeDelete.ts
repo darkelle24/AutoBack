@@ -17,7 +17,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
   }
 
   private gestDeleteRoute(req: any, res: any, route: RouteDelete): any {
-    return this.sequelizeData.findOne({ where: { id: req.params.id } }).then(data => {
+    return this.sequelizeData.findOne(this.getFilter(req, this.filterlist)).then(data => {
       if (!data) {
         return res.status(404).json({ message: "Treatment " + req.params.id + " not found" })
       }

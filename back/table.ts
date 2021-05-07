@@ -1,9 +1,9 @@
 import { RoutePostClass } from './route/routePost';
-import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass } from './../_helpers/models/routeModels';
+import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass, InfoPlace } from './../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize";
 import { saveTable } from "../_helpers/models/models";
 import { Route, TypeRoute } from "../_helpers/models/routeModels";
-import { addPath } from '../_helpers/fn';
+import { activeAllFiltersForAllCols, addPath } from '../_helpers/fn';
 import { RouteGetClass } from './route/routeGet';
 import { RoutePutClass } from './route/routePut';
 import { RouteDeleteClass } from './route/routeDelete';
@@ -46,7 +46,8 @@ export class TableClass<M extends Model> {
   private basicGet() {
     this.addRoute({
       path: '/',
-      type: TypeRoute.GET
+      type: TypeRoute.GET,
+      filters: activeAllFiltersForAllCols(this.table)
     })
   }
 
@@ -60,14 +61,32 @@ export class TableClass<M extends Model> {
   private basicDelete() {
     this.addRoute({
       path: '/:id',
-      type: TypeRoute.DELETE
+      type: TypeRoute.DELETE,
+      filters: {
+        id: {
+          equal: {
+            name: 'id',
+            where: InfoPlace.PARAMS,
+            transformValue: (value: string) => {return parseInt(value)}
+          }
+        }
+      }
     })
   }
 
   private basicPut() {
     this.addRoute({
       path: '/:id',
-      type: TypeRoute.PUT
+      type: TypeRoute.PUT,
+      filters: {
+        id: {
+          equal: {
+            name: 'id',
+            where: InfoPlace.PARAMS,
+            transformValue: (value: string) => {return parseInt(value)}
+          }
+        }
+      }
     })
   }
 

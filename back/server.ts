@@ -173,24 +173,6 @@ if (test) {
     returnColumns: {
       whitelist: ["id"],
       inverse: true
-    },
-    filters: {
-      comment: {
-        equal: {
-          name: 'lol',
-          where: InfoPlace.QUERYPARAMS
-        },
-        greater_than: {
-          name: 'lol',
-          where: InfoPlace.QUERYPARAMS
-        }
-      },
-      date: {
-        greater_than: {
-          name: 'lol',
-          where: InfoPlace.QUERYPARAMS
-        }
-      }
     }
   })
 }

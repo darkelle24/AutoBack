@@ -24,7 +24,11 @@ export interface dataTypeInfo {
     /**
     * If inverse is true whitelist became blacklist
     */
-    inverse?: boolean
+    inverse?: boolean,
+    /**
+    * Replace transform from FilterInfo if FilterInfo.transform === undefined
+    */
+    transform?(data: any): any
   }
 }
 
@@ -51,7 +55,11 @@ export interface realDataTypeInfo {
     /**
     * If inverse is true whitelist became blacklist
     */
-    inverse: boolean
+    inverse: boolean,
+    /**
+    * Replace transform from FilterInfo if FilterInfo.transform === undefined
+    */
+    transform?(data: any): any
   }
 }
 

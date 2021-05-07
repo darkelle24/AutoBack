@@ -19,7 +19,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
 
   private gestGetRoute(req: any, res: any, route: RouteGet): any {
 
-    return this.sequelizeData.findAll().then(datas => {
+    return this.sequelizeData.findAll(this.getFilter(req, this.filterlist)).then(datas => {
       datas.every((value, index) => {
         value = value.get()
         if (route.columsAccept)

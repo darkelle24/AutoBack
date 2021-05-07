@@ -1,7 +1,8 @@
 import { DataTypes, Op } from "sequelize"
-import { DataType, dataType, dataTypeInfo, realDataType, realDataTypeInfo, saveDataTableInfo } from "./models/models"
-import { FilterInfoType, RealFilterInfo } from "./models/routeModels"
+import { DataType, dataType, dataTypeInfo, realDataType, realDataTypeInfo, saveDataTableInfo, saveTable } from "./models/models"
+import { FilterInfoType, FilterOperators, ListFilter, RealFilterInfo } from "./models/routeModels"
 import * as _ from "lodash"
+import { transform } from "lodash"
 
 export function defaultJsonToDB(data: any): any {
   return data
@@ -121,70 +122,70 @@ export function filterOperatorToSequelizeOperator(filterOperatorName: string): F
       return {
         name: 'equal',
         reduce_name: 'eq',
-        sequilize_type: [Op.eq]
+        sequilize_type: Op.eq
       }
     }
     case ('negatif'): {
       return {
         name: 'negatif',
         reduce_name: 'ne',
-        sequilize_type: [Op.ne]
+        sequilize_type: Op.ne
       }
     }
     case ('is'): {
       return {
         name: 'is',
         reduce_name: 'is',
-        sequilize_type: [Op.is]
+        sequilize_type: Op.is
       }
     }
     case ('not'): {
       return {
         name: 'not',
         reduce_name: 'not',
-        sequilize_type: [Op.not]
+        sequilize_type: Op.not
       }
     }
     case ('greater_than'): {
       return {
         name: 'greater_than',
         reduce_name: 'gt',
-        sequilize_type: [Op.gt]
+        sequilize_type: Op.gt
       }
     }
     case ('greater_than_equals'): {
       return {
         name: 'greater_than_equals',
         reduce_name: 'gte',
-        sequilize_type: [Op.gte]
+        sequilize_type: Op.gte
       }
     }
     case ('smaller_than'): {
       return {
         name: 'smaller_than',
         reduce_name: 'lt',
-        sequilize_type: [Op.lt]
+        sequilize_type: Op.lt
       }
     }
     case ('smaller_than_equals'): {
       return {
         name: 'smaller_than_equals',
         reduce_name: 'lte',
-        sequilize_type: [Op.lte]
+        sequilize_type: Op.lte
       }
     }
     case ('substring'): {
       return {
         name: 'substring',
         reduce_name: 'substr',
-        sequilize_type: [Op.substring]
+        sequilize_type: Op.substring
       }
     }
     case ('regexp'): {
       return {
         name: 'regexp',
         reduce_name: 'reg',
-        sequilize_type: [Op.regexp]
+        sequilize_type: Op.regexp
       }
     }
     default: {
@@ -235,4 +236,28 @@ export function autorizeFilterOperator(type: FilterInfoType, info: realDataTypeI
   if (info.filterOperator.inverse)
     toReturn = !toReturn
   return toReturn
+}
+
+export function activeAllFiltersForAllCols(table: saveTable): ListFilter {
+  let toReturn: ListFilter = {}
+
+  Object.entries(table).forEach(([key, value]) => {
+    toReturn[key] = allFilter()
+  })
+  return toReturn
+}
+
+export function allFilter(): FilterOperators {
+  return {
+    equal: {},
+    negatif: {},
+    is: {},
+    not: {},
+    greater_than: {},
+    greater_than_equals: {},
+    smaller_than: {},
+    smaller_than_equals: {},
+    substring: {},
+    regexp: {},
+  }
 }

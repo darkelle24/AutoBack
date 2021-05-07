@@ -46,7 +46,8 @@ export type RouteGet = {
 
 export type RoutePost = {
   readonly type: TypeRoute.POST,
-  returnColumns?: acceptData
+   returnColumns?: acceptData,
+   filters?: undefined
 } & RouteBasic
 
 export type RoutePut = {
@@ -121,8 +122,13 @@ export interface FilterInfo {
      * The place to find the info of the filter
      *
      * You have the choice between InfoPlace.BODY, InfoPlace.PARAMS, InfoPlace.QUERYPARAMS, InfoPlace.HEADER
+     *
+     * Default value InfoPlace.QUERYPARAMS
   */
-   where: InfoPlace,
+   where?: InfoPlace,
+   /**
+    * Replace transform with transform from dataTypeInfo if transformValue === undefined && dataTypeInfo.transform !== undefined
+    */
    transformValue?(value: any): any
 }
 

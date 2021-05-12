@@ -1,4 +1,4 @@
-import { RealFilterInfo, RealListFilter } from './../../_helpers/models/routeModels';
+import { ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo } from './../../_helpers/models/routeModels';
 import { StatusCodes } from "http-status-codes"
 import { Model, ModelCtor } from "sequelize/types"
 import { autorizeFilterOperator, filterOperatorToSequelizeOperator } from "../../_helpers/fn"
@@ -12,6 +12,7 @@ export class RouteBasicClass<M extends Model> {
   table: saveTable
   protected server: any
   protected filterlist?: RealListFilter = undefined
+  protected dataAsList?: RealListValueInfo = undefined
 
   constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string) {
     this.sequelizeData = sequelizeData
@@ -116,7 +117,7 @@ export class RouteBasicClass<M extends Model> {
               toReturn[keyCol][type.name] = {
                 info: type,
                 name: value.name ? value.name : keyCol + '_' + type.reduce_name,
-                where: value.where ? value.where : InfoPlace.QUERYPARAMS,
+                where: value.where !== undefined ? value.where : InfoPlace.QUERYPARAMS,
                 transformValue: transform
               }
             }
@@ -130,15 +131,15 @@ export class RouteBasicClass<M extends Model> {
     }
   }
 
-  protected getValueFrom(req: any, info: RealFilterInfo): any | undefined {
-    if (info.where === InfoPlace.BODY) {
-      return req.body[info.name]
-    } else if (info.where === InfoPlace.HEADER) {
-      return req.headers[info.name]
-    } else if (info.where === InfoPlace.QUERYPARAMS) {
-      return req.query[info.name]
-    } else if (info.where === InfoPlace.PARAMS) {
-      return req.params[info.name]
+  protected getValueFrom(req: any, place: InfoPlace, name: string): any | undefined {
+    if (place === InfoPlace.BODY) {
+      return req.body[name]
+    } else if (place === InfoPlace.HEADER) {
+      return req.headers[name]
+    } else if (place === InfoPlace.QUERYPARAMS) {
+      return req.query[name]
+    } else if (place === InfoPlace.PARAMS) {
+      return req.params[name]
     } else {
       return undefined
     }
@@ -152,7 +153,7 @@ export class RouteBasicClass<M extends Model> {
 
     Object.entries(filter).forEach(([keyCol, valueCol]) => {
       Object.entries(valueCol).forEach(([key, value]) => {
-        let filterValue = this.getValueFrom(req, value)
+        let filterValue = this.getValueFrom(req, value.where, value.name)
 
         if (filterValue !== undefined) {
           if (value.transformValue)
@@ -167,7 +168,7 @@ export class RouteBasicClass<M extends Model> {
   }
 
   protected getValueFromRequest(req: any, info: RealFilterInfo): any | undefined {
-    let filterValue = this.getValueFrom(req, info)
+    let filterValue = this.getValueFrom(req, info.where, info.name)
 
     if (filterValue !== undefined) {
       if (info.transformValue)
@@ -175,5 +176,47 @@ export class RouteBasicClass<M extends Model> {
       return filterValue
     }
     return undefined
+  }
+
+  public changeDataAsList(dataAs?: ListValueInfo) {
+    if (dataAs) {
+      let toReturn: RealListValueInfo = {}
+
+      Object.entries(dataAs).forEach(([keyCol, valueCol]) => {
+        if (this.table.hasOwnProperty(keyCol)) {
+              let transform = undefined
+
+              if (valueCol.transformValue)
+                transform = valueCol.transformValue
+              toReturn[keyCol] = {
+                name: valueCol.name ? valueCol.name : keyCol,
+                where: valueCol.where !== undefined ? valueCol.where : InfoPlace.BODY,
+                transformValue: transform ? transform : undefined,
+                force: valueCol.force === false ? false : true
+              }
+
+        }
+      })
+      this.dataAsList = toReturn
+    } else {
+      this.dataAsList = undefined
+    }
+  }
+
+  protected getDataAs(req: any, dataAs?: RealListValueInfo) {
+    if (dataAs === undefined || Object.keys(dataAs).length === 0)
+      return undefined
+
+    Object.entries(dataAs).forEach(([keyCol, valueCol]) => {
+      if ((!valueCol.force && (req.body[valueCol.name] === undefined || req.body[valueCol.name] === null)) || valueCol.force) {
+        let valueFind = this.getValueFrom(req, valueCol.where, valueCol.name)
+
+        if (valueFind !== undefined) {
+          if (valueCol.transformValue)
+            valueFind = valueCol.transformValue(valueFind)
+          req.body[valueCol.name] = valueFind
+        }
+      }
+    })
   }
 }

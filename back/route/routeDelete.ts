@@ -21,7 +21,8 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
       if (!data) {
         return res.status(404).json({ message: "Treatment " + req.params.id + " not found" })
       }
-
+      if (route.beforeDelete)
+        route.beforeDelete(req, res, this)
       return (data.destroy().then(() => {
         return res.status(200).json({
             message: "Deleted"

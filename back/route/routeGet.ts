@@ -15,7 +15,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     this.changeFilterList(routeInfo.filters)
     if (routeInfo.limit) {
       routeInfo.limit.name = routeInfo.limit.name ? routeInfo.limit.name : 'limit',
-      routeInfo.limit.where = routeInfo.limit.where ? routeInfo.limit.where : InfoPlace.QUERYPARAMS
+      routeInfo.limit.where = routeInfo.limit.where !== undefined ? routeInfo.limit.where : InfoPlace.QUERYPARAMS
       routeInfo.limit.transformValue = routeInfo.limit.transformValue ? routeInfo.limit.transformValue : (value: any) => {
         if (typeof value === 'string')
           return parseInt(value)
@@ -24,7 +24,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     }
     if (routeInfo.offset) {
       routeInfo.offset.name = routeInfo.offset.name ? routeInfo.offset.name : 'offset',
-      routeInfo.offset.where = routeInfo.offset.where ? routeInfo.offset.where : InfoPlace.QUERYPARAMS
+      routeInfo.offset.where = routeInfo.offset.where !== undefined ? routeInfo.offset.where : InfoPlace.QUERYPARAMS
       routeInfo.offset.transformValue = routeInfo.offset.transformValue ? routeInfo.offset.transformValue : (value: any) => {
         if (typeof value === 'string')
           return parseInt(value)
@@ -47,11 +47,13 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     return this.sequelizeData.findAll(filter).then(datas => {
       datas.every((value, index) => {
         value = value.get()
-        if (route.columsAccept)
-          datas[index] = this.list(value, route.columsAccept)
+        if (route.returnColumns)
+          datas[index] = this.list(value, route.returnColumns)
         this.getAllValue(datas[index])
         return true
       })
+      if (route.beforeSend)
+          route.beforeSend(req, res, this, datas)
       return res.status(StatusCodes.OK).json(datas)
     })
   }

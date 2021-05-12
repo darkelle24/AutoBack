@@ -23,8 +23,12 @@ export interface RouteBasic {
   /**
      * If columsAccept undefined accept all columns execpt primaryKey
   */
-  columsAccept?: acceptData,
-  filters?: ListFilter
+   columsAccept?: acceptData,
+   filters?: ListFilter,
+   /**
+     * All columns value are selected with the same name in the body
+  */
+   dataAs?: ListValueInfo
 }
 
 export interface acceptData {
@@ -43,23 +47,33 @@ export interface acceptData {
 export type RouteGet = {
    readonly type: TypeRoute.GET,
    limit?: FilterInfo,
-   offset?: FilterInfo
+   offset?: FilterInfo,
+   columsAccept?: undefined,
+   returnColumns?: acceptData,
+   dataAs?: undefined,
+   beforeSend?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void,
 } & RouteBasic
 
 export type RoutePost = {
   readonly type: TypeRoute.POST,
    returnColumns?: acceptData,
+   beforeSetValue?(request: any, respond: any, routeClass: RoutePostClass<any>): void,
+   beforeSend?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
    filters?: undefined
 } & RouteBasic
 
 export type RoutePut = {
   readonly type: TypeRoute.PUT,
-  returnColumns?: acceptData
+   returnColumns?: acceptData,
+   beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>): void,
+   beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
 } & RouteBasic
 
 export type RouteDelete = {
   readonly type: TypeRoute.DELETE,
-  columsAccept?: undefined
+   columsAccept?: undefined,
+   dataAs?: undefined,
+   beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>): void
 } & RouteBasic
 
 export type Route = RouteGet | RoutePost | RoutePut | RouteDelete
@@ -156,8 +170,50 @@ export interface FilterInfoType {
 }
 
 export enum InfoPlace {
-  BODY,
-  PARAMS,
-  QUERYPARAMS,
-  HEADER
+  BODY = 0,
+  PARAMS = 1,
+  QUERYPARAMS = 2,
+  HEADER = 3
 }
+
+export interface ListValueInfo {
+   [columnsName: string]: ValueInfo
+}
+
+export interface ValueInfo {
+   /**
+      * Name to search
+      *
+      * Default value columns name
+   */
+   name?: string
+   /**
+      * The place to find the info of the filter
+      *
+      * You have the choice between InfoPlace.BODY, InfoPlace.PARAMS, InfoPlace.QUERYPARAMS, InfoPlace.HEADER
+      *
+      * Default value InfoPlace.BODY
+   */
+    where?: InfoPlace,
+    /**
+     * Replace transform with transform from dataTypeInfo if transformValue === undefined && dataTypeInfo.transform !== undefined
+     */
+   transformValue?(value: any): any,
+    /**
+    * Default value true
+    *
+    * If a properties in body have the same name and is not undefined or null they will replace
+    */
+   force?: boolean
+ }
+
+ export interface RealListValueInfo {
+    [columnsName: string]: RealValueInfo
+ }
+
+ export interface RealValueInfo {
+    name: string,
+    where: InfoPlace,
+    transformValue?(value: any): any,
+    force: boolean
+ }

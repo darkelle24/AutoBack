@@ -30,23 +30,26 @@ export function addPath(path1: string, path2: string): string {
   return path1 + '/' + path2
 }
 
+function dateToNumber(data: string | number | Date): number {
+  let date: Date
+
+  if (typeof data === 'string' || typeof data === 'number')
+    date = new Date(data)
+  else
+    date = data
+  return date.getTime()
+}
+
 export function basicDataType(): dataType {
   let basic: dataType = {
     date: {
-      sequelizeType: DataTypes.STRING,
-      JsonToDB: (data: string | number | Date): any => {
-        let date: Date
-
-        if (typeof data === 'string' || typeof data === 'number')
-          date = new Date(data)
-        else
-          date = data
-        return date.toJSON()
-      },
-      DBToJson: (data: any): any => { return data ? new Date(data) : null },
+      sequelizeType: DataTypes.BIGINT,
+      JsonToDB: dateToNumber,
+      DBToJson: (data: any): any => { return data ? new Date(Number(data)) : null },
       filterOperator: {
         inverse: false,
-        whitelist: getNumberOperatorFilter()
+        whitelist: getNumberOperatorFilter(),
+        transform: dateToNumber
       }
     },
     int: {

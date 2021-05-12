@@ -43,7 +43,7 @@ export class TableClass<M extends Model> {
     }
   }
 
-  private basicGet() {
+  protected basicGet() {
     this.addRoute({
       path: '/',
       type: TypeRoute.GET,
@@ -53,14 +53,14 @@ export class TableClass<M extends Model> {
     })
   }
 
-  private basicPost() {
+  protected basicPost() {
     this.addRoute({
       path: '/',
       type: TypeRoute.POST
     })
   }
 
-  private basicDelete() {
+  protected basicDelete() {
     this.addRoute({
       path: '/:id',
       type: TypeRoute.DELETE,
@@ -76,7 +76,7 @@ export class TableClass<M extends Model> {
     })
   }
 
-  private basicPut() {
+  protected basicPut() {
     this.addRoute({
       path: '/:id',
       type: TypeRoute.PUT,

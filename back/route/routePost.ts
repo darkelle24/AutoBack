@@ -11,6 +11,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
 
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
+    this.changeDataAsList(routeInfo.dataAs)
     server.post(path, (req: any, res: any) => {
       return this.gestPostRoute(req, res, routeInfo)
     })
@@ -18,13 +19,15 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
 
   private gestPostRoute(req: any, res: any, route: RoutePost): any {
     let toReturn: any = {}
-    let body: any = req.body
 
     if (route.columsAccept && req.body)
-      body = this.list(req.body, route.columsAccept)
+      req.body = this.list(req.body, route.columsAccept)
+    this.getDataAs(req, this.dataAsList)
+    if (route.beforeSetValue)
+        route.beforeSetValue(req, res, this)
     Object.entries(this.table).forEach(([key, value]) => {
-      if (value.primaryKey === false) {
-        toReturn[key] = this.setValue(body[key], value)
+      if (value.autoIncrement === false) {
+        toReturn[key] = this.setValue(req.body[key], value)
       }
     })
 
@@ -34,6 +37,9 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       data = data.get()
       if (route.returnColumns && data)
         data = this.list(data, route.returnColumns)
+      this.getAllValue(data)
+      if (route.beforeSend)
+          route.beforeSend(req, res, this, data)
       return res.status(200).json(data)
     })
   }

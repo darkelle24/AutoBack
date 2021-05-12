@@ -1,3 +1,4 @@
+import { access } from './../../_helpers/models/userTableModel';
 import { ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo } from './../../_helpers/models/routeModels';
 import { StatusCodes } from "http-status-codes"
 import { Model, ModelCtor } from "sequelize/types"
@@ -57,39 +58,39 @@ export class RouteBasicClass<M extends Model> {
   protected list(data: any, accept: acceptData): any {
     if (accept.inverse)
       return this.blackList(data, accept)
-    return this.whiteList(data, accept)
+    return this.whitelist(data, accept)
   }
 
   protected blackList(data: any, accept: acceptData): any {
-    if (accept.whitelist && accept.whitelist.length !== 0) {
+    if (accept.list && accept.list.length !== 0) {
       let toReturn: any = data
-      let list: string[] = accept.whitelist
+      let list: string[] = accept.list
 
       Object.entries(data).forEach(([key, value]) => {
         if (list.find(element => element === key))
           delete toReturn[key]
       })
       return toReturn
-    } else if (accept.whitelist !== undefined && (accept.whitelist === null || accept.whitelist.length === 0)) {
+    } else if (accept.list !== undefined && (accept.list === null || accept.list.length === 0)) {
       return data
-    } else if (accept.whitelist === undefined) {
+    } else if (accept.list === undefined) {
       return {}
     }
   }
 
-  protected whiteList(data: any, accept: acceptData): any {
-    if (accept.whitelist && accept.whitelist.length !== 0) {
+  protected whitelist(data: any, accept: acceptData): any {
+    if (accept.list && accept.list.length !== 0) {
       let toReturn: any = {}
-      let list: string[] = accept.whitelist
+      let list: string[] = accept.list
 
       Object.entries(data).forEach(([key, value]) => {
         if (list.find(element => element === key))
           toReturn[key] = value
       })
       return toReturn
-    } else if (accept.whitelist !== undefined && (accept.whitelist === null || accept.whitelist.length === 0)) {
+    } else if (accept.list !== undefined && (accept.list === null || accept.list.length === 0)) {
       return {}
-    } else if (accept.whitelist === undefined) {
+    } else if (accept.list === undefined) {
       return data
     }
   }
@@ -218,5 +219,8 @@ export class RouteBasicClass<M extends Model> {
         }
       }
     })
+  }
+
+  protected checkAuth(req: any) {
   }
 }

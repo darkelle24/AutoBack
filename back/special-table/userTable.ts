@@ -1,3 +1,4 @@
+import { basicRole } from './../../_helpers/models/userTableModel';
 import { Model, ModelCtor } from 'sequelize';
 import { activeAllFiltersForAllCols } from '../../_helpers/fn';
 import { saveTable } from '../../_helpers/models/models';
@@ -6,6 +7,8 @@ import { TableClass } from '../table';
 
 
 export class UserTableClass<M extends Model> extends TableClass<M> {
+
+  role: string[] = basicRole
 
   constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, originRoutePath?: string) {
     super(name, table, sequelizeData, server, originRoutePath)
@@ -17,6 +20,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       this.basicGet()
       this.basicPost()
       this.basicPut()
+      this.login()
+      this.register()
     } else {
       console.error('Already activate basic routing on table ' + this.name)
     }
@@ -30,7 +35,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       limit: {},
       offset: {},
       returnColumns: {
-        whitelist: ['password'],
+        list: ['password'],
         inverse: true
       }
     })
@@ -66,7 +71,20 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         }
       },
       returnColumns: {
-        whitelist: ['password'],
+        list: ['password'],
+        inverse: true
+      }
+    })
+  }
+
+  protected register() { }
+
+  protected login() {
+    super.addRoute({
+      path: '/login',
+      type: TypeRoute.PUT,
+      returnColumns: {
+        list: ['password'],
         inverse: true
       }
     })

@@ -2,6 +2,7 @@ import { RoutePostClass } from './../../back/route/routePost';
 import { RouteGetClass } from './../../back/route/routeGet';
 import { RouteDeleteClass } from '../../back/route/routeDelete';
 import { RoutePutClass } from '../../back/route/routePut';
+import { access } from './userTableModel';
 
 export enum TypeRoute {
   GET,
@@ -19,27 +20,22 @@ export interface allRoutes {
 }
 
 export interface RouteBasic {
-  path: string,
-  /**
-     * If columsAccept undefined accept all columns execpt primaryKey
-  */
-   columsAccept?: acceptData,
-   filters?: ListFilter,
+   path: string,
    /**
-     * All columns value are selected with the same name in the body
-  */
-   dataAs?: ListValueInfo
+     * Work if autoback user table created
+    */
+   access?: access
 }
 
 export interface acceptData {
     /**
-     * If whitelist undefined accept all columns execpt primaryKey
+     * If list undefined accept all columns execpt primaryKey
      *
-     * If whitelist null accept no columns
+     * If list null accept no columns
     */
-    whitelist?: string[] | null,
+    list?: string[] | null,
     /**
-     * If inverse is true whitelist became blacklist
+     * If inverse is true list became blacklist
     */
     inverse?: boolean
 }
@@ -48,31 +44,33 @@ export type RouteGet = {
    readonly type: TypeRoute.GET,
    limit?: FilterInfo,
    offset?: FilterInfo,
-   columsAccept?: undefined,
    returnColumns?: acceptData,
-   dataAs?: undefined,
+   filters?: ListFilter,
    beforeSend?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void,
 } & RouteBasic
 
 export type RoutePost = {
-  readonly type: TypeRoute.POST,
+   readonly type: TypeRoute.POST,
+   columsAccept?: acceptData,
    returnColumns?: acceptData,
+   dataAs?: ListValueInfo,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePostClass<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
-   filters?: undefined
 } & RouteBasic
 
 export type RoutePut = {
-  readonly type: TypeRoute.PUT,
+   readonly type: TypeRoute.PUT,
+   columsAccept?: acceptData,
    returnColumns?: acceptData,
+   dataAs?: ListValueInfo,
+   filters?: ListFilter,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
 } & RouteBasic
 
 export type RouteDelete = {
-  readonly type: TypeRoute.DELETE,
-   columsAccept?: undefined,
-   dataAs?: undefined,
+   readonly type: TypeRoute.DELETE,
+   filters?: ListFilter,
    beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>): void
 } & RouteBasic
 

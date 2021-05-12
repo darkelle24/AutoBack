@@ -48,7 +48,7 @@ export function basicDataType(): dataType {
       DBToJson: (data: any): any => { return data ? new Date(data) : null },
       filterOperator: {
         inverse: false,
-        whitelist: getNumberOperatorFilter(),
+        list: getNumberOperatorFilter(),
         transform: dateToNumber
       }
     },
@@ -56,7 +56,7 @@ export function basicDataType(): dataType {
       sequelizeType: DataTypes.INTEGER,
       filterOperator: {
         inverse: false,
-        whitelist: getNumberOperatorFilter()
+        list: getNumberOperatorFilter()
       }
     },
     text: {
@@ -71,7 +71,7 @@ export function basicDataType(): dataType {
       sequelizeType: DataTypes.FLOAT,
       filterOperator: {
         inverse: false,
-        whitelist: getNumberOperatorFilter()
+        list: getNumberOperatorFilter()
       }
     },
     boolean: {
@@ -81,7 +81,7 @@ export function basicDataType(): dataType {
       sequelizeType: DataTypes.BIGINT,
       filterOperator: {
         inverse: false,
-        whitelist: getNumberOperatorFilter()
+        list: getNumberOperatorFilter()
       }
     },
     string: {
@@ -104,13 +104,13 @@ export function applyDefaultValueOnDataType(basic: dataType): realDataType {
       if (temp.filterOperator === undefined) {
         temp.filterOperator = {
           inverse: false,
-          whitelist: getStringToOperatorFilterList(getBasicOperatorFilter())
+          list: getStringToOperatorFilterList(getBasicOperatorFilter())
         }
       } else {
         if (temp.filterOperator.inverse === undefined)
           temp.filterOperator.inverse = false
-        if (temp.filterOperator.whitelist && temp.filterOperator.whitelist.lenght !== 0) {
-          temp.filterOperator.whitelist = getStringToOperatorFilterList(temp.filterOperator.whitelist)
+        if (temp.filterOperator.list && temp.filterOperator.list.lenght !== 0) {
+          temp.filterOperator.list = getStringToOperatorFilterList(temp.filterOperator.list)
         }
       }
       toReturn[key] = temp
@@ -226,11 +226,11 @@ export function getStringToOperatorFilterList(list: string[]): FilterInfoType[] 
 export function autorizeFilterOperator(type: FilterInfoType, info: realDataTypeInfo): boolean {
   let toReturn: boolean = false
 
-  if (info.filterOperator.whitelist === undefined)
+  if (info.filterOperator.list === undefined)
     toReturn = true
-  else if (info.filterOperator.whitelist === null)
+  else if (info.filterOperator.list === null)
     toReturn = false
-  else if (Object.values(info.filterOperator.whitelist).find((element: any) => {
+  else if (Object.values(info.filterOperator.list).find((element: any) => {
     return (type.name === element.name && type.reduce_name === element.reduce_name)
   })) {
     toReturn = true

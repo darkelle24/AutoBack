@@ -1,6 +1,6 @@
 import { DataType, DB } from "../_helpers/models/models"
 import { InfoPlace, TypeRoute } from "../_helpers/models/routeModels"
-import { AutoBack } from "./db"
+import { AutoBack } from "./autoBack"
 
 let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, true, true)
 //let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
@@ -23,10 +23,10 @@ if (test) {
     path: '/lol',
     columsAccept: {
       inverse: true,
-      whitelist: ["id"]
+      list: ["id"]
     },
     returnColumns: {
-      whitelist: ["id"],
+      list: ["id"],
       inverse: true
     },
     dataAs: {

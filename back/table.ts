@@ -1,3 +1,4 @@
+import { UserTableClass } from './special-table/userTable';
 import { RoutePostClass } from './route/routePost';
 import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass, InfoPlace } from './../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize";
@@ -16,7 +17,7 @@ export class TableClass<M extends Model> {
   routes: allRoutes = { originRoutePath: '/', get: [], post: [], put: [], delete: [] }
   activeBasicRouting: boolean = false
 
-  constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, originRoutePath?: string) {
+  constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, originRoutePath?: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
     this.table = table
     this.name = name

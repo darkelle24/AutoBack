@@ -16,13 +16,13 @@ export interface dataTypeInfo {
   */
   filterOperator?: {
     /**
-    * If whitelist undefined accept all operator
+    * If list undefined accept all operator
     *
-    * If whitelist null accept no operator
+    * If list null accept no operator
     */
-    whitelist?: string[] | null,
+    list?: string[] | null,
     /**
-    * If inverse is true whitelist became blacklist
+    * If inverse is true list became blacklist
     */
     inverse?: boolean,
     /**
@@ -47,13 +47,13 @@ export interface realDataTypeInfo {
   */
   filterOperator: {
     /**
-    * If whitelist undefined accept all operator
+    * If list undefined accept all operator
     *
-    * If whitelist null accept no operator
+    * If list null accept no operator
     */
-    whitelist?: FilterInfoType[] | null,
+    list?: FilterInfoType[] | null,
     /**
-    * If inverse is true whitelist became blacklist
+    * If inverse is true list became blacklist
     */
     inverse: boolean,
     /**

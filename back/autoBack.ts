@@ -22,9 +22,9 @@ export class AutoBack {
   tables: allTables = {}
   private defaultSaveDataInfo: any = defaultSaveDataInfo()
   private waitDestroyDb?: Promise<void>
-  private userTable?: UserTableClass<any>
+  private userTable?: UserTableClass<any> = undefined
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeAuth: boolean = true, activeHealthRoute: boolean = true, resetDb: boolean = false) {
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
 
@@ -39,7 +39,8 @@ export class AutoBack {
     }
     if (activeHealthRoute)
       this.health()
-    this.userTable = undefined
+    if (activeAuth)
+      this.userTable = this.defineUserTable()
   }
 
   private async resetDb() {
@@ -98,7 +99,7 @@ export class AutoBack {
     });
   }
 
-  defineUserTable(): UserTableClass<any> | undefined {
+  private defineUserTable(): UserTableClass<any> | undefined {
     if (!this.userTable) {
       let [tableSequelize, saveTableInfo] = this.defineStartTable("User", userTableDefine)
 
@@ -128,7 +129,7 @@ export class AutoBack {
     let [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
     if (tableSequelize)
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo, tableSequelize, this.server, originRoutePath)
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo, tableSequelize, this.server, originRoutePath, this.userTable)
     return this.tables[nameTable]
   }
 

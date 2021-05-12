@@ -45,7 +45,7 @@ export function basicDataType(): dataType {
     date: {
       sequelizeType: DataTypes.BIGINT,
       JsonToDB: dateToNumber,
-      DBToJson: (data: any): any => { return data ? new Date(Number(data)) : null },
+      DBToJson: (data: any): any => { return data ? new Date(data) : null },
       filterOperator: {
         inverse: false,
         whitelist: getNumberOperatorFilter(),

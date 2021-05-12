@@ -10,5 +10,6 @@ export class PostgresDb implements DBInterface {
 
   constructor() {
     this.dataType = applyDefaultValueOnDataType(basicDataType())
+    require('pg').defaults.parseInt8 = true
   }
 }

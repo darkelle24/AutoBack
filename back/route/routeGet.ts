@@ -4,15 +4,17 @@ import { Model, ModelCtor } from "sequelize";
 import { saveTable } from "../../_helpers/models/models";
 import { InfoPlace, RouteGet } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
+import { UserTableClass } from 'back/special-table/userTable';
 
 export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RouteGet
 
-  constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RouteGet) {
-    super(table, sequelizeData, server, path)
+  constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RouteGet, userTable?: UserTableClass<any>) {
+    super(table, sequelizeData, server, path, userTable)
 
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
+    this.changeAccess(routeInfo.auth)
     if (routeInfo.limit) {
       routeInfo.limit.name = routeInfo.limit.name ? routeInfo.limit.name : 'limit',
       routeInfo.limit.where = routeInfo.limit.where !== undefined ? routeInfo.limit.where : InfoPlace.QUERYPARAMS
@@ -31,7 +33,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
         return value
       }
     }
-    server.get(path, (req: any, res: any) => {
+    server.get(path, this.checkToken(routeInfo), (req: any, res: any) => {
       if (!routeInfo.doSomething)
         return this.gestGetRoute(req, res, routeInfo)
       else {

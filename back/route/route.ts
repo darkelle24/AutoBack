@@ -1,5 +1,6 @@
+import { UserTableClass } from './../special-table/userTable';
 import { access } from './../../_helpers/models/userTableModel';
-import { ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo } from './../../_helpers/models/routeModels';
+import { ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo, Route } from './../../_helpers/models/routeModels';
 import { StatusCodes } from "http-status-codes"
 import { Model, ModelCtor } from "sequelize/types"
 import { autorizeFilterOperator, filterOperatorToSequelizeOperator } from "../../_helpers/fn"
@@ -14,12 +15,14 @@ export class RouteBasicClass<M extends Model> {
   protected server: any
   protected filterlist?: RealListFilter = undefined
   protected dataAsList?: RealListValueInfo = undefined
+  protected userTable?: UserTableClass<any> = undefined
 
-  constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string) {
+  constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
     this.table = table
     this.server = server
     this.path = path
+    this.userTable = userTable
   }
 
 
@@ -221,6 +224,29 @@ export class RouteBasicClass<M extends Model> {
     })
   }
 
-  protected checkAuth(req: any) {
+  public changeAccess(access?: access) {
+    if (access && this.userTable) {
+      if (access.role) {
+        access.role = access.role.filter((e) => {
+          if (this.userTable && this.userTable.config.roles.find(el => el === e )) {
+            return true
+          }
+          return false
+        })
+      }
+    }
+  }
+
+  public checkToken(route: Route) {
+    return async (req: any, res: any, next: any) => {
+      if (this.userTable) {
+        let result = await this.userTable.checkToken(req, res, route)
+        if (result) {
+          next()
+        }
+      } else {
+        next()
+      }
+    }
   }
 }

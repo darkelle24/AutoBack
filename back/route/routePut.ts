@@ -1,3 +1,4 @@
+import { UserTableClass } from "back/special-table/userTable";
 import { Model, ModelCtor } from "sequelize";
 import { saveTable } from "../../_helpers/models/models";
 import { RoutePut } from "../../_helpers/models/routeModels";
@@ -6,13 +7,14 @@ import { RouteBasicClass } from "./route";
 export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RoutePut
 
-  constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RoutePut) {
-    super(table, sequelizeData, server, path)
+  constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RoutePut, userTable?: UserTableClass<any>) {
+    super(table, sequelizeData, server, path, userTable)
 
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
     this.changeDataAsList(routeInfo.dataAs)
-    server.put(path, (req: any, res: any) => {
+    this.changeAccess(routeInfo.auth)
+    server.put(path, this.checkToken(routeInfo), (req: any, res: any) => {
       if (!routeInfo.doSomething)
         return this.gestPutRoute(req, res, routeInfo)
       else {

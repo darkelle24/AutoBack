@@ -10,7 +10,7 @@ import { ModelCtor, Sequelize } from 'sequelize';
 import { defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo } from '../_helpers/fn';
 import * as _ from "lodash"
 import { InfoPlace, TypeRoute } from '../_helpers/models/routeModels';
-import { userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
+import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
 
 export class AutoBack {
@@ -24,7 +24,7 @@ export class AutoBack {
   private waitDestroyDb?: Promise<void>
   private userTable?: UserTableClass<any> = undefined
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: userTableConfig, activeHealthRoute: boolean = true, resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack, activeHealthRoute: boolean = true, resetDb: boolean = false) {
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
 
@@ -40,9 +40,11 @@ export class AutoBack {
     if (activeHealthRoute)
       this.health()
     if (auth) {
-      this.userTable = this.defineUserTable(auth)
+      if (!auth.config)
+        auth.config= {}
+      this.userTable = this.defineUserTable(auth.config)
       if (this.userTable)
-        this.userTable.basicRouting()
+        this.userTable.basicRouting(auth.getRoute, auth.postRoute, auth.putRoute, auth.deleteRoute)
     }
   }
 

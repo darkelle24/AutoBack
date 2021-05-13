@@ -1,5 +1,5 @@
 import { DataType, Table } from './models';
-import { Route, RouteBasic } from './routeModels';
+import { basicRouteParams, Route, RouteBasic } from './routeModels';
 
 export let userTableDefine: Table = {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
@@ -7,7 +7,7 @@ export let userTableDefine: Table = {
   password: { type: DataType.STRING },
   email: { type: DataType.STRING },
   phone: { type: DataType.STRING, allowNull: true },
-  role: {type: DataType.STRING, defaultValue: "User"}
+  role: {type: DataType.STRING}
 }
 
 export interface access {
@@ -15,10 +15,7 @@ export interface access {
      * If undefined accept all
   */
   role?: string[],
-  /**
-     * Active every time and after role check and self check
-  */
-  detect?(req: any, route: Route): any
+  inverse?: boolean
 }
 
 export let basicRole: string[] = [
@@ -31,10 +28,20 @@ export interface userTableConfig {
   readonly tokenSecret?: string,
   readonly passwordSecret?: string,
   expiresIn?: string,
+  roles?: string[]
 }
 
 export interface realUserTableConfig {
   readonly tokenSecret: string,
   readonly passwordSecret: string,
   expiresIn: string,
+  readonly roles: string[]
+}
+
+export interface authConfigAutoBack {
+  config?: userTableConfig,
+  getRoute?: basicRouteParams,
+  postRoute?: basicRouteParams,
+  putRoute?: basicRouteParams,
+  deleteRoute?: basicRouteParams
 }

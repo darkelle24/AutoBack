@@ -10,10 +10,13 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     super(table, sequelizeData, server, path)
 
     this.routeInfo = routeInfo
-    this.changeFilterList(routeInfo.filters)
     this.changeDataAsList(routeInfo.dataAs)
     server.post(path, (req: any, res: any) => {
-      return this.gestPostRoute(req, res, routeInfo)
+      if (!routeInfo.doSomething)
+        return this.gestPostRoute(req, res, routeInfo)
+      else {
+        return routeInfo.doSomething(req, res, this)
+      }
     })
   }
 

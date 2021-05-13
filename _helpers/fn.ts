@@ -17,10 +17,10 @@ export function defaultSaveDataInfo(): any {
     primaryKey: false,
     autoIncrement: false,
     comment: null,
-    allowNull: {
-      keepOldValue: false
-    },
+    allowNull: false,
+    keepOldValue: true,
     initValue: null,
+    unique: false
   })
 }
 

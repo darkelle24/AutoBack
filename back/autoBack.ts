@@ -1,6 +1,6 @@
 import { TableClass } from './table';
 import { PostgresDb } from './db/postgres/postgres';
-import { DB, Table, DBInterface, DataType, dataTypeInfo, allowNullParams, saveDataTableInfo, dataTableInfo, saveTable, allTables, realDataTypeInfo } from '../_helpers/models/models';
+import { DB, Table, DBInterface, DataType, dataTypeInfo, saveDataTableInfo, dataTableInfo, saveTable, allTables, realDataTypeInfo } from '../_helpers/models/models';
 import express from "express";
 import {
 	ReasonPhrases,
@@ -10,7 +10,7 @@ import { ModelCtor, Sequelize } from 'sequelize';
 import { defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo } from '../_helpers/fn';
 import * as _ from "lodash"
 import { InfoPlace, TypeRoute } from '../_helpers/models/routeModels';
-import { userTableDefine } from '../_helpers/models/userTableModel';
+import { userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
 
 export class AutoBack {
@@ -24,7 +24,7 @@ export class AutoBack {
   private waitDestroyDb?: Promise<void>
   private userTable?: UserTableClass<any> = undefined
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeAuth: boolean = true, activeHealthRoute: boolean = true, resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: userTableConfig, activeHealthRoute: boolean = true, resetDb: boolean = false) {
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
 
@@ -39,8 +39,11 @@ export class AutoBack {
     }
     if (activeHealthRoute)
       this.health()
-    if (activeAuth)
-      this.userTable = this.defineUserTable()
+    if (auth) {
+      this.userTable = this.defineUserTable(auth)
+      if (this.userTable)
+        this.userTable.basicRouting()
+    }
   }
 
   private async resetDb() {
@@ -99,12 +102,12 @@ export class AutoBack {
     });
   }
 
-  private defineUserTable(): UserTableClass<any> | undefined {
+  private defineUserTable(auth: userTableConfig): UserTableClass<any> | undefined {
     if (!this.userTable) {
       let [tableSequelize, saveTableInfo] = this.defineStartTable("User", userTableDefine)
 
       if (tableSequelize)
-        this.tables["User"] = new UserTableClass("User", saveTableInfo, tableSequelize, this.server, '/auth')
+        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo, tableSequelize, this.server, '/auth')
 
       if (this.tables["User"]) {
         this.userTable = (this.tables["User"] as UserTableClass<any>)
@@ -144,27 +147,16 @@ export class AutoBack {
         tableSequelizeInfo[key].type = type.sequelizeType;
         tableSequelizeInfo[key].primaryKey = table[key].primaryKey || false;
         tableSequelizeInfo[key].autoIncrement = table[key].autoIncrement || false;
-        tableSequelizeInfo[key].allowNull = this.gestParametersTableAllowNull(table, key, table[key].allowNull)
+        tableSequelizeInfo[key].allowNull = table[key].allowNull || false
+        tableSequelizeInfo[key].unique = table[key].unique || false
         saveTableInfo[key] = this.saveDataInfo(table[key], type)
       }
     });
     return [tableSequelizeInfo, saveTableInfo]
   }
 
-  private gestParametersTableAllowNull(table: Table, key: string, allowNull: any = false): boolean {
-    if (allowNull && typeof allowNull !== "boolean" && allowNull.keepOldValue === true) {
-      table[key].allowNull = { keepOldValue: true }
-      return true
-    } else if (allowNull === true) {
-      table[key].allowNull = { keepOldValue: false }
-      return true
-    }
-    return false
-  }
-
   private saveDataInfo(dataInfo: dataTableInfo, type: realDataTypeInfo): saveDataTableInfo {
     let temp = _.merge({}, this.defaultSaveDataInfo, dataInfo)
-    temp.allowNull = dataInfo.allowNull as allowNullParams
     temp.type = type
 
     return temp

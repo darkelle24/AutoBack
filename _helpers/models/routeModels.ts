@@ -1,3 +1,4 @@
+import { saveTable } from './models';
 import { RoutePostClass } from './../../back/route/routePost';
 import { RouteGetClass } from './../../back/route/routeGet';
 import { RouteDeleteClass } from '../../back/route/routeDelete';
@@ -24,7 +25,11 @@ export interface RouteBasic {
    /**
      * Work if autoback user table created
     */
-   access?: access
+   access?: access,
+   /**
+     * If not undefined then the other function except auth will be skip
+    */
+   doSomething?(req: any, res: any, route: RouteClass): any
 }
 
 export interface acceptData {

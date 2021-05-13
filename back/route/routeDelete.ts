@@ -12,7 +12,11 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
     server.delete(path, (req: any, res: any) => {
-      return this.gestDeleteRoute(req, res, routeInfo)
+      if (!routeInfo.doSomething)
+        return this.gestDeleteRoute(req, res, routeInfo)
+      else {
+        return routeInfo.doSomething(req, res, this)
+      }
     })
   }
 

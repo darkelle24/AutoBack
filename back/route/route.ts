@@ -30,9 +30,9 @@ export class RouteBasicClass<M extends Model> {
       toReturn = value
       if (info.type.JsonToDB)
         toReturn = info.type.JsonToDB(toReturn)
-    } else if (created === false && olderValue !== undefined && olderValue !== null && info.allowNull && info.allowNull.keepOldValue) {
+    } else if (created === false && value === undefined && info.keepOldValue) {
       toReturn = olderValue
-    } else if (info.defaultValue !== undefined) {
+    } else if (created === true && value === undefined && info.defaultValue !== undefined) {
       toReturn = info.defaultValue
       if (info.type.JsonToDB)
         toReturn = info.type.JsonToDB(toReturn)

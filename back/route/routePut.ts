@@ -13,7 +13,11 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     this.changeFilterList(routeInfo.filters)
     this.changeDataAsList(routeInfo.dataAs)
     server.put(path, (req: any, res: any) => {
-      return this.gestPutRoute(req, res, routeInfo)
+      if (!routeInfo.doSomething)
+        return this.gestPutRoute(req, res, routeInfo)
+      else {
+        return routeInfo.doSomething(req, res, this)
+      }
     })
   }
 

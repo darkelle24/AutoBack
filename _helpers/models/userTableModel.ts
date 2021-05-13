@@ -3,10 +3,10 @@ import { Route, RouteBasic } from './routeModels';
 
 export let userTableDefine: Table = {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
-  username: { type: DataType.STRING },
+  username: { type: DataType.STRING, unique: true },
   password: { type: DataType.STRING },
   email: { type: DataType.STRING },
-  phone: { type: DataType.STRING },
+  phone: { type: DataType.STRING, allowNull: true },
   role: {type: DataType.STRING, defaultValue: "User"}
 }
 
@@ -26,3 +26,15 @@ export let basicRole: string[] = [
   "Admin",
   "User"
 ]
+
+export interface userTableConfig {
+  readonly tokenSecret?: string,
+  readonly passwordSecret?: string,
+  expiresIn?: string,
+}
+
+export interface realUserTableConfig {
+  readonly tokenSecret: string,
+  readonly passwordSecret: string,
+  expiresIn: string,
+}

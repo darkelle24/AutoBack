@@ -2,7 +2,7 @@ import { DataType, DB } from "../_helpers/models/models"
 import { InfoPlace, TypeRoute } from "../_helpers/models/routeModels"
 import { AutoBack } from "./autoBack"
 
-let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, true, true)
+let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, {}, true)
 //let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
 let test = autoback.defineTable('lol', {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
@@ -10,11 +10,6 @@ let test = autoback.defineTable('lol', {
   comment: { type: DataType.TEXT, defaultValue: 'No comment' },
   date: {type: DataType.DATE, allowNull: { keepOldValue: true } }
 }, 'dab')
-
-let user = autoback.defineUserTable()
-if (user) {
-  user.basicRouting()
-}
 
 if (test) {
   test.basicRouting()

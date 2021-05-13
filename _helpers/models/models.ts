@@ -92,12 +92,10 @@ export interface dataTableInfo {
   primaryKey?: boolean,
   autoIncrement?: boolean,
   comment?: string,
-  allowNull?: allowNullParams | boolean,
+  allowNull?: boolean,
   initValue?: any,
-  defaultValue?: any
-}
-
-export interface allowNullParams {
+  defaultValue?: any,
+  unique?: boolean,
   keepOldValue?: boolean
 }
 
@@ -110,9 +108,11 @@ export interface saveDataTableInfo {
   primaryKey: boolean,
   autoIncrement: boolean,
   comment: string | null,
-  allowNull: allowNullParams,
+  allowNull: boolean,
   initValue: any | null,
-  defaultValue?: any
+  defaultValue?: any,
+  unique: boolean,
+  keepOldValue: boolean
 }
 
 export interface allTables {

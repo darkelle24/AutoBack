@@ -32,7 +32,11 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       }
     }
     server.get(path, (req: any, res: any) => {
-      return this.gestGetRoute(req, res, routeInfo)
+      if (!routeInfo.doSomething)
+        return this.gestGetRoute(req, res, routeInfo)
+      else {
+        return routeInfo.doSomething(req, res, this)
+      }
     })
   }
 

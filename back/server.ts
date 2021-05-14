@@ -8,7 +8,8 @@ let test = autoback.defineTable('lol', {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
   bonjour: { type: DataType.BOOLEAN, defaultValue: true },
   comment: { type: DataType.TEXT, defaultValue: 'No comment' },
-  date: {type: DataType.DATE }
+  date: { type: DataType.DATE },
+  array: {type: DataType.ARRAY}
 }, 'dab')
 
 if (test) {

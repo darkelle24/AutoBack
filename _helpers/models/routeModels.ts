@@ -29,7 +29,7 @@ export interface RouteBasic {
     */
    auth?: access,
    /**
-     * If not undefined then the other function except auth will be skip
+     * If not undefined then the other function except auth will be skip (include all transforms func)
     */
    doSomething?(req: any, res: any, route: RouteClass): any
 }
@@ -60,6 +60,9 @@ export type RoutePost = {
    readonly type: TypeRoute.POST,
    columsAccept?: acceptData,
    returnColumns?: acceptData,
+   /**
+     * Set value in body, can act as transfrom before validate
+    */
    dataAs?: ListValueInfo,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePostClass<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
@@ -69,6 +72,9 @@ export type RoutePut = {
    readonly type: TypeRoute.PUT,
    columsAccept?: acceptData,
    returnColumns?: acceptData,
+   /**
+     * Set value in body, can act as transfrom before validate
+    */
    dataAs?: ListValueInfo,
    filters?: ListFilter,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>): void,

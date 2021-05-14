@@ -25,7 +25,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
   private gestDeleteRoute(req: any, res: any, route: RouteDelete): any {
     return this.sequelizeData.findOne(this.getFilter(req, this.filterlist)).then(data => {
       if (!data) {
-        return res.status(404).json({ message: "Treatment " + req.params.id + " not found" })
+        return res.status(404).json({ message: "Not found" })
       }
       if (route.beforeDelete)
         route.beforeDelete(req, res, this)
@@ -33,7 +33,11 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
         return res.status(200).json({
             message: "Deleted"
         })
+      }).catch(err => {
+        return res.status(400).json(err)
       }))
+    }).catch(err => {
+      return res.status(400).json(err)
     })
   }
 }

@@ -69,7 +69,8 @@ export enum DB {
 
 export interface DBInterface {
   readonly dbName: string,
-  readonly dataType: realDataType;
+  dataType: realDataType;
+  addTypes(newTypes: realDataType): void
 }
 
 export enum DataType {
@@ -96,11 +97,24 @@ export interface dataTableInfo {
   initValue?: any,
   defaultValue?: any,
   unique?: boolean,
-  keepOldValue?: boolean
+  keepOldValue?: boolean,
+  /**
+     * Execute before execute dataTypeInfo.JsonToDB and after validate
+  */
+  transformSet?(value: any, table: TableClass<any>): any
+  /**
+     * Execute after execute dataTypeInfo.DBToJson
+  */
+  transformGet?(value: any, table: TableClass<any>): any
 }
 
 export interface saveTable {
   [key: string]: saveDataTableInfo
+}
+
+export interface tempSaveTable {
+  saveTable: saveTable,
+  table?: TableClass<any>
 }
 
 export interface saveDataTableInfo {
@@ -112,7 +126,15 @@ export interface saveDataTableInfo {
   initValue: any | null,
   defaultValue?: any,
   unique: boolean,
-  keepOldValue: boolean
+  keepOldValue: boolean,
+  /**
+     * Execute before execute dataTypeInfo.JsonToDB and after validate
+  */
+   transformSet?(value: any, table: TableClass<any>): any
+   /**
+      * Execute after execute dataTypeInfo.DBToJson
+   */
+  transformGet?(value: any, table: TableClass<any>): any
 }
 
 export interface allTables {

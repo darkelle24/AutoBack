@@ -1,6 +1,7 @@
+import { tempSaveTable } from './../_helpers/models/models';
 import { TableClass } from './table';
 import { PostgresDb } from './db/postgres/postgres';
-import { DB, Table, DBInterface, DataType, dataTypeInfo, saveDataTableInfo, dataTableInfo, saveTable, allTables, realDataTypeInfo } from '../_helpers/models/models';
+import { DB, Table, DBInterface, DataType, dataTypeInfo, saveDataTableInfo, dataTableInfo, saveTable, allTables, realDataTypeInfo, realDataType } from '../_helpers/models/models';
 import express from "express";
 import {
 	ReasonPhrases,
@@ -46,6 +47,10 @@ export class AutoBack {
       if (this.userTable)
         this.userTable.basicRouting(auth.getRoute, auth.postRoute, auth.putRoute, auth.deleteRoute)
     }
+  }
+
+  public addTypes(newTypes: realDataType) {
+    this.DB.addTypes(newTypes)
   }
 
   private async resetDb() {
@@ -108,8 +113,10 @@ export class AutoBack {
     if (!this.userTable) {
       let [tableSequelize, saveTableInfo] = this.defineStartTable("User", userTableDefine)
 
-      if (tableSequelize)
-        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo, tableSequelize, this.server, '/auth')
+      if (tableSequelize) {
+        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, '/auth')
+        saveTableInfo.table = this.tables["User"]
+      }
 
       if (this.tables["User"]) {
         this.userTable = (this.tables["User"] as UserTableClass<any>)
@@ -121,7 +128,7 @@ export class AutoBack {
     }
   }
 
-  private defineStartTable(nameTable: string, table: Table): [ModelCtor<any> | undefined, saveTable] {
+  private defineStartTable(nameTable: string, table: Table): [ModelCtor<any> | undefined, tempSaveTable] {
     let tableSequelize = undefined
     let [tableSequelizeInfo, saveTableInfo]  = this.createTableSequelizeInfo(table)
 
@@ -133,28 +140,60 @@ export class AutoBack {
   defineTable(nameTable: string, table: Table, originRoutePath?: string): TableClass<any> | undefined {
     let [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
-    if (tableSequelize)
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo, tableSequelize, this.server, originRoutePath, this.userTable)
+    if (tableSequelize) {
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, originRoutePath, this.userTable)
+      saveTableInfo.table = this.tables[nameTable]
+    }
     return this.tables[nameTable]
   }
 
-  private createTableSequelizeInfo(table: Table): [any, saveTable] {
+  private createTableSequelizeInfo(table: Table): [any, tempSaveTable] {
     let tableSequelizeInfo: any = {}
     let saveTableInfo: saveTable = {}
+    let tempSaveTable: tempSaveTable = {
+      saveTable: {}
+    }
 
     Object.keys(table).forEach((key) => {
       let type = this.getDataType(table[key].type)
       if (type) {
-        tableSequelizeInfo[key] = {}
-        tableSequelizeInfo[key].type = type.sequelizeType;
-        tableSequelizeInfo[key].primaryKey = table[key].primaryKey || false;
-        tableSequelizeInfo[key].autoIncrement = table[key].autoIncrement || false;
-        tableSequelizeInfo[key].allowNull = table[key].allowNull || false
-        tableSequelizeInfo[key].unique = table[key].unique || false
         saveTableInfo[key] = this.saveDataInfo(table[key], type)
+
+        tableSequelizeInfo[key] = {
+          type: type.sequelizeType,
+          primaryKey: table[key].primaryKey || false,
+          autoIncrement: table[key].autoIncrement || false,
+          allowNull: table[key].allowNull || false,
+          unique: table[key].unique || false,
+          get() {
+            let value = this.getDataValue(key)
+            if (value !== undefined && value !== NaN && value !== null) {
+              if (type && type.DBToJson) {
+                value = type.DBToJson(value)
+              }
+              if (saveTableInfo[key] && saveTableInfo[key].transformGet) {
+                // @ts-ignore
+                value = saveTableInfo[key].transformGet(value, tempSaveTable.table)
+              }
+            }
+            return value
+          },
+          set(value: any) {
+            if (value !== undefined && value !== NaN && value !== null) {
+              if (saveTableInfo[key] && saveTableInfo[key].transformSet) {
+                // @ts-ignore
+                value = saveTableInfo[key].transformSet(value, tempSaveTable.table)
+              }
+              if (type && type.JsonToDB)
+                value = type.JsonToDB(value)
+            }
+            this.setDataValue(key, value)
+          }
+        }
       }
     });
-    return [tableSequelizeInfo, saveTableInfo]
+    tempSaveTable.saveTable = saveTableInfo
+    return [tableSequelizeInfo, tempSaveTable]
   }
 
   private saveDataInfo(dataInfo: dataTableInfo, type: realDataTypeInfo): saveDataTableInfo {

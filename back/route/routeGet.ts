@@ -51,16 +51,18 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       filter['offset'] = this.getValueFromRequest(req, (route.offset as RealFilterInfo))
 
     return this.sequelizeData.findAll(filter).then(datas => {
+      let toSend: any[] = []
+
       datas.every((value, index) => {
-        value = value.get()
+        toSend.push(value.get())
         if (route.returnColumns)
-          datas[index] = this.list(value, route.returnColumns)
-        this.getAllValue(datas[index])
+          toSend[index]= this.list(toSend[index], route.returnColumns)
+        this.getAllValue(toSend[index])
         return true
       })
       if (route.beforeSend)
-          route.beforeSend(req, res, this, datas)
-      return res.status(StatusCodes.OK).json(datas)
+          route.beforeSend(req, res, this, toSend)
+      return res.status(StatusCodes.OK).json(toSend)
     }).catch(err => {
       return res.status(400).json(err)
     })

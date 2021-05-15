@@ -92,6 +92,10 @@ export function basicDataType(): dataType {
   return basic
 }
 
+export function addType(oldTypes: realDataType, newTypes: realDataType): realDataType {
+  return _.merge(oldTypes, newTypes)
+}
+
 export function applyDefaultValueOnDataType(basic: dataType): realDataType {
   let toReturn: realDataType = {}
 

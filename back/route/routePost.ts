@@ -39,13 +39,14 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     return this.sequelizeData.create(
       toReturn
     ).then(data => {
-      data = data.get()
-      if (route.returnColumns && data)
-        data = this.list(data, route.returnColumns)
-      this.getAllValue(data)
+      let toSend = data.get()
+
+      if (route.returnColumns && toSend)
+        toSend = this.list(toSend, route.returnColumns)
+      this.getAllValue(toSend)
       if (route.beforeSend)
-          route.beforeSend(req, res, this, data)
-      return res.status(200).json(data)
+          route.beforeSend(req, res, this, toSend)
+      return res.status(200).json(toSend)
     }).catch(err => {
       return res.status(400).json(err)
     })

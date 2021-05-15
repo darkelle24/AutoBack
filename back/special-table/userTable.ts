@@ -85,12 +85,6 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
           }
         }
       },
-      dataAs: {
-        password: {
-          transformValue: (value: string) => { return this.getHash().update(value).digest('hex') },
-          force: true
-        }
-      },
       returnColumns: {
         list: ['password'],
         inverse: true
@@ -107,17 +101,11 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         list: ["password"],
         inverse: true
       },
-      dataAs: {
-        password: {
-          transformValue: (value: string) => { return this.getHash().update(value).digest('hex') },
-          force: true
-        }
-      },
       auth: accessRule
     })
   }
 
-  protected getHash(): crypto.Hmac {
+  public getHash(): crypto.Hmac {
     return crypto.createHmac('sha512', this.config.passwordSecret)
   }
 

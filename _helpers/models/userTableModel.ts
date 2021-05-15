@@ -1,10 +1,11 @@
+import { UserTableClass } from 'back/special-table/userTable';
 import { DataType, Table } from './models';
 import { basicRouteParams, Route, RouteBasic } from './routeModels';
 
 export let userTableDefine: Table = {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
   username: { type: DataType.STRING, unique: true },
-  password: { type: DataType.STRING },
+  password: { type: DataType.STRING, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
   email: { type: DataType.STRING },
   phone: { type: DataType.STRING, allowNull: true },
   role: {type: DataType.STRING}

@@ -29,7 +29,7 @@ export interface RouteBasic {
     */
    auth?: access,
    /**
-     * If not undefined then the other function except auth will be skip (include all transforms func)
+     * If not undefined then the other function except auth, JsonToDB, DBToJson, checkError, transfromGet, transformSet will be skip
     */
    doSomething?(req: any, res: any, route: RouteClass): any
 }

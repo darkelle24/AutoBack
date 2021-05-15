@@ -43,13 +43,16 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       })
 
       return data.update(toReturn).then(updatedObject => {
-        updatedObject = updatedObject.get()
-        if (route.returnColumns && updatedObject)
-          updatedObject = this.list(updatedObject, route.returnColumns)
-        this.getAllValue(data)
+
+        let toSend = updatedObject.get()
+
+        if (route.returnColumns && toSend)
+          toSend = this.list(toSend, route.returnColumns)
+        this.getAllValue(toSend)
         if (route.beforeSend)
-          route.beforeSend(req, res, this, data)
-        return res.status(200).json(updatedObject)
+            route.beforeSend(req, res, this, toSend)
+        return res.status(200).json(toSend)
+
       }).catch(err => {
         return res.status(400).json(err)
       })

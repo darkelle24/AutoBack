@@ -31,14 +31,10 @@ export class RouteBasicClass<M extends Model> {
 
     if (value !== undefined && value !== null) {
       toReturn = value
-      if (info.type.JsonToDB)
-        toReturn = info.type.JsonToDB(toReturn)
     } else if (created === false && value === undefined && info.keepOldValue) {
       toReturn = olderValue
     } else if (created === true && value === undefined && info.defaultValue !== undefined) {
       toReturn = info.defaultValue
-      if (info.type.JsonToDB)
-        toReturn = info.type.JsonToDB(toReturn)
     } else {
       toReturn = null
     }
@@ -46,9 +42,6 @@ export class RouteBasicClass<M extends Model> {
   }
 
   protected getValue(value: any, info: saveDataTableInfo): any {
-    if (info.type.DBToJson) {
-      return info.type.DBToJson(value)
-    }
     return value
   }
 

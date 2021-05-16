@@ -13,6 +13,7 @@ import * as _ from "lodash"
 import { InfoPlace, TypeRoute } from '../_helpers/models/routeModels';
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
+import { applyValidator } from '../_helpers/validator';
 
 export class AutoBack {
 
@@ -161,10 +162,10 @@ export class AutoBack {
 
         tableSequelizeInfo[key] = {
           type: type.sequelizeType,
-          primaryKey: table[key].primaryKey || false,
-          autoIncrement: table[key].autoIncrement || false,
-          allowNull: table[key].allowNull || false,
-          unique: table[key].unique || false,
+          primaryKey: saveTableInfo[key].primaryKey,
+          autoIncrement: saveTableInfo[key].autoIncrement,
+          allowNull: saveTableInfo[key].allowNull,
+          unique: saveTableInfo[key].unique,
           get() {
             let value = this.getDataValue(key)
             if (value !== undefined && value !== NaN && value !== null) {
@@ -180,6 +181,10 @@ export class AutoBack {
           },
           set(value: any) {
             if (value !== undefined && value !== NaN && value !== null) {
+              if (saveTableInfo[key].validate !== undefined) {
+                // @ts-ignore
+                applyValidator(key, value, saveTableInfo[key].validate)
+              }
               if (saveTableInfo[key] && saveTableInfo[key].transformSet) {
                 // @ts-ignore
                 value = saveTableInfo[key].transformSet(value, tempSaveTable.table)
@@ -199,6 +204,11 @@ export class AutoBack {
   private saveDataInfo(dataInfo: dataTableInfo, type: realDataTypeInfo): saveDataTableInfo {
     let temp = _.merge({}, this.defaultSaveDataInfo, dataInfo)
     temp.type = type
+
+    if (temp.validate)
+      temp.validate = _.merge({}, type.validate, temp.validate)
+    else
+      temp.validate = _.merge({}, type.validate)
 
     return temp
   }

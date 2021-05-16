@@ -10,8 +10,8 @@ import { acceptData, ListFilter, FilterInfo, InfoPlace } from "../../_helpers/mo
 export class RouteBasicClass<M extends Model> {
 
   readonly path: string
-  sequelizeData: ModelCtor<M>
-  table: saveTable
+  readonly sequelizeData: ModelCtor<M>
+  readonly table: saveTable
   protected server: any
   protected filterlist?: RealListFilter = undefined
   protected dataAsList?: RealListValueInfo = undefined

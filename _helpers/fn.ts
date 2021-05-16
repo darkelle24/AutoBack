@@ -2,7 +2,7 @@ import { DataTypes, Op } from "sequelize"
 import { DataType, dataType, dataTypeInfo, realDataType, realDataTypeInfo, saveDataTableInfo, saveTable } from "./models/models"
 import { FilterInfoType, FilterOperators, ListFilter, RealFilterInfo } from "./models/routeModels"
 import * as _ from "lodash"
-import { transform } from "lodash"
+import validator from "validator"
 
 export function defaultJsonToDB(data: any): any {
   return data
@@ -50,6 +50,9 @@ export function basicDataType(): dataType {
         inverse: false,
         list: getNumberOperatorFilter(),
         transform: dateToNumber
+      },
+      validate: {
+        isDate: true
       }
     },
     int: {
@@ -57,6 +60,9 @@ export function basicDataType(): dataType {
       filterOperator: {
         inverse: false,
         list: getNumberOperatorFilter()
+      },
+      validate: {
+        isInt: true
       }
     },
     text: {
@@ -66,16 +72,30 @@ export function basicDataType(): dataType {
       sequelizeType: DataTypes.TEXT,
       JsonToDB: (data: any[]): any => { return JSON.stringify(data) },
       DBToJson: (data: any): any[] => { return JSON.parse(data) },
+      validate: {
+        isArray: true
+      }
     },
     float: {
       sequelizeType: DataTypes.FLOAT,
       filterOperator: {
         inverse: false,
         list: getNumberOperatorFilter()
+      },
+      validate: {
+        isFloat: true
       }
     },
     boolean: {
       sequelizeType: DataTypes.BOOLEAN,
+      validate: {
+        isBoolean: true
+      },
+      JsonToDB: (data: any): any => {
+        if (typeof data === 'string')
+          return validator.toBoolean(data, true)
+        return Boolean(data)
+      },
     },
     bigInt: {
       sequelizeType: DataTypes.BIGINT,
@@ -86,6 +106,8 @@ export function basicDataType(): dataType {
     },
     string: {
       sequelizeType: DataTypes.STRING,
+      validate: {
+      }
     }
   }
 
@@ -117,6 +139,8 @@ export function applyDefaultValueOnDataType(basic: dataType): realDataType {
           temp.filterOperator.list = getStringToOperatorFilterList(temp.filterOperator.list)
         }
       }
+      if (!value.validate)
+        temp.validate = {}
       toReturn[key] = temp
     }
   })

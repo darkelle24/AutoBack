@@ -1,4 +1,4 @@
-import { DataTypeAbstract } from "sequelize"
+import { DataTypeAbstract, ModelValidateOptions } from "sequelize"
 import { TableClass } from "../../back/table"
 import { FilterInfoType } from "./routeModels"
 
@@ -29,7 +29,8 @@ export interface dataTypeInfo {
     * Replace transform from FilterInfo if FilterInfo.transform === undefined
     */
     transform?(data: any): any
-  }
+  },
+  validate?: ModelValidatior
 }
 
 export type realDataType = {
@@ -60,7 +61,8 @@ export interface realDataTypeInfo {
     * Replace transform from FilterInfo if FilterInfo.transform === undefined
     */
     transform?(data: any): any
-  }
+  },
+  validate: ModelValidatior
 }
 
 export enum DB {
@@ -105,7 +107,8 @@ export interface dataTableInfo {
   /**
      * Execute after execute dataTypeInfo.DBToJson
   */
-  transformGet?(value: any, table: TableClass<any>): any
+  transformGet?(value: any, table: TableClass<any>): any,
+  validate?: ModelValidatior
 }
 
 export interface saveTable {
@@ -134,9 +137,133 @@ export interface saveDataTableInfo {
    /**
       * Execute after execute dataTypeInfo.DBToJson
    */
-  transformGet?(value: any, table: TableClass<any>): any
+  transformGet?(value: any, table: TableClass<any>): any,
+  validate?: ModelValidatior
 }
 
 export interface allTables {
   [key: string]: TableClass<any>
+}
+
+export interface ModelValidatior {
+  contains?: {
+    seed: string,
+    msg?: string
+  },
+
+  equals?: {
+    comparaison: any,
+    msg?: string
+  },
+
+  isAlpha?: {
+    msg?: string
+  } | boolean,
+
+  isAlphanumeric?: {
+    msg?: string
+  } | boolean,
+
+  isBoolean?: {
+    msg?: string
+  } | boolean,
+
+  isDataURI?: {
+    msg?: string
+  } | boolean,
+
+  isEmail?: {
+    msg?: string
+  } | boolean,
+
+  isEmpty?: {
+    ignore_whitespace?: boolean,
+    msg?: string
+  } | boolean,
+
+  isFloat?: {
+    gte?: number,
+    gt?: number,
+    lt?: number,
+    lte?: number,
+    msg?: string
+  } | boolean,
+
+  isIn?: {
+    values: any,
+    msg?: string
+  },
+
+  isInt?: {
+    gte?: number,
+    gt?: number,
+    lt?: number,
+    lte?: number,
+    msg?: string
+  } | boolean,
+
+  isJSON?: {
+    msg?: string
+  } | boolean,
+
+  isLength?: {
+    min?: number,
+    max?: number,
+    msg?: string
+  } | boolean,
+
+  isLowercase?: {
+    msg?: string
+  } | boolean,
+
+  isNumeric?: {
+    no_symbols?: boolean,
+    msg?: string
+  } | boolean,
+
+  isUppercase?: {
+    msg?: string
+  } | boolean,
+
+  isStrongPassword?: {
+    minLength?: number,
+    minLowercase?: number,
+    minUppercase?: number,
+    minNumbers?: number,
+    minSymbols?: number,
+    maxLength?: number,
+    msg?: string
+  } | boolean,
+
+  isURL?: {
+    protocols?: string[],
+    require_protocol?: boolean,
+    require_valid_protocol?: boolean,
+    require_host?: boolean,
+    allow_protocol_relative_urls?: boolean,
+    msg?: string
+  } | boolean,
+
+  isWhitelisted?: {
+    char: string[],
+    msg?: string
+  },
+
+  isBlacklisted?: {
+    char: string[],
+    msg?: string
+  },
+
+  isArray?: {
+    msg?: string
+  } | boolean,
+
+  isRegex?: {
+    regex: string,
+    msg?: string
+  }
+
+  isDate?: {
+    msg?: string
+  } | boolean,
 }

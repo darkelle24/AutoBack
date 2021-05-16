@@ -48,7 +48,10 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
           route.beforeSend(req, res, this, toSend)
       return res.status(200).json(toSend)
     }).catch(err => {
-      return res.status(400).json(err)
+      if (err.errors !== undefined) {
+        return res.status(400).json({ message: err.name + ': ' + err.errors[0].message })
+      }
+      return res.status(400).json({ message: err.toString() })
     })
   }
 }

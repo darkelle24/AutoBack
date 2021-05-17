@@ -72,7 +72,7 @@ export class AutoBack {
         return this.userTable.sequelizeData.create(
           this.userTable.config.basicUser
         ).then(data => {
-          console.log('Succeful create basic user')
+          console.log('Succefully create basic user')
         }).catch(err => {
           if (err.errors !== undefined) {
             console.warn(err.name + ': ' + err.errors[0].message )

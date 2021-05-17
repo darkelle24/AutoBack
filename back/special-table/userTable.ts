@@ -12,7 +12,7 @@ import _ from 'lodash';
 
 export class UserTableClass<M extends Model> extends TableClass<M> {
 
-  config: realUserTableConfig
+  readonly config: realUserTableConfig
 
   constructor(auth: userTableConfig, name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, originRoutePath?: string) {
     if (table.role.validate) {

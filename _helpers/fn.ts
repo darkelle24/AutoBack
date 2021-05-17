@@ -70,6 +70,9 @@ export function basicDataType(): dataType {
     },
     text: {
       sequelizeType: DataTypes.TEXT,
+      JsonToDB: (data: any): any => {
+        return data.toString()
+      }
     },
     array: {
       sequelizeType: DataTypes.TEXT,
@@ -118,7 +121,8 @@ export function basicDataType(): dataType {
     },
     string: {
       sequelizeType: DataTypes.STRING,
-      validate: {
+      JsonToDB: (data: any): any => {
+        return data.toString()
       }
     }
   }

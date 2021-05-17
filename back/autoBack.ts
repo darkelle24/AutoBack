@@ -26,7 +26,7 @@ export class AutoBack {
   private waitDestroyDb?: Promise<void>
   private userTable?: UserTableClass<any> = undefined
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack, activeHealthRoute: boolean = true, resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, resetDb: boolean = false) {
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
 
@@ -42,6 +42,8 @@ export class AutoBack {
     if (activeHealthRoute)
       this.health()
     if (auth) {
+      if (auth === true)
+        auth = {}
       if (!auth.config)
         auth.config= {}
       this.userTable = this.defineUserTable(auth.config)
@@ -64,7 +66,22 @@ export class AutoBack {
   */
 
   private async startFn(port: number = 8080) {
-    await this.sequelize.sync().then(() => console.log('Created all Tables'))
+    await this.sequelize.sync().then(() => {
+      console.log('Created all Tables')
+      if (this.userTable && this.userTable.config.basicUser) {
+        return this.userTable.sequelizeData.create(
+          this.userTable.config.basicUser
+        ).then(data => {
+          console.log('Succeful create basic user')
+        }).catch(err => {
+          if (err.errors !== undefined) {
+            console.warn(err.name + ': ' + err.errors[0].message )
+          } else {
+            console.warn(err.toString())
+          }
+        })
+      }
+    })
     this.server.listen(port, () => {
       console.log('Server listening on port ' + port)
     });

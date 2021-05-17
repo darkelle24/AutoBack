@@ -29,14 +29,28 @@ export interface userTableConfig {
   readonly tokenSecret?: string,
   readonly passwordSecret?: string,
   expiresIn?: string,
-  roles?: string[]
+  roles?: string[],
+  basicUser?: {
+    username: string,
+    password: string,
+    email: string,
+    phone?: number,
+    role: string
+  }
 }
 
 export interface realUserTableConfig {
   readonly tokenSecret: string,
   readonly passwordSecret: string,
   expiresIn: string,
-  readonly roles: string[]
+  readonly roles: string[],
+  readonly basicUser?: {
+    username: string,
+    password: string,
+    email: string,
+    phone?: number,
+    role: string
+  }
 }
 
 export interface authConfigAutoBack {

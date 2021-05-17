@@ -21,7 +21,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     if (table.password.validate && table.password.validate.isStrongPassword) {
       if (table.password.validate.isStrongPassword === true)
         table.password.validate.isStrongPassword = {}
-      table.password.validate.isStrongPassword = _.merge({minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 0, maxLength: 15}, table.password.validate.isStrongPassword)
+      table.password.validate.isStrongPassword = _.merge({minLength: 6, minLowercase: 1, minUppercase: 0, minNumbers: 0, minSymbols: 0, maxLength: 15}, table.password.validate.isStrongPassword)
       // @ts-ignore
       table.password.validate.isStrongPassword.msg = "Wrong password need to have: min length: " + table.password.validate.isStrongPassword.minLength.toString() + ", max length: " + table.password.validate.isStrongPassword.maxLength.toString() + ", min lowercase: " + table.password.validate.isStrongPassword.minLowercase.toString() + ", min uppercase: " + table.password.validate.isStrongPassword.minUppercase.toString() + ", min numbers: " + table.password.validate.isStrongPassword.minNumbers.toString() + ", min symbols: " + table.password.validate.isStrongPassword.minSymbols.toString()
     }
@@ -30,7 +30,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       tokenSecret: auth.tokenSecret ? auth.tokenSecret : "wVmNfh6YPJMHtwtbj0Wa43wSh3cvJpoKqoQzZK8QbwjTGEVBNYO8xllNQC2G0U7lfKcVMK5lsn1Tshwl",
       passwordSecret: auth.passwordSecret ? auth.passwordSecret : "pBvhLoQrwTKyk9amfwSabc0zwh5EuV7DDTYpbGG4K52vV9WGftSDhmlz90hMvASJlHk1azg24Uvdturqomx819kz10NS9S",
       expiresIn: auth.expiresIn && auth.expiresIn !== "" ? auth.expiresIn : "7 days",
-      roles: auth.roles ? auth.roles : basicRole
+      roles: auth.roles ? auth.roles : basicRole,
+      basicUser: auth.basicUser
     }
   }
 

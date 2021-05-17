@@ -1,4 +1,4 @@
-import { Route } from './../../_helpers/models/routeModels';
+import { ListFilter, Route } from './../../_helpers/models/routeModels';
 import { basicRole, userTableConfig, realUserTableConfig, access } from './../../_helpers/models/userTableModel';
 import { Model, ModelCtor } from 'sequelize';
 import { activeAllFiltersForAllCols } from '../../_helpers/fn';
@@ -52,11 +52,17 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     }
   }
 
+  protected filterAllWithoutPassword(): ListFilter {
+    let toReturn = activeAllFiltersForAllCols(this.table);
+    delete toReturn.password;
+    return toReturn
+  }
+
   protected basicGet(accessRule?: access) {
     super.addRoute({
       path: '/',
       type: TypeRoute.GET,
-      filters: activeAllFiltersForAllCols(this.table),
+      filters: this.filterAllWithoutPassword(),
       limit: {},
       offset: {},
       returnColumns: {

@@ -1,11 +1,12 @@
+import { DataType } from './../../_helpers/models/models';
 import { UserTableClass } from './../special-table/userTable';
 import { access } from './../../_helpers/models/userTableModel';
 import { ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo, Route } from './../../_helpers/models/routeModels';
-import { StatusCodes } from "http-status-codes"
 import { Model, ModelCtor } from "sequelize/types"
 import { autorizeFilterOperator, filterOperatorToSequelizeOperator } from "../../_helpers/fn"
-import { saveDataTableInfo, saveTable } from "../../_helpers/models/models"
+import { routeTableInfo, saveDataTableInfo, saveTable } from "../../_helpers/models/models"
 import { acceptData, ListFilter, FilterInfo, InfoPlace } from "../../_helpers/models/routeModels"
+import multer from 'multer';
 
 export class RouteBasicClass<M extends Model> {
 
@@ -16,13 +17,15 @@ export class RouteBasicClass<M extends Model> {
   protected filterlist?: RealListFilter = undefined
   protected dataAsList?: RealListValueInfo = undefined
   protected userTable?: UserTableClass<any> = undefined
+  protected uploads?: multer.Multer
 
-  constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string, userTable?: UserTableClass<any>) {
+  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: any, path: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
-    this.table = table
+    this.table = table.table
     this.server = server
     this.path = path
     this.userTable = userTable
+    this.uploads = table.uploads
   }
 
 
@@ -241,5 +244,47 @@ export class RouteBasicClass<M extends Model> {
         next()
       }
     }
+  }
+
+  protected fileList(): any[] {
+    let fields: any[] = []
+
+    Object.entries(this.table).forEach(([key, value]) => {
+      if (value.type.autobackDataType === DataType.FILE) {
+        fields.push({name: key, maxCount: 1})
+      }
+    })
+    return fields
+  }
+
+  protected dataToBody() {
+    return (req: any, res: any, next: any) => {
+      if (req.is('multipart/form-data')) {
+        if (req.body.data) {
+          req.body = JSON.parse(req.body.data)
+          Object.keys(req.files).forEach((key: string) => {
+            delete req.body[key]
+          });
+        } else {
+          req.body = {}
+        }
+        next()
+      } else {
+        next()
+      }
+    }
+  }
+
+  protected uploadFile() {
+    if (!this.uploads)
+      throw Error("OK")
+    let fields: any[] = []
+
+    Object.entries(this.table).forEach(([key, value]) => {
+      if (value.type.autobackDataType === DataType.FILE) {
+        fields.push({name: key, maxCount: 1})
+      }
+    })
+    return this.uploads.fields(fields)
   }
 }

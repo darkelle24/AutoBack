@@ -1,13 +1,13 @@
 import { UserTableClass } from "back/special-table/userTable";
 import { Model, ModelCtor } from "sequelize";
-import { saveTable } from "../../_helpers/models/models";
+import { routeTableInfo, saveTable } from "../../_helpers/models/models";
 import { RoutePut } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 
 export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RoutePut
 
-  constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RoutePut, userTable?: UserTableClass<any>) {
+  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RoutePut, userTable?: UserTableClass<any>) {
     super(table, sequelizeData, server, path, userTable)
 
     this.routeInfo = routeInfo
@@ -15,10 +15,15 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     this.changeDataAsList(routeInfo.dataAs)
     this.changeAccess(routeInfo.auth)
     server.put(path, this.checkToken(routeInfo), (req: any, res: any) => {
-      if (!routeInfo.doSomething)
-        return this.gestPutRoute(req, res, routeInfo)
-      else {
-        return routeInfo.doSomething(req, res, this)
+      try {
+        if (!routeInfo.doSomething)
+          return this.gestPutRoute(req, res, routeInfo)
+        else {
+          return routeInfo.doSomething(req, res, this)
+        }
+      } catch (err) {
+        console.error(err)
+        res.status(500).send(err);
       }
     })
   }

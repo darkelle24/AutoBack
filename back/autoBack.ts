@@ -8,12 +8,15 @@ import {
 	StatusCodes,
 } from 'http-status-codes';
 import { ModelCtor, Sequelize } from 'sequelize';
-import { defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo } from '../_helpers/fn';
+import { addPath, defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo } from '../_helpers/fn';
 import * as _ from "lodash"
 import { InfoPlace, TypeRoute } from '../_helpers/models/routeModels';
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
 import { applyValidator } from '../_helpers/validator';
+import cors from 'cors'
+import path from 'path';
+import fs from 'fs'
 
 export class AutoBack {
 
@@ -25,10 +28,28 @@ export class AutoBack {
   private defaultSaveDataInfo: any = defaultSaveDataInfo()
   private waitDestroyDb?: Promise<void>
   private userTable?: UserTableClass<any> = undefined
+  readonly filePath: string
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, fileInfo?: {folderPath: string, virtualPath?: string}, resetDb: boolean = false) {
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
+    this.server.use(cors());
+
+    if (!fileInfo)
+      fileInfo = {
+        folderPath: 'uploads',
+        virtualPath: '/uploads'
+      }
+    this.filePath = fileInfo.folderPath
+
+    if (!fs.existsSync(this.filePath)){
+      fs.mkdirSync(this.filePath);
+    }
+
+    if (!fileInfo.virtualPath)
+      this.server.use(express.static(this.filePath));
+    else
+      this.server.use(fileInfo.virtualPath, express.static(this.filePath));
 
     if (db === DB.POSTGRES) {
       this.DB = new PostgresDb();
@@ -61,10 +82,6 @@ export class AutoBack {
     await this.sequelize.sync().then(() => console.log('All tables dropped'))
   }
 
-  /**
-     * Call after you init all your routes and tables
-  */
-
   private async startFn(port: number = 8080) {
     await this.sequelize.sync().then(() => {
       console.log('Created all Tables')
@@ -87,6 +104,10 @@ export class AutoBack {
     });
     this.error404()
   }
+
+  /**
+     * Call after you init all your routes and tables
+  */
 
   async start(port: number = 8080) {
     if (this.waitDestroyDb) {
@@ -132,7 +153,7 @@ export class AutoBack {
       let [tableSequelize, saveTableInfo] = this.defineStartTable("User", userTableDefine)
 
       if (tableSequelize) {
-        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, '/auth')
+        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, this.filePath, '/auth')
         saveTableInfo.table = this.tables["User"]
       }
 
@@ -159,7 +180,7 @@ export class AutoBack {
     let [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
     if (tableSequelize) {
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, originRoutePath, this.userTable)
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, this.filePath, originRoutePath, this.userTable)
       saveTableInfo.table = this.tables[nameTable]
     }
     return this.tables[nameTable]

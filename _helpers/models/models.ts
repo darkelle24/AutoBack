@@ -1,3 +1,4 @@
+import multer from "multer"
 import { DataTypeAbstract, ModelValidateOptions } from "sequelize"
 import { TableClass } from "../../back/table"
 import { FilterInfoType } from "./routeModels"
@@ -84,6 +85,7 @@ export enum DataType {
   BOOLEAN = "boolean",
   BIGINT = "bigInt",
   STRING = "string",
+  FILE = "file"
 }
 
 export interface Table {
@@ -143,6 +145,11 @@ export interface saveDataTableInfo {
 
 export interface allTables {
   [key: string]: TableClass<any>
+}
+
+export interface routeTableInfo {
+  table: saveTable,
+  uploads?: multer.Multer
 }
 
 export interface ModelValidatior {

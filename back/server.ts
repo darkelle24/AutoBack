@@ -18,7 +18,10 @@ let test = autoback.defineTable('lol', {
   comment: { type: DataType.TEXT, defaultValue: 'No comment' },
   date: { type: DataType.DATE },
   array: { type: DataType.ARRAY },
-  number: {type: DataType.BIGINT, allowNull: true}
+  number: { type: DataType.BIGINT, allowNull: true },
+  file: { type: DataType.FILE, allowNull: true },
+  dab: { type: DataType.FILE, allowNull: true },
+  lol: {type: DataType.FILE, allowNull: true}
 }, 'dab')
 
 if (test) {

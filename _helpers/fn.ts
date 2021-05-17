@@ -124,6 +124,12 @@ export function basicDataType(): dataType {
       JsonToDB: (data: any): any => {
         return data.toString()
       }
+    },
+    file: {
+      sequelizeType: DataTypes.STRING,
+      JsonToDB: (data: any): any => {
+        return data.toString()
+      }
     }
   }
 
@@ -306,5 +312,17 @@ export function allFilter(): FilterOperators {
     smaller_than_equals: {},
     substring: {},
     regexp: {},
+  }
+}
+
+export function getFileExtansion(filename: string): string | undefined {
+  let splited = filename.split('.')
+
+  if (splited.length !== 1)
+    return splited.pop();
+  else if (splited[0][0] === ".") {
+    return splited.pop();
+  } else {
+    return undefined
   }
 }

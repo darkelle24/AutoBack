@@ -1,25 +1,42 @@
 import { UserTableClass } from "back/special-table/userTable";
 import { Model, ModelCtor } from "sequelize";
-import { saveTable } from "../../_helpers/models/models";
+import { routeTableInfo, saveTable } from "../../_helpers/models/models";
 import { RoutePost } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 
 export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RoutePost
 
-  constructor(table: saveTable, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RoutePost, userTable?: UserTableClass<any>) {
+  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RoutePost, userTable?: UserTableClass<any>) {
     super(table, sequelizeData, server, path, userTable)
 
     this.routeInfo = routeInfo
     this.changeDataAsList(routeInfo.dataAs)
     this.changeAccess(routeInfo.auth)
-    server.post(path, this.checkToken(routeInfo), (req: any, res: any) => {
-      if (!routeInfo.doSomething)
-        return this.gestPostRoute(req, res, routeInfo)
+
+    if (this.uploads) {
+      let files = this.fileList()
+      server.post(path, this.checkToken(routeInfo), this.uploads.fields(files), this.dataToBody(), (req: any, res: any) => {
+        this.toDo(req, res)
+      })
+    } else {
+      server.post(path, this.checkToken(routeInfo), (req: any, res: any) => {
+        this.toDo(req, res)
+      })
+    }
+  }
+
+  protected toDo(req: any, res: any): any {
+    try {
+      if (!this.routeInfo.doSomething)
+        return this.gestPostRoute(req, res, this.routeInfo)
       else {
-        return routeInfo.doSomething(req, res, this)
+        return this.routeInfo.doSomething(req, res, this)
       }
-    })
+    } catch (err) {
+      console.error(err)
+      res.status(500).send(err);
+    }
   }
 
   private gestPostRoute(req: any, res: any, route: RoutePost): any {

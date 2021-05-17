@@ -63,6 +63,9 @@ export function basicDataType(): dataType {
       },
       validate: {
         isInt: true
+      },
+      JsonToDB: (data: any): any => {
+        return Number(data)
       }
     },
     text: {
@@ -84,6 +87,9 @@ export function basicDataType(): dataType {
       },
       validate: {
         isFloat: true
+      },
+      JsonToDB: (data: any): any => {
+        return Number(data)
       }
     },
     boolean: {
@@ -102,6 +108,12 @@ export function basicDataType(): dataType {
       filterOperator: {
         inverse: false,
         list: getNumberOperatorFilter()
+      },
+      validate: {
+        isInt: true
+      },
+      JsonToDB: (data: any): any => {
+        return Number(data)
       }
     },
     string: {

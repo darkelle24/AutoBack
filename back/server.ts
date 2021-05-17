@@ -9,7 +9,8 @@ let test = autoback.defineTable('lol', {
   bonjour: { type: DataType.BOOLEAN, defaultValue: true },
   comment: { type: DataType.TEXT, defaultValue: 'No comment' },
   date: { type: DataType.DATE },
-  array: {type: DataType.ARRAY}
+  array: { type: DataType.ARRAY },
+  number: {type: DataType.BIGINT, allowNull: true}
 }, 'dab')
 
 if (test) {

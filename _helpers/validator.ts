@@ -119,7 +119,7 @@ export function applyValidator(name: string, valueToValidate: any, validator: Mo
 function checkThrow(messageWrong: string, result?: boolean, msg?: string) {
   if (result === undefined) {
     console.warn(messageWrong)
-    throw new Error(messageWrong)
+    throw new TypeError(messageWrong)
   }
   if (!result && msg !== undefined) {
     throw new Error(msg)
@@ -193,9 +193,13 @@ function isEmail(value: any, option: any): boolean | undefined {
 }
 
 function isEmpty(value: any, option: any): boolean | undefined {
-  if (typeof value === 'string')
-    return validator.isEmpty(value, { ignore_whitespace: option.ignore_whitespace })
-  else
+  if (typeof value === 'string') {
+    let options: any = { ignore_whitespace: option.ignore_whitespace }
+    options = _.filter(options, (value) => value !== undefined)
+    if (_.isEmpty(options))
+      options = undefined
+    return validator.isEmpty(value, options)
+  } else
     return _.isEmpty(value)
 }
 
@@ -207,8 +211,13 @@ function isFloat(value: any, option: any): boolean | undefined {
   } else if (typeof value === 'string') {
     temp = value
   }
-  if (temp !== undefined)
-    return validator.isFloat(value, { gt: option.gt, lt: option.lt, min: option.gte, max: option.lte})
+  if (temp !== undefined) {
+    let options: any = { gt: option.gt, lt: option.lt, min: option.gte, max: option.lte }
+    options = _.filter(options, (value) => value !== undefined)
+    if (_.isEmpty(options))
+      options = undefined
+    return validator.isFloat(temp, options)
+  }
   return undefined
 }
 
@@ -235,8 +244,13 @@ function isInt(value: any, option: any): boolean | undefined {
   } else if (typeof value === 'string') {
     temp = value
   }
-  if (temp !== undefined)
-    return validator.isInt(value, { gt: option.gt, lt: option.lt, min: option.gte, max: option.lte})
+  if (temp !== undefined) {
+    let options: any = { gt: option.gt, lt: option.lt, min: option.gte, max: option.lte }
+    options = _.filter(options, (value) => value !== undefined)
+    if (_.isEmpty(options))
+      options = undefined
+    return validator.isInt(temp, options)
+  }
   return undefined
 }
 
@@ -254,8 +268,13 @@ function isLength(value: any, option: any): boolean | undefined {
   } else if (typeof value === 'string') {
     temp = value
   }
-  if (temp !== undefined)
-    return validator.isLength(value, { min: option.min, max: option.max })
+  if (temp !== undefined) {
+    let options: any = { min: option.min, max: option.max }
+    options = _.filter(options, (value) => value !== undefined)
+    if (_.isEmpty(options))
+      options = undefined
+    return validator.isLength(temp, options)
+  }
   return undefined
 }
 
@@ -273,8 +292,13 @@ function isNumeric(value: any, option: any): boolean | undefined {
   } else if (typeof value === 'string') {
     temp = value
   }
-  if (temp !== undefined)
-    return validator.isNumeric(value, { no_symbols: option.no_symbols })
+  if (temp !== undefined) {
+    let options: any = { no_symbols: option.no_symbols }
+    options = _.filter(options, (value) => value !== undefined)
+    if (_.isEmpty(options))
+      options = undefined
+    return validator.isNumeric(temp, options)
+  }
   return undefined
 }
 
@@ -304,8 +328,13 @@ function isStrongPassword(value: any, option: any): boolean | undefined {
 }
 
 function isURL(value: any, option: any): boolean | undefined {
-  if (typeof value === 'string')
-    return validator.isURL(value, { protocols: option.protocols, require_protocol: option.require_protocol, require_valid_protocol: option.require_valid_protocol, require_host: option.require_host, allow_protocol_relative_urls: option.allow_protocol_relative_urls})
+  if (typeof value === 'string') {
+    let options: any = { protocols: option.protocols, require_protocol: option.require_protocol, require_valid_protocol: option.require_valid_protocol, require_host: option.require_host, allow_protocol_relative_urls: option.allow_protocol_relative_urls }
+    options = _.filter(options, (value) => value !== undefined)
+    if (_.isEmpty(options))
+      options = undefined
+    return validator.isURL(value, options)
+  }
   return undefined
 }
 

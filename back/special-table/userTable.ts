@@ -16,7 +16,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
 
   constructor(auth: userTableConfig, name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, originRoutePath?: string) {
     if (table.role.validate) {
-      table.role.validate.equals = { comparaison: auth.roles ? auth.roles : basicRole, msg: "Wrong role" }
+      table.role.validate.equals = { comparaison: auth.roles ? auth.roles : basicRole, msg: "Role don't exist" }
     }
     if (table.password.validate && table.password.validate.isStrongPassword) {
       if (table.password.validate.isStrongPassword === true)

@@ -7,6 +7,7 @@ import { basicRouteParams, InfoPlace, TypeRoute } from '../../_helpers/models/ro
 import { TableClass } from '../table';
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
+import _ from 'lodash';
 
 
 export class UserTableClass<M extends Model> extends TableClass<M> {
@@ -14,6 +15,16 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
   config: realUserTableConfig
 
   constructor(auth: userTableConfig, name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, originRoutePath?: string) {
+    if (table.role.validate) {
+      table.role.validate.equals = { comparaison: auth.roles ? auth.roles : basicRole, msg: "Wrong role" }
+    }
+    if (table.password.validate && table.password.validate.isStrongPassword) {
+      if (table.password.validate.isStrongPassword === true)
+        table.password.validate.isStrongPassword = {}
+      table.password.validate.isStrongPassword = _.merge({minLength: 8, minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 0, maxLength: 15}, table.password.validate.isStrongPassword)
+      // @ts-ignore
+      table.password.validate.isStrongPassword.msg = "Wrong password need to have: min length: " + table.password.validate.isStrongPassword.minLength.toString() + ", max length: " + table.password.validate.isStrongPassword.maxLength.toString() + ", min lowercase: " + table.password.validate.isStrongPassword.minLowercase.toString() + ", min uppercase: " + table.password.validate.isStrongPassword.minUppercase.toString() + ", min numbers: " + table.password.validate.isStrongPassword.minNumbers.toString() + ", min symbols: " + table.password.validate.isStrongPassword.minSymbols.toString()
+    }
     super(name, table, sequelizeData, server, originRoutePath)
     this.config = {
       tokenSecret: auth.tokenSecret ? auth.tokenSecret : "wVmNfh6YPJMHtwtbj0Wa43wSh3cvJpoKqoQzZK8QbwjTGEVBNYO8xllNQC2G0U7lfKcVMK5lsn1Tshwl",

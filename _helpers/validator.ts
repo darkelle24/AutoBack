@@ -140,7 +140,17 @@ function contains(value: any, option: any): boolean | undefined {
 }
 
 function equals(value: any, option: any): boolean | undefined {
-  return _.isEqual(value, option.comparaison)
+  if (isArray(value, undefined))
+    return _.isEqual(value, option.comparaison)
+  else {
+    if (isArray(option.comparaison, undefined)) {
+      return option.comparaison.some((element: any) => {
+        return _.isEqual(value, element)
+      });
+    } else {
+      return _.isEqual(value, option.values)
+    }
+  }
 }
 
 function isAlpha(value: any, option: any): boolean | undefined {
@@ -203,7 +213,16 @@ function isFloat(value: any, option: any): boolean | undefined {
 }
 
 function isIn(value: any, option: any): boolean | undefined {
-  if (typeof value === 'string' || typeof value === 'object' || isArray(value, undefined))
+  if (typeof value === 'string' || typeof value === 'object') {
+    if (isArray(option.values, undefined)) {
+      return option.values.some((element: any) => {
+        return _.includes(value, element)
+      });
+    } else {
+      return _.includes(value, option.values)
+    }
+  }
+  if (isArray(value, undefined))
     return _.includes(value, option.values)
   return undefined
 }

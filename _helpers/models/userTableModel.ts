@@ -5,10 +5,10 @@ import { basicRouteParams, Route, RouteBasic } from './routeModels';
 export let userTableDefine: Table = {
   id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
   username: { type: DataType.STRING, unique: true },
-  password: { type: DataType.STRING, validate: {isStrongPassword: {minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0}}, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
+  password: { type: DataType.STRING, validate: { isStrongPassword: { minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 }}, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
   email: { type: DataType.STRING, validate: {isEmail: true} },
   phone: { type: DataType.STRING, allowNull: true },
-  role: {type: DataType.STRING}
+  role: {type: DataType.STRING, validate: { equals: {comparaison: ["Admin", "SuperAdmin"]}}}
 }
 
 export interface access {

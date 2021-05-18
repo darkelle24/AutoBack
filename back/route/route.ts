@@ -3,7 +3,7 @@ import { UserTableClass } from './../special-table/userTable';
 import { access } from './../../_helpers/models/userTableModel';
 import { ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo, Route } from './../../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize/types"
-import { autorizeFilterOperator, filterOperatorToSequelizeOperator } from "../../_helpers/fn"
+import { autorizeFilterOperator, filterOperatorToSequelizeOperator, removeFile } from "../../_helpers/fn"
 import { routeTableInfo, saveDataTableInfo, saveTable } from "../../_helpers/models/models"
 import { acceptData, ListFilter, FilterInfo, InfoPlace } from "../../_helpers/models/routeModels"
 import multer from 'multer';
@@ -293,5 +293,11 @@ export class RouteBasicClass<M extends Model> {
       }
     })
     return this.uploads.fields(fields)
+  }
+
+  protected ereaseAllNewFiles(req: any) {
+    Object.entries(req.files).forEach(([key, value]: [string, any]) => {
+      removeFile(value[0].path)
+    })
   }
 }

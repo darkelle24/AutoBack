@@ -8,7 +8,7 @@ import {
 	StatusCodes,
 } from 'http-status-codes';
 import { ModelCtor, Sequelize } from 'sequelize';
-import { addPath, defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo } from '../_helpers/fn';
+import { addPath, defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo, removeFile } from '../_helpers/fn';
 import * as _ from "lodash"
 import { InfoPlace, TypeRoute } from '../_helpers/models/routeModels';
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
@@ -232,6 +232,14 @@ export class AutoBack {
               }
               if (type && type.JsonToDB)
                 value = type.JsonToDB(value)
+              if (type && type.autobackDataType === DataType.FILE && fileInfo.folderPath) {
+                let oldValue = this.getDataValue(key)
+
+                if (oldValue) {
+                  let pathOldValue = path.join(fileInfo.folderPath, nameTable, key, oldValue)
+                  removeFile(pathOldValue)
+                }
+              }
             }
             this.setDataValue(key, value)
           }

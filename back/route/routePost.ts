@@ -38,10 +38,12 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       else {
         this.routeInfo.doSomething(req, res, this)
       }
-      return
     } catch (err) {
       console.error(err)
       res.status(500).send(err);
+    }
+    if (res !== 200 && req.files) {
+      this.ereaseAllNewFiles(req)
     }
   }
 

@@ -35,13 +35,16 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
   protected toDo(req: any, res: any): any {
     try {
       if (!this.routeInfo.doSomething)
-        return this.gestPutRoute(req, res, this.routeInfo)
+        this.gestPutRoute(req, res, this.routeInfo)
       else {
-        return this.routeInfo.doSomething(req, res, this)
+        this.routeInfo.doSomething(req, res, this)
       }
     } catch (err) {
       console.error(err)
       res.status(500).send(err);
+    }
+    if (res !== 200 && req.files) {
+        this.ereaseAllNewFiles(req)
     }
   }
 

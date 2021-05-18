@@ -4,6 +4,7 @@ import { FilterInfoType, FilterOperators, ListFilter, RealFilterInfo } from "./m
 import * as _ from "lodash"
 import validator from "validator"
 import path from "path"
+import fs from 'fs'
 
 export function defaultJsonToDB(data: any): any {
   return data
@@ -329,4 +330,15 @@ export function errorHandling(err: any, res: any): void {
     return res.status(400).json({ message: err.name + ': ' + err.errors[0].message })
   }
   return res.status(400).json({ message: err.toString() })
+}
+
+export function removeFile(path: string): void {
+  if (fs.existsSync(path)) {
+    fs.unlink(path, (err) => {
+      if (err) {
+        console.error(err)
+        return
+      }
+    })
+  }
 }

@@ -76,7 +76,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
           }
         })
       }
-      return res.status(200).json(toSend)
+      return res.status(201).json(toSend)
     }).catch(err => {
       return errorHandling(err, res)
     })

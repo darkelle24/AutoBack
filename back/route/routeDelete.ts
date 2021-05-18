@@ -1,9 +1,10 @@
 import { UserTableClass } from "back/special-table/userTable";
 import { Model, ModelCtor } from "sequelize";
-import { errorHandling } from "../../_helpers/fn";
+import { errorHandling, removeFile } from "../../_helpers/fn";
 import { routeTableInfo, saveTable } from "../../_helpers/models/models";
 import { RouteDelete } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
+import path from 'path';
 
 export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RouteDelete
@@ -33,9 +34,21 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
       if (!data) {
         return res.status(404).json({ message: "Not found" })
       }
+      let fileToDestroy: any[] = []
+
+      let pathFolder = this.pathFolder || ''
+      this.files.forEach((element: any) => {
+        let value = data.getDataValue(element.name)
+        if (value)
+          fileToDestroy.push( path.join(pathFolder, element.name, value))
+      })
       if (route.beforeDelete)
         route.beforeDelete(req, res, this)
+
       return (data.destroy().then(() => {
+        fileToDestroy.forEach((element) => {
+          removeFile(element)
+        })
         return res.status(200).json({
             message: "Deleted"
         })

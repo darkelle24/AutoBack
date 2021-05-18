@@ -36,8 +36,6 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     }
     if (routeInfo.fileReturnWithHost === undefined)
       routeInfo.fileReturnWithHost = true
-    if (this.uploads)
-      this.files = this.fileList()
 
     server.get(path, this.checkToken(routeInfo), (req: any, res: any) => {
       try {

@@ -19,8 +19,6 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       routeInfo.fileReturnWithHost = true
 
     if (this.uploads) {
-      this.files = this.fileList()
-
       server.post(path, this.checkToken(routeInfo), this.uploads.fields(this.files), this.dataToBody(), (req: any, res: any) => {
         this.toDo(req, res)
       })
@@ -42,7 +40,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       console.error(err)
       res.status(500).send(err);
     }
-    if (res !== 200 && req.files) {
+    if (res.statusCode !== 200 && req.files) {
       this.ereaseAllNewFiles(req)
     }
   }

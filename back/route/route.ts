@@ -19,6 +19,7 @@ export class RouteBasicClass<M extends Model> {
   protected userTable?: UserTableClass<any> = undefined
   protected uploads?: multer.Multer
   protected files: any[] = []
+  readonly pathFolder?: string
 
   constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: any, path: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
@@ -27,6 +28,9 @@ export class RouteBasicClass<M extends Model> {
     this.path = path
     this.userTable = userTable
     this.uploads = table.uploads
+    this.pathFolder = table.pathFolder
+    if (this.uploads)
+      this.files = this.fileList()
   }
 
 

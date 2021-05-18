@@ -149,7 +149,8 @@ export interface allTables {
 
 export interface routeTableInfo {
   table: saveTable,
-  uploads?: multer.Multer
+  uploads?: multer.Multer,
+  pathFolder?: string
 }
 
 export interface filePathInfo {

@@ -39,22 +39,21 @@ export class TableClass<M extends Model> {
     if (haveFile) {
       let pathFolder = path.join(filePath, name)
 
-      if (!fs.existsSync(pathFolder)){
-        fs.mkdirSync(pathFolder);
-      }
-
       let storage = multer.diskStorage({
         destination: function (req, file, cb) {
-          cb(null, pathFolder)
+          if (!fs.existsSync(path.join(pathFolder, file.fieldname))){
+            fs.mkdirSync(path.join(pathFolder, file.fieldname), { recursive: true });
+          }
+          cb(null, path.join(pathFolder, file.fieldname))
         },
         filename: function (req, file, cb) {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) + '-' + file.fieldname
           const ext = getFileExtansion(file.originalname)
 
           if (!ext)
             cb(null, uniqueSuffix)
           else
-            cb(null, uniqueSuffix + "." + ext)
+            cb(null, uniqueSuffix + ext)
         }
       })
 

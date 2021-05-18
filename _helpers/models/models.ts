@@ -152,6 +152,11 @@ export interface routeTableInfo {
   uploads?: multer.Multer
 }
 
+export interface filePathInfo {
+  folderPath: string,
+  virtualPath?: string
+}
+
 export interface ModelValidatior {
   contains?: {
     seed: string,

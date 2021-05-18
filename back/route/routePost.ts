@@ -16,6 +16,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
 
     if (this.uploads) {
       let files = this.fileList()
+
       server.post(path, this.checkToken(routeInfo), this.uploads.fields(files), this.dataToBody(), (req: any, res: any) => {
         this.toDo(req, res)
       })

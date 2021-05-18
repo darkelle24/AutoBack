@@ -1,4 +1,4 @@
-import { tempSaveTable } from './../_helpers/models/models';
+import { filePathInfo, tempSaveTable } from './../_helpers/models/models';
 import { TableClass } from './table';
 import { PostgresDb } from './db/postgres/postgres';
 import { DB, Table, DBInterface, DataType, dataTypeInfo, saveDataTableInfo, dataTableInfo, saveTable, allTables, realDataTypeInfo, realDataType } from '../_helpers/models/models';
@@ -28,9 +28,9 @@ export class AutoBack {
   private defaultSaveDataInfo: any = defaultSaveDataInfo()
   private waitDestroyDb?: Promise<void>
   private userTable?: UserTableClass<any> = undefined
-  readonly filePath: string
+  readonly fileInfo: filePathInfo
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, fileInfo?: {folderPath: string, virtualPath?: string}, resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, resetDb: boolean = false) {
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
     this.server.use(cors());
@@ -40,16 +40,16 @@ export class AutoBack {
         folderPath: 'uploads',
         virtualPath: '/uploads'
       }
-    this.filePath = fileInfo.folderPath
+    this.fileInfo = fileInfo
 
-    if (!fs.existsSync(this.filePath)){
-      fs.mkdirSync(this.filePath);
+    if (!fs.existsSync(this.fileInfo.folderPath)){
+      fs.mkdirSync(this.fileInfo.folderPath);
     }
 
     if (!fileInfo.virtualPath)
-      this.server.use(express.static(this.filePath));
+      this.server.use(express.static(this.fileInfo.folderPath));
     else
-      this.server.use(fileInfo.virtualPath, express.static(this.filePath));
+      this.server.use(fileInfo.virtualPath, express.static(this.fileInfo.folderPath));
 
     if (db === DB.POSTGRES) {
       this.DB = new PostgresDb();
@@ -153,7 +153,7 @@ export class AutoBack {
       let [tableSequelize, saveTableInfo] = this.defineStartTable("User", userTableDefine)
 
       if (tableSequelize) {
-        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, this.filePath, '/auth')
+        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, '/auth')
         saveTableInfo.table = this.tables["User"]
       }
 
@@ -169,7 +169,7 @@ export class AutoBack {
 
   private defineStartTable(nameTable: string, table: Table): [ModelCtor<any> | undefined, tempSaveTable] {
     let tableSequelize = undefined
-    let [tableSequelizeInfo, saveTableInfo]  = this.createTableSequelizeInfo(table)
+    let [tableSequelizeInfo, saveTableInfo] = this.createTableSequelizeInfo(table, nameTable, this.fileInfo)
 
     if (this.sequelize)
       tableSequelize = this.sequelize.define(nameTable, tableSequelizeInfo)
@@ -180,13 +180,13 @@ export class AutoBack {
     let [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
     if (tableSequelize) {
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, this.filePath, originRoutePath, this.userTable)
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, originRoutePath, this.userTable)
       saveTableInfo.table = this.tables[nameTable]
     }
     return this.tables[nameTable]
   }
 
-  private createTableSequelizeInfo(table: Table): [any, tempSaveTable] {
+  private createTableSequelizeInfo(table: Table, nameTable: string, fileInfo: filePathInfo): [any, tempSaveTable] {
     let tableSequelizeInfo: any = {}
     let saveTableInfo: saveTable = {}
     let tempSaveTable: tempSaveTable = {
@@ -209,6 +209,9 @@ export class AutoBack {
             if (value !== undefined && value !== NaN && value !== null) {
               if (type && type.DBToJson) {
                 value = type.DBToJson(value)
+              }
+              if (type && type.autobackDataType === DataType.FILE && fileInfo.virtualPath) {
+                value = path.posix.join(fileInfo.virtualPath, nameTable, key, value)
               }
               if (saveTableInfo[key] && saveTableInfo[key].transformGet) {
                 // @ts-ignore

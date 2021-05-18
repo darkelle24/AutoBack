@@ -3,6 +3,7 @@ import { DataType, dataType, dataTypeInfo, realDataType, realDataTypeInfo, saveD
 import { FilterInfoType, FilterOperators, ListFilter, RealFilterInfo } from "./models/routeModels"
 import * as _ from "lodash"
 import validator from "validator"
+import path from "path"
 
 export function defaultJsonToDB(data: any): any {
   return data
@@ -316,13 +317,9 @@ export function allFilter(): FilterOperators {
 }
 
 export function getFileExtansion(filename: string): string | undefined {
-  let splited = filename.split('.')
+  let toReturn = path.extname(filename)
 
-  if (splited.length !== 1)
-    return splited.pop();
-  else if (splited[0][0] === ".") {
-    return splited.pop();
-  } else {
+  if (toReturn === '')
     return undefined
-  }
+  return toReturn
 }

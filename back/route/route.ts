@@ -262,8 +262,8 @@ export class RouteBasicClass<M extends Model> {
       if (req.is('multipart/form-data')) {
         if (req.body.data) {
           req.body = JSON.parse(req.body.data)
-          Object.keys(req.files).forEach((key: string) => {
-            delete req.body[key]
+          Object.entries(req.files).forEach(([key, value]: [string, any]) => {
+            req.body[key] = value[0].filename
           });
         } else {
           req.body = {}

@@ -1,5 +1,6 @@
 import { UserTableClass } from "back/special-table/userTable";
 import { Model, ModelCtor } from "sequelize";
+import { errorHandling } from "../../_helpers/fn";
 import { routeTableInfo, saveTable } from "../../_helpers/models/models";
 import { RouteDelete } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
@@ -39,10 +40,10 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
             message: "Deleted"
         })
       }).catch(err => {
-        return res.status(400).json(err)
+        return errorHandling(err, res)
       }))
     }).catch(err => {
-      return res.status(400).json(err)
+      return errorHandling(err, res)
     })
   }
 }

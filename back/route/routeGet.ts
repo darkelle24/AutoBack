@@ -5,6 +5,7 @@ import { routeTableInfo, saveTable } from "../../_helpers/models/models";
 import { InfoPlace, RouteGet } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 import { UserTableClass } from 'back/special-table/userTable';
+import { errorHandling } from "../../_helpers/fn";
 
 export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RouteGet
@@ -33,6 +34,11 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
         return value
       }
     }
+    if (routeInfo.fileReturnWithHost === undefined)
+      routeInfo.fileReturnWithHost = true
+    if (this.uploads)
+      this.files = this.fileList()
+
     server.get(path, this.checkToken(routeInfo), (req: any, res: any) => {
       try {
       if (!routeInfo.doSomething)
@@ -66,10 +72,19 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
         return true
       })
       if (route.beforeSend)
-          route.beforeSend(req, res, this, toSend)
+        route.beforeSend(req, res, this, toSend)
+      if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
+        toSend.forEach((oneInfo: any) => {
+          this.files.forEach((element) => {
+            if (oneInfo.hasOwnProperty(element.name) && oneInfo[element.name]) {
+              oneInfo[element.name] = req.protocol + '://' + req.headers.host + oneInfo[element.name]
+            }
+          })
+        })
+      }
       return res.status(StatusCodes.OK).json(toSend)
     }).catch(err => {
-      return res.status(400).json(err)
+      return errorHandling(err, res)
     })
   }
 }

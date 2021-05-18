@@ -18,6 +18,7 @@ export class RouteBasicClass<M extends Model> {
   protected dataAsList?: RealListValueInfo = undefined
   protected userTable?: UserTableClass<any> = undefined
   protected uploads?: multer.Multer
+  protected files: any[] = []
 
   constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: any, path: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
@@ -35,7 +36,7 @@ export class RouteBasicClass<M extends Model> {
     if (value !== undefined && value !== null) {
       toReturn = value
     } else if (created === false && value === undefined && info.keepOldValue) {
-      toReturn = olderValue
+      toReturn = undefined
     } else if (created === true && value === undefined && info.defaultValue !== undefined) {
       toReturn = info.defaultValue
     } else {
@@ -262,11 +263,17 @@ export class RouteBasicClass<M extends Model> {
       if (req.is('multipart/form-data')) {
         if (req.body.data) {
           req.body = JSON.parse(req.body.data)
+          this.files.forEach((element) => {
+            delete req.body[element.name]
+          });
           Object.entries(req.files).forEach(([key, value]: [string, any]) => {
             req.body[key] = value[0].filename
           });
         } else {
           req.body = {}
+          Object.entries(req.files).forEach(([key, value]: [string, any]) => {
+            req.body[key] = value[0].filename
+          });
         }
         next()
       } else {

@@ -323,3 +323,10 @@ export function getFileExtansion(filename: string): string | undefined {
     return undefined
   return toReturn
 }
+
+export function errorHandling(err: any, res: any): void {
+  if (err.errors !== undefined) {
+    return res.status(400).json({ message: err.name + ': ' + err.errors[0].message })
+  }
+  return res.status(400).json({ message: err.toString() })
+}

@@ -53,6 +53,10 @@ export type RouteGet = {
    offset?: FilterInfo,
    returnColumns?: acceptData,
    filters?: ListFilter,
+   /**
+     * Default true
+    */
+   fileReturnWithHost?: boolean,
    beforeSend?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void,
 } & RouteBasic
 
@@ -64,6 +68,10 @@ export type RoutePost = {
      * Set value in body, can act as transfrom before validate
     */
    dataAs?: ListValueInfo,
+   /**
+     * Default true
+    */
+   fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePostClass<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
 } & RouteBasic
@@ -77,6 +85,10 @@ export type RoutePut = {
     */
    dataAs?: ListValueInfo,
    filters?: ListFilter,
+   /**
+     * Default true
+    */
+   fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
 } & RouteBasic

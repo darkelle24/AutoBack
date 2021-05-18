@@ -1,5 +1,6 @@
 import { UserTableClass } from "back/special-table/userTable";
 import { Model, ModelCtor } from "sequelize";
+import { errorHandling } from "../../_helpers/fn";
 import { routeTableInfo, saveTable } from "../../_helpers/models/models";
 import { RoutePost } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
@@ -14,10 +15,13 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     this.changeDataAsList(routeInfo.dataAs)
     this.changeAccess(routeInfo.auth)
 
-    if (this.uploads) {
-      let files = this.fileList()
+    if (routeInfo.fileReturnWithHost === undefined)
+      routeInfo.fileReturnWithHost = true
 
-      server.post(path, this.checkToken(routeInfo), this.uploads.fields(files), this.dataToBody(), (req: any, res: any) => {
+    if (this.uploads) {
+      this.files = this.fileList()
+
+      server.post(path, this.checkToken(routeInfo), this.uploads.fields(this.files), this.dataToBody(), (req: any, res: any) => {
         this.toDo(req, res)
       })
     } else {
@@ -30,10 +34,11 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
   protected toDo(req: any, res: any): any {
     try {
       if (!this.routeInfo.doSomething)
-        return this.gestPostRoute(req, res, this.routeInfo)
+        this.gestPostRoute(req, res, this.routeInfo)
       else {
-        return this.routeInfo.doSomething(req, res, this)
+        this.routeInfo.doSomething(req, res, this)
       }
+      return
     } catch (err) {
       console.error(err)
       res.status(500).send(err);
@@ -63,13 +68,17 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
         toSend = this.list(toSend, route.returnColumns)
       this.getAllValue(toSend)
       if (route.beforeSend)
-          route.beforeSend(req, res, this, toSend)
+        route.beforeSend(req, res, this, toSend)
+      if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
+        this.files.forEach((element) => {
+          if (toSend.hasOwnProperty(element.name) && toSend[element.name]) {
+            toSend[element.name] = req.protocol + '://' + req.headers.host + toSend[element.name]
+          }
+        })
+      }
       return res.status(200).json(toSend)
     }).catch(err => {
-      if (err.errors !== undefined) {
-        return res.status(400).json({ message: err.name + ': ' + err.errors[0].message })
-      }
-      return res.status(400).json({ message: err.toString() })
+      return errorHandling(err, res)
     })
   }
 }

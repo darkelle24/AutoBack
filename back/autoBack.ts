@@ -29,8 +29,9 @@ export class AutoBack {
   private waitDestroyDb?: Promise<void>
   private userTable?: UserTableClass<any> = undefined
   readonly fileInfo: filePathInfo
+  readonly serverPath: string
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", resetDb: boolean = false) {
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
     this.server.use(cors());
@@ -41,6 +42,7 @@ export class AutoBack {
         virtualPath: '/uploads'
       }
     this.fileInfo = fileInfo
+    this.serverPath = serverPath
 
     if (!fs.existsSync(this.fileInfo.folderPath)){
       fs.mkdirSync(this.fileInfo.folderPath);
@@ -153,7 +155,7 @@ export class AutoBack {
       let [tableSequelize, saveTableInfo] = this.defineStartTable("User", userTableDefine)
 
       if (tableSequelize) {
-        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, '/auth')
+        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, '/auth')
         saveTableInfo.table = this.tables["User"]
       }
 
@@ -180,7 +182,7 @@ export class AutoBack {
     let [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
     if (tableSequelize) {
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, originRoutePath, this.userTable)
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable)
       saveTableInfo.table = this.tables[nameTable]
     }
     return this.tables[nameTable]
@@ -212,6 +214,8 @@ export class AutoBack {
               }
               if (type && type.autobackDataType === DataType.FILE && fileInfo.virtualPath) {
                 value = path.posix.join(fileInfo.virtualPath, nameTable, key, value)
+                if (!fs.existsSync(value))
+                  value = undefined
               }
               if (saveTableInfo[key] && saveTableInfo[key].transformGet) {
                 // @ts-ignore

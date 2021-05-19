@@ -24,16 +24,16 @@ export class TableClass<M extends Model> {
   readonly upload?: multer.Multer
   readonly pathFolder?: string
 
-  constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, filePath: string, originRoutePath?: string, userTable?: UserTableClass<any>) {
+  constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
     this.table = table
     this.name = name
     this.server = server
     this.userTable = userTable
     if (originRoutePath)
-      this.routes.originRoutePath = addPath('', originRoutePath)
+      this.routes.originRoutePath = addPath('/', addPath(originServerPath, originRoutePath))
     else
-      this.routes.originRoutePath = '/' + name
+      this.routes.originRoutePath = addPath('/', addPath(addPath(originServerPath, '/'), name))
 
     let haveFile = Object.values(this.table).some((value: any) => { return value.type.autobackDataType === DataType.FILE })
 

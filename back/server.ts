@@ -33,10 +33,10 @@ if (test) {
       inverse: true,
       list: ["id"]
     },
-    returnColumns: {
+    /* returnColumns: {
       list: ["id"],
       inverse: true
-    },
+    }, */
     dataAs: {
       comment: {
         where: InfoPlace.QUERYPARAMS,
@@ -44,7 +44,7 @@ if (test) {
       }
     },
     auth: {
-
+      role: ['User', 'Admin']
     }
   })
 }

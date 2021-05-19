@@ -27,8 +27,12 @@ export function defaultSaveDataInfo(): any {
 }
 
 export function addPath(path1: string, path2: string): string {
-  if (path2[0] === '/')
+  let lastOne = path1[path1.length -1]
+
+  if ((path2[0] === '/' && lastOne !== '/') || (path2[0] !== '/' && lastOne === '/'))
     return path1 + path2
+  if (path2[0] === '/' && lastOne === '/')
+    return path1 + path2.substring(1)
   return path1 + '/' + path2
 }
 

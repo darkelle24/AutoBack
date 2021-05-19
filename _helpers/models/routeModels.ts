@@ -24,7 +24,7 @@ export interface RouteBasic {
    path: string,
    /**
      * Work if autoback user table created
-     * 
+     *
      * If not undefined need to be auth to have access to the route
     */
    auth?: access,
@@ -240,7 +240,7 @@ export interface ValueInfo {
     transformValue?(value: any): any,
     force: boolean
 }
- 
+
 export interface basicRouteParams {
    active?: boolean,
    auth?: access

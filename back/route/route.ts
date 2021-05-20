@@ -7,6 +7,7 @@ import multer from 'multer';
 import { routeTableInfo } from '../../_helpers/models/models';
 import { ABDataType } from '../../_helpers/models/modelsType';
 import { saveTable, saveDataTableInfo } from '../../_helpers/models/modelsTable';
+import express, { RequestHandler } from 'express';
 
 export class RouteBasicClass<M extends Model> {
 
@@ -21,7 +22,7 @@ export class RouteBasicClass<M extends Model> {
   protected files: any[] = []
   readonly pathFolder?: string
 
-  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: any, path: string, userTable?: UserTableClass<any>) {
+  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: express.Application, path: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
     this.table = table.table
     this.server = server
@@ -33,7 +34,7 @@ export class RouteBasicClass<M extends Model> {
       this.files = this.fileList()
   }
 
-
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected setValue(value: any, info: saveDataTableInfo, created: boolean = true): any {
     let toReturn: any
 
@@ -49,22 +50,24 @@ export class RouteBasicClass<M extends Model> {
     return toReturn
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected getValue(value: any): any {
     return value
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected getAllValue(data: any) {
     Object.entries(this.table).forEach(([key]) => {
       data[key] = this.getValue(data[key])
     })
   }
-
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected list(data: any, accept: acceptData): any {
     if (accept.inverse)
       return this.blackList(data, accept)
     return this.whitelist(data, accept)
   }
-
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected blackList(data: any, accept: acceptData): any {
     if (accept.list && accept.list.length !== 0) {
       const toReturn: any = data
@@ -81,7 +84,7 @@ export class RouteBasicClass<M extends Model> {
       return {}
     }
   }
-
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected whitelist(data: any, accept: acceptData): any {
     if (accept.list && accept.list.length !== 0) {
       const toReturn: any = {}
@@ -99,7 +102,7 @@ export class RouteBasicClass<M extends Model> {
     }
   }
 
-  public changeFilterList(filters?: ListFilter) {
+  public changeFilterList(filters?: ListFilter): void {
     if (filters) {
       const toReturn: RealListFilter = {}
 
@@ -136,7 +139,7 @@ export class RouteBasicClass<M extends Model> {
     }
   }
 
-  protected getValueFrom(req: any, place: InfoPlace, name: string): any | undefined {
+  protected getValueFrom(req: express.Request, place: InfoPlace, name: string): any | undefined {
     if (place === InfoPlace.BODY) {
       return req.body[name]
     } else if (place === InfoPlace.HEADER) {
@@ -150,7 +153,7 @@ export class RouteBasicClass<M extends Model> {
     }
   }
 
-  protected getFilter(req: any, filter?: RealListFilter): any | undefined {
+  protected getFilter(req: express.Request, filter?: RealListFilter): any | undefined {
     const toReturn: any = { where: {} }
 
     if (filter === undefined || Object.keys(filter).length === 0)
@@ -172,7 +175,7 @@ export class RouteBasicClass<M extends Model> {
     return toReturn
   }
 
-  protected getValueFromRequest(req: any, info: RealFilterInfo): any | undefined {
+  protected getValueFromRequest(req: express.Request, info: RealFilterInfo): any | undefined {
     let filterValue = this.getValueFrom(req, info.where, info.name)
 
     if (filterValue !== undefined) {
@@ -183,7 +186,7 @@ export class RouteBasicClass<M extends Model> {
     return undefined
   }
 
-  public changeDataAsList(dataAs?: ListValueInfo) {
+  public changeDataAsList(dataAs?: ListValueInfo): void {
     if (dataAs) {
       const toReturn: RealListValueInfo = {}
 
@@ -208,7 +211,7 @@ export class RouteBasicClass<M extends Model> {
     }
   }
 
-  protected getDataAs(req: any, dataAs?: RealListValueInfo) {
+  protected getDataAs(req: express.Request, dataAs?: RealListValueInfo): undefined | void {
     if (dataAs === undefined || Object.keys(dataAs).length === 0)
       return undefined
 
@@ -225,7 +228,7 @@ export class RouteBasicClass<M extends Model> {
     })
   }
 
-  public changeAccess(access?: access) {
+  public changeAccess(access?: access): boolean | void {
     if (access && this.userTable) {
       if (access.role) {
         access.role = access.role.filter((e) => {
@@ -238,7 +241,7 @@ export class RouteBasicClass<M extends Model> {
     }
   }
 
-  public checkToken(route: Route) {
+  public checkToken(route: Route): RequestHandler  {
     return async (req: any, res: any, next: any) => {
       if (this.userTable) {
         const result = await this.userTable.checkToken(req, res, route)
@@ -262,8 +265,8 @@ export class RouteBasicClass<M extends Model> {
     return fields
   }
 
-  protected dataToBody() {
-    return (req: any, res: any, next: any) => {
+  protected dataToBody(): RequestHandler  {
+    return (req, _res, next): void => {
       if (req.is('multipart/form-data')) {
         if (req.body.data) {
           req.body = JSON.parse(req.body.data)
@@ -286,7 +289,7 @@ export class RouteBasicClass<M extends Model> {
     }
   }
 
-  protected uploadFile() {
+  protected uploadFile(): express.RequestHandler<any> {
     if (!this.uploads)
       throw Error("OK")
     const fields: any[] = []
@@ -299,7 +302,7 @@ export class RouteBasicClass<M extends Model> {
     return this.uploads.fields(fields)
   }
 
-  protected ereaseAllNewFiles(req: any) {
+  protected ereaseAllNewFiles(req: express.Request): void {
     Object.entries(req.files).forEach(([, value]: [string, any]) => {
       removeFile(value[0].path)
     })

@@ -14,7 +14,7 @@ export class PostgresDb implements DBInterface {
     pg.defaults.parseInt8 = true
   }
 
-  addTypes(newTypes: realDataType) {
+  addTypes(newTypes: realDataType): void {
     this.dataType = addType(this.dataType, newTypes)
   }
 }

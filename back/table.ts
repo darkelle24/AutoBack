@@ -13,19 +13,20 @@ import fs from 'fs'
 import path from 'path';
 import { saveTable } from '../_helpers/models/modelsTable';
 import { ABDataType } from '../_helpers/models/modelsType';
+import express from 'express';
 
 export class TableClass<M extends Model> {
   readonly name: string
   sequelizeData: ModelCtor<M>
   table: saveTable
-  private server: any
+  private server: express.Application
   routes: allRoutes = { originRoutePath: '/', get: [], post: [], put: [], delete: [] }
   activeBasicRouting = false
   private userTable?: UserTableClass<any> = undefined
   readonly upload?: multer.Multer
   readonly pathFolder?: string
 
-  constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>) {
+  constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
     this.table = table
     this.name = name
@@ -66,7 +67,7 @@ export class TableClass<M extends Model> {
     }
   }
 
-  basicRouting(getRoute: basicRouteParams = {}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}) {
+  basicRouting(getRoute: basicRouteParams = {}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
     if (!this.activeBasicRouting) {
       this.activeBasicRouting = true
       if (getRoute && (getRoute.active || getRoute.active === undefined))
@@ -82,7 +83,7 @@ export class TableClass<M extends Model> {
     }
   }
 
-  protected basicGet(accessRule?: access) {
+  protected basicGet(accessRule?: access): void {
     this.addRoute({
       path: '/',
       type: TypeRoute.GET,
@@ -93,7 +94,7 @@ export class TableClass<M extends Model> {
     })
   }
 
-  protected basicPost(accessRule?: access) {
+  protected basicPost(accessRule?: access): void {
     this.addRoute({
       path: '/',
       type: TypeRoute.POST,
@@ -101,7 +102,7 @@ export class TableClass<M extends Model> {
     })
   }
 
-  protected basicDelete(accessRule?: access) {
+  protected basicDelete(accessRule?: access): void {
     this.addRoute({
       path: '/:id',
       type: TypeRoute.DELETE,
@@ -118,7 +119,7 @@ export class TableClass<M extends Model> {
     })
   }
 
-  protected basicPut(accessRule?: access) {
+  protected basicPut(accessRule?: access): void {
     this.addRoute({
       path: '/:id',
       type: TypeRoute.PUT,

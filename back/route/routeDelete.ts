@@ -5,11 +5,12 @@ import { RouteDelete } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 import path from 'path';
 import { routeTableInfo } from "../../_helpers/models/models";
+import express from "express";
 
 export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RouteDelete
 
-  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RouteDelete, userTable?: UserTableClass<any>) {
+  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: express.Application, path: string, routeInfo: RouteDelete, userTable?: UserTableClass<any>) {
     super(table, sequelizeData, server, path, userTable)
 
     this.routeInfo = routeInfo
@@ -29,7 +30,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
     })
   }
 
-  private gestDeleteRoute(req: any, res: any, route: RouteDelete): any {
+  private gestDeleteRoute(req: express.Request, res: express.Response, route: RouteDelete): any {
     return this.sequelizeData.findOne(this.getFilter(req, this.filterlist)).then(data => {
       if (!data) {
         return res.status(404).json({ message: "Not found" })

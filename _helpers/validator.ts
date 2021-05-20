@@ -2,7 +2,8 @@ import { ModelValidatior } from './models/models';
 import validator from "validator";
 import * as _ from "lodash"
 
-export function applyValidator(name: string, valueToValidate: any, validator: ModelValidatior) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function applyValidator(name: string, valueToValidate: any, validator: ModelValidatior): void {
 
   Object.entries(validator).forEach(([key, value]) => {
     if (value !== undefined && value !== false) {

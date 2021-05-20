@@ -1,4 +1,5 @@
 import { UserTableClass } from "back/special-table/userTable";
+import express from "express";
 import { Model, ModelCtor } from "sequelize";
 import { errorHandling } from "../../_helpers/fn";
 import { routeTableInfo } from "../../_helpers/models/models";
@@ -8,7 +9,7 @@ import { RouteBasicClass } from "./route";
 export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RoutePut
 
-  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RoutePut, userTable?: UserTableClass<any>) {
+  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: express.Application, path: string, routeInfo: RoutePut, userTable?: UserTableClass<any>) {
     super(table, sequelizeData, server, path, userTable)
 
     this.routeInfo = routeInfo
@@ -30,7 +31,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     }
   }
 
-  protected toDo(req: any, res: any): any {
+  protected toDo(req: express.Request, res: express.Response): any {
     try {
       if (!this.routeInfo.doSomething)
         this.gestPutRoute(req, res, this.routeInfo)

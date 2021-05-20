@@ -6,11 +6,12 @@ import { InfoPlace, RouteGet } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 import { UserTableClass } from 'back/special-table/userTable';
 import { errorHandling } from "../../_helpers/fn";
+import express from 'express';
 
 export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RouteGet
 
-  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: any, path: string, routeInfo: RouteGet, userTable?: UserTableClass<any>) {
+  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: express.Application, path: string, routeInfo: RouteGet, userTable?: UserTableClass<any>) {
     super(table, sequelizeData, server, path, userTable)
 
     this.routeInfo = routeInfo
@@ -37,7 +38,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     if (routeInfo.fileReturnWithHost === undefined)
       routeInfo.fileReturnWithHost = true
 
-    server.get(path, this.checkToken(routeInfo), (req: any, res: any) => {
+    server.get(path, this.checkToken(routeInfo), (req: express.Request, res: express.Response) => {
       try {
       if (!routeInfo.doSomething)
         return this.gestGetRoute(req, res, routeInfo)
@@ -51,7 +52,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     })
   }
 
-  private gestGetRoute(req: any, res: any, route: RouteGet): any {
+  private gestGetRoute(req: express.Request, res: express.Response, route: RouteGet): any {
     const filter = this.getFilter(req, this.filterlist)
 
     if (route.limit)

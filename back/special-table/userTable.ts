@@ -8,13 +8,14 @@ import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import _ from 'lodash';
 import { saveTable } from '../../_helpers/models/modelsTable';
+import express from 'express';
 
 
 export class UserTableClass<M extends Model> extends TableClass<M> {
 
   readonly config: realUserTableConfig
 
-  constructor(auth: userTableConfig, name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: any, filePath: string, originServerPath: string, originRoutePath?: string) {
+  constructor(auth: userTableConfig, name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string) {
     if (table.role.validate) {
       table.role.validate.equals = { comparaison: auth.roles ? auth.roles : basicRole, msg: "Role don't exist" }
     }
@@ -35,7 +36,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     }
   }
 
-  basicRouting(getRoute: basicRouteParams = {}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}) {
+  basicRouting(getRoute: basicRouteParams = {}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
     if (!this.activeBasicRouting) {
       this.activeBasicRouting = true
       if (getRoute && (getRoute.active || getRoute.active === undefined))
@@ -58,7 +59,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     return toReturn
   }
 
-  protected basicGet(accessRule?: access) {
+  protected basicGet(accessRule?: access):void {
     super.addRoute({
       path: '/',
       type: TypeRoute.GET,
@@ -73,7 +74,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     })
   }
 
-  protected basicDelete(accessRule?: access) {
+  protected basicDelete(accessRule?: access):void {
     super.addRoute({
       path: '/:user_id',
       type: TypeRoute.DELETE,
@@ -90,7 +91,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     })
   }
 
-  protected basicPut(accessRule?: access) {
+  protected basicPut(accessRule?: access): void {
     super.addRoute({
       path: '/:user_id',
       type: TypeRoute.PUT,
@@ -111,7 +112,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     })
   }
 
-  protected basicPost(accessRule?: access) {
+  protected basicPost(accessRule?: access): void {
     super.addRoute({
       path: '/register',
       type: TypeRoute.POST,
@@ -127,7 +128,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     return crypto.createHmac('sha512', this.config.passwordSecret)
   }
 
-  protected login() {
+  protected login(): void {
     super.addRoute({
       path: '/login',
       type: TypeRoute.POST,
@@ -152,7 +153,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     })
   }
 
-  protected checkJWT(token: string, req: any, res: any): boolean  {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected checkJWT(token: string, req: any, res: express.Response): boolean  {
     let good: boolean = false
 
     jwt.verify(token, this.config.tokenSecret, (err: any, user: any) => {
@@ -167,7 +169,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     return good
   }
 
-  protected async checkUserExist(req: any, res: any, sequilize: ModelCtor<any>): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected async checkUserExist(req: any, res: express.Response, sequilize: ModelCtor<any>): Promise<boolean> {
     const user = await sequilize.findOne({ where: { id: req.user.id, createdAt: req.user.createdAt } })
 
     if (user) {
@@ -178,7 +181,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     return false
   }
 
-  protected checkRole(req: any, res: any, route: Route): boolean {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected checkRole(req: any, res: express.Response, route: Route): boolean {
     if (route.auth && route.auth.role) {
       const find = route.auth.role.find(e => e === req.user.role)
       let toReturn: boolean = false
@@ -195,7 +199,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     return true
   }
 
-  public async checkToken(req: any, res: any, route: Route): Promise<boolean>{
+  public async checkToken(req: express.Request, res: express.Response, route: Route): Promise<boolean>{
     if (route.auth) {
       const authHeader = req.headers.authorization;
 

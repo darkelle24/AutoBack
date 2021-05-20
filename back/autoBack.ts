@@ -76,7 +76,7 @@ export class AutoBack {
     }
   }
 
-  public addTypes(newTypes: realDataType) {
+  public addTypes(newTypes: realDataType): void {
     this.DB.addTypes(newTypes)
   }
 
@@ -112,7 +112,7 @@ export class AutoBack {
      * Call after you init all your routes and tables
   */
 
-  async start(port: number = 8080) {
+  async start(port: number = 8080): Promise<void> {
     if (this.waitDestroyDb) {
       this.waitDestroyDb.finally(async () => {
         await this.startFn(port)
@@ -122,7 +122,7 @@ export class AutoBack {
     }
   }
 
-  loadDb(db: DB, connnectionStr: string) {
+  loadDb(db: DB, connnectionStr: string): void {
     if (db === DB.POSTGRES) {
       this.DB = new PostgresDb();
     }

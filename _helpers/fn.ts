@@ -6,11 +6,14 @@ import path from "path"
 import fs from 'fs'
 import { ABDataType, dataType, realDataType, realDataTypeInfo } from "./models/modelsType"
 import { saveTable } from "./models/modelsTable"
+import express from "express"
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function defaultJsonToDB(data: any): any {
   return data
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function defaultDBToJson(data: any): any {
   return data
 }
@@ -330,8 +333,8 @@ export function getFileExtansion(filename: string): string | undefined {
     return undefined
   return toReturn
 }
-
-export function errorHandling(err: any, res: any): void {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function errorHandling(err: any, res: express.Response): express.Response {
   if (err.errors !== undefined) {
     return res.status(400).json({ message: err.name + ': ' + err.errors[0].message })
   }
@@ -351,7 +354,7 @@ export function removeFile(path: string): void {
     })
   })
 }
-
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export async function checkIfExistRowInTableLink(columnsName: string, tableName: string, sequelizeTable: ModelCtor<any>, value: any): Promise<void> {
   const filter: any = {}
   filter.where = {}

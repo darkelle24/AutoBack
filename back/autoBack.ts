@@ -202,8 +202,7 @@ export class AutoBack {
           if (type && type.DBToJson) {
             value = type.DBToJson(value)
           }
-          if (saveTableInfo && saveTableInfo.transformGet) {
-            // @ts-ignore
+          if (saveTableInfo && saveTableInfo.transformGet && tempSaveTable.table) {
             value = saveTableInfo.transformGet(value, tempSaveTable.table)
           }
         }
@@ -212,11 +211,9 @@ export class AutoBack {
       set(value: any) {
         if (value !== undefined && !isNaN(value) && value !== null) {
           if (saveTableInfo.validate !== undefined) {
-            // @ts-ignore
             applyValidator(key, value, saveTableInfo.validate)
           }
-          if (saveTableInfo && saveTableInfo.transformSet) {
-            // @ts-ignore
+          if (saveTableInfo && saveTableInfo.transformSet && tempSaveTable.table) {
             value = saveTableInfo.transformSet(value, tempSaveTable.table)
           }
           if (type && type.JsonToDB)
@@ -245,8 +242,7 @@ export class AutoBack {
             if (!fs.existsSync(value))
               value = undefined
           }
-          if (saveTableInfo && saveTableInfo.transformGet) {
-            // @ts-ignore
+          if (saveTableInfo && saveTableInfo.transformGet && tempSaveTable.table) {
             value = saveTableInfo.transformGet(value, tempSaveTable.table)
           }
         }
@@ -255,11 +251,9 @@ export class AutoBack {
       set(value: any) {
         if (value !== undefined && !isNaN(value) && value !== null) {
           if (saveTableInfo.validate !== undefined) {
-            // @ts-ignore
             applyValidator(key, value, saveTableInfo.validate)
           }
-          if (saveTableInfo && saveTableInfo.transformSet) {
-            // @ts-ignore
+          if (saveTableInfo && saveTableInfo.transformSet && tempSaveTable.table) {
             value = saveTableInfo.transformSet(value, tempSaveTable.table)
           }
           if (type && type.JsonToDB)
@@ -291,8 +285,7 @@ export class AutoBack {
           if (type && type.DBToJson) {
             value = type.DBToJson(value)
           }
-          if (saveTableInfo && saveTableInfo.transformGet) {
-            // @ts-ignore
+          if (saveTableInfo && saveTableInfo.transformGet && tempSaveTable.table) {
             value = saveTableInfo.transformGet(value, tempSaveTable.table)
           }
         }
@@ -301,11 +294,9 @@ export class AutoBack {
       set(value: any) {
         if (value !== undefined && !isNaN(value) && value !== null) {
           if (saveTableInfo.validate !== undefined) {
-            // @ts-ignore
             applyValidator(key, value, saveTableInfo.validate)
           }
-          if (saveTableInfo && saveTableInfo.transformSet) {
-            // @ts-ignore
+          if (saveTableInfo && saveTableInfo.transformSet && tempSaveTable.table) {
             value = saveTableInfo.transformSet(value, tempSaveTable.table)
           }
           if (type && type.JsonToDB)

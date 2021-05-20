@@ -23,6 +23,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       if (table.password.validate.isStrongPassword === true)
         table.password.validate.isStrongPassword = {}
       table.password.validate.isStrongPassword = _.merge({minLength: 6, minLowercase: 1, minUppercase: 0, minNumbers: 0, minSymbols: 0, maxLength: 15}, table.password.validate.isStrongPassword)
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       table.password.validate.isStrongPassword.msg = "Wrong password need to have: min length: " + table.password.validate.isStrongPassword.minLength.toString() + ", max length: " + table.password.validate.isStrongPassword.maxLength.toString() + ", min lowercase: " + table.password.validate.isStrongPassword.minLowercase.toString() + ", min uppercase: " + table.password.validate.isStrongPassword.minUppercase.toString() + ", min numbers: " + table.password.validate.isStrongPassword.minNumbers.toString() + ", min symbols: " + table.password.validate.isStrongPassword.minSymbols.toString()
     }

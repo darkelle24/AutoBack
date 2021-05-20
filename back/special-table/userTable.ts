@@ -53,7 +53,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
   }
 
   protected filterAllWithoutPassword(): ListFilter {
-    let toReturn = activeAllFiltersForAllCols(this.table);
+    const toReturn = activeAllFiltersForAllCols(this.table);
     delete toReturn.password;
     return toReturn
   }
@@ -137,7 +137,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         const user = await route.sequelizeData.findOne({ where: { username: username, password: this.getHash().update(password).digest('hex') } })
 
         if (user) {
-          let temp = user.get()
+          const temp = user.get()
           delete temp.password
           const accessToken = jwt.sign(temp, this.config.tokenSecret, {expiresIn: this.config.expiresIn});
 
@@ -168,7 +168,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
   }
 
   protected async checkUserExist(req: any, res: any, sequilize: ModelCtor<any>): Promise<boolean> {
-    let user = await sequilize.findOne({ where: { id: req.user.id, createdAt: req.user.createdAt } })
+    const user = await sequilize.findOne({ where: { id: req.user.id, createdAt: req.user.createdAt } })
 
     if (user) {
       req.user = user.get()
@@ -180,7 +180,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
 
   protected checkRole(req: any, res: any, route: Route): boolean {
     if (route.auth && route.auth.role) {
-      let find = route.auth.role.find(e => e === req.user.role)
+      const find = route.auth.role.find(e => e === req.user.role)
       let toReturn: boolean = false
 
       if (find)
@@ -203,7 +203,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         const token = authHeader.split(' ')[1];
         if (!this.checkJWT(token, req, res))
           return false
-        let result = await this.checkUserExist(req, res, this.sequelizeData)
+        const result = await this.checkUserExist(req, res, this.sequelizeData)
         if (!result)
           return false
         if (!this.checkRole(req, res, route))

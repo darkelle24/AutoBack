@@ -1,8 +1,5 @@
 import multer from "multer"
-import { DataTypeAbstract, ModelValidateOptions } from "sequelize"
-import { TableClass } from "../../back/table"
 import { saveTable } from "./modelsTable"
-import { FilterInfoType } from "./routeModels"
 
 export interface routeTableInfo {
   table: saveTable,

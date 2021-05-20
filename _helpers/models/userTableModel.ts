@@ -1,9 +1,9 @@
 import { UserTableClass } from 'back/special-table/userTable';
 import { ABDataType } from './modelsType';
 import { Table } from './modelsTable';
-import { basicRouteParams, Route, RouteBasic } from './routeModels';
+import { basicRouteParams } from './routeModels';
 
-export let userTableDefine: Table = {
+export const userTableDefine: Table = {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   username: { type: ABDataType.STRING, unique: true },
   password: { type: ABDataType.STRING, validate: { isStrongPassword: { minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 }}, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
@@ -20,7 +20,7 @@ export interface access {
   inverse?: boolean
 }
 
-export let basicRole: string[] = [
+export const basicRole: string[] = [
   "SuperAdmin",
   "Admin",
   "User"

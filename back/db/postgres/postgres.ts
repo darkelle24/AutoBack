@@ -1,6 +1,7 @@
 import { applyDefaultValueOnDataType, basicDataType, addType } from "../../../_helpers/fn"
 import { realDataType } from "../../../_helpers/models/modelsType"
 import { DBInterface } from "../../../_helpers/models/modelsDb"
+import pg from "pg"
 
 
 export class PostgresDb implements DBInterface {
@@ -10,7 +11,7 @@ export class PostgresDb implements DBInterface {
 
   constructor() {
     this.dataType = applyDefaultValueOnDataType(basicDataType())
-    require('pg').defaults.parseInt8 = true
+    pg.defaults.parseInt8 = true
   }
 
   addTypes(newTypes: realDataType) {

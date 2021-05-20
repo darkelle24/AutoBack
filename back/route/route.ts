@@ -34,7 +34,7 @@ export class RouteBasicClass<M extends Model> {
   }
 
 
-  protected setValue(value: any, info: saveDataTableInfo, created: boolean = true, olderValue?: any): any {
+  protected setValue(value: any, info: saveDataTableInfo, created: boolean = true): any {
     let toReturn: any
 
     if (value !== undefined && value !== null) {
@@ -49,13 +49,13 @@ export class RouteBasicClass<M extends Model> {
     return toReturn
   }
 
-  protected getValue(value: any, info: saveDataTableInfo): any {
+  protected getValue(value: any): any {
     return value
   }
 
   protected getAllValue(data: any) {
-    Object.entries(this.table).forEach(([key, value]) => {
-      data[key] = this.getValue(data[key], value)
+    Object.entries(this.table).forEach(([key]) => {
+      data[key] = this.getValue(data[key])
     })
   }
 
@@ -67,10 +67,10 @@ export class RouteBasicClass<M extends Model> {
 
   protected blackList(data: any, accept: acceptData): any {
     if (accept.list && accept.list.length !== 0) {
-      let toReturn: any = data
-      let list: string[] = accept.list
+      const toReturn: any = data
+      const list: string[] = accept.list
 
-      Object.entries(data).forEach(([key, value]) => {
+      Object.entries(data).forEach(([key]) => {
         if (list.find(element => element === key))
           delete toReturn[key]
       })
@@ -84,8 +84,8 @@ export class RouteBasicClass<M extends Model> {
 
   protected whitelist(data: any, accept: acceptData): any {
     if (accept.list && accept.list.length !== 0) {
-      let toReturn: any = {}
-      let list: string[] = accept.list
+      const toReturn: any = {}
+      const list: string[] = accept.list
 
       Object.entries(data).forEach(([key, value]) => {
         if (list.find(element => element === key))
@@ -101,13 +101,13 @@ export class RouteBasicClass<M extends Model> {
 
   public changeFilterList(filters?: ListFilter) {
     if (filters) {
-      let toReturn: RealListFilter = {}
+      const toReturn: RealListFilter = {}
 
       Object.entries(filters).forEach(([keyCol, valueCol]) => {
-        if (this.table.hasOwnProperty(keyCol)) {
+        if (Object.prototype.hasOwnProperty.call(this.table, keyCol)) {
 
           Object.entries(valueCol).forEach(([key, value]) => {
-            let type = filterOperatorToSequelizeOperator(key)
+            const type = filterOperatorToSequelizeOperator(key)
             if (type !== undefined && autorizeFilterOperator(type, this.table[keyCol].type)) {
               let transform = undefined
 
@@ -151,13 +151,13 @@ export class RouteBasicClass<M extends Model> {
   }
 
   protected getFilter(req: any, filter?: RealListFilter): any | undefined {
-    let toReturn: any = { where: {} }
+    const toReturn: any = { where: {} }
 
     if (filter === undefined || Object.keys(filter).length === 0)
       return undefined
 
     Object.entries(filter).forEach(([keyCol, valueCol]) => {
-      Object.entries(valueCol).forEach(([key, value]) => {
+      Object.entries(valueCol).forEach(([, value]) => {
         let filterValue = this.getValueFrom(req, value.where, value.name)
 
         if (filterValue !== undefined) {
@@ -185,10 +185,10 @@ export class RouteBasicClass<M extends Model> {
 
   public changeDataAsList(dataAs?: ListValueInfo) {
     if (dataAs) {
-      let toReturn: RealListValueInfo = {}
+      const toReturn: RealListValueInfo = {}
 
       Object.entries(dataAs).forEach(([keyCol, valueCol]) => {
-        if (this.table.hasOwnProperty(keyCol)) {
+        if (Object.prototype.hasOwnProperty.call(this.table, keyCol)) {
               let transform = undefined
 
               if (valueCol.transformValue)
@@ -212,7 +212,7 @@ export class RouteBasicClass<M extends Model> {
     if (dataAs === undefined || Object.keys(dataAs).length === 0)
       return undefined
 
-    Object.entries(dataAs).forEach(([keyCol, valueCol]) => {
+    Object.entries(dataAs).forEach(([, valueCol]) => {
       if ((!valueCol.force && (req.body[valueCol.name] === undefined || req.body[valueCol.name] === null)) || valueCol.force) {
         let valueFind = this.getValueFrom(req, valueCol.where, valueCol.name)
 
@@ -241,7 +241,7 @@ export class RouteBasicClass<M extends Model> {
   public checkToken(route: Route) {
     return async (req: any, res: any, next: any) => {
       if (this.userTable) {
-        let result = await this.userTable.checkToken(req, res, route)
+        const result = await this.userTable.checkToken(req, res, route)
         if (result) {
           next()
         }
@@ -252,7 +252,7 @@ export class RouteBasicClass<M extends Model> {
   }
 
   protected fileList(): any[] {
-    let fields: any[] = []
+    const fields: any[] = []
 
     Object.entries(this.table).forEach(([key, value]) => {
       if (value.type.autobackDataType === ABDataType.FILE) {
@@ -289,7 +289,7 @@ export class RouteBasicClass<M extends Model> {
   protected uploadFile() {
     if (!this.uploads)
       throw Error("OK")
-    let fields: any[] = []
+    const fields: any[] = []
 
     Object.entries(this.table).forEach(([key, value]) => {
       if (value.type.autobackDataType === ABDataType.FILE) {
@@ -300,7 +300,7 @@ export class RouteBasicClass<M extends Model> {
   }
 
   protected ereaseAllNewFiles(req: any) {
-    Object.entries(req.files).forEach(([key, value]: [string, any]) => {
+    Object.entries(req.files).forEach(([, value]: [string, any]) => {
       removeFile(value[0].path)
     })
   }

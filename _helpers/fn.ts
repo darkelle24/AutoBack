@@ -28,7 +28,7 @@ export function defaultSaveDataInfo(): any {
 }
 
 export function addPath(path1: string, path2: string): string {
-  let lastOne = path1[path1.length -1]
+  const lastOne = path1[path1.length -1]
 
   if ((path2[0] === '/' && lastOne !== '/') || (path2[0] !== '/' && lastOne === '/'))
     return path1 + path2
@@ -48,7 +48,7 @@ function dateToNumber(data: string | number | Date): number {
 }
 
 export function basicDataType(): dataType {
-  let basic: dataType = {
+  const basic: dataType = {
     date: {
       sequelizeType: DataTypes.BIGINT,
       JsonToDB: dateToNumber,
@@ -148,11 +148,11 @@ export function addType(oldTypes: realDataType, newTypes: realDataType): realDat
 }
 
 export function applyDefaultValueOnDataType(basic: dataType): realDataType {
-  let toReturn: realDataType = {}
+  const toReturn: realDataType = {}
 
   Object.entries(basic).forEach(([key, value]) => {
     if ((<any>Object).values(ABDataType).includes(key)) {
-      let temp: any = _.merge({}, value)
+      const temp: any = _.merge({}, value)
 
       temp.name = key
       temp.autobackDataType = <DataType> key
@@ -264,11 +264,11 @@ export function getNumberOperatorFilter(): string[] {
 }
 
 export function getStringToOperatorFilterList(list: string[]): FilterInfoType[] {
-  let toReturn: FilterInfoType[] = []
+  const toReturn: FilterInfoType[] = []
 
   if (list.length !== 0) {
     list.forEach((value) => {
-      let type = filterOperatorToSequelizeOperator(value)
+      const type = filterOperatorToSequelizeOperator(value)
       if (type !== undefined && !toReturn.find((element) => {
         if (type && element.name === type.name)
           return true
@@ -300,9 +300,9 @@ export function autorizeFilterOperator(type: FilterInfoType, info: realDataTypeI
 }
 
 export function activeAllFiltersForAllCols(table: saveTable): ListFilter {
-  let toReturn: ListFilter = {}
+  const toReturn: ListFilter = {}
 
-  Object.entries(table).forEach(([key, value]) => {
+  Object.entries(table).forEach(([key]) => {
     toReturn[key] = allFilter()
   })
   return toReturn
@@ -324,7 +324,7 @@ export function allFilter(): FilterOperators {
 }
 
 export function getFileExtansion(filename: string): string | undefined {
-  let toReturn = path.extname(filename)
+  const toReturn = path.extname(filename)
 
   if (toReturn === '')
     return undefined
@@ -353,11 +353,11 @@ export function removeFile(path: string): void {
 }
 
 export async function checkIfExistRowInTableLink(columnsName: string, tableName: string, sequelizeTable: ModelCtor<any>, value: any): Promise<void> {
-  let filter: any = {}
+  const filter: any = {}
   filter.where = {}
   filter.where[columnsName] = value
 
-  let result = await sequelizeTable.findOne(filter)
+  const result = await sequelizeTable.findOne(filter)
   if (!result) {
     throw new Error('Not found row with value ' + value + ' in the table ' + tableName)
   }

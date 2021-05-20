@@ -34,11 +34,11 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
       if (!data) {
         return res.status(404).json({ message: "Not found" })
       }
-      let fileToDestroy: any[] = []
+      const fileToDestroy: any[] = []
 
-      let pathFolder = this.pathFolder || ''
+      const pathFolder = this.pathFolder || ''
       this.files.forEach((element: any) => {
-        let value = data.getDataValue(element.name)
+        const value = data.getDataValue(element.name)
         if (value)
           fileToDestroy.push( path.join(pathFolder, element.name, value))
       })

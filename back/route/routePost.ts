@@ -46,7 +46,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
   }
 
   private gestPostRoute(req: any, res: any, route: RoutePost): any {
-    let toReturn: any = {}
+    const toReturn: any = {}
 
     if (route.columsAccept && req.body)
       req.body = this.list(req.body, route.columsAccept)
@@ -71,7 +71,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
         route.beforeSend(req, res, this, toSend)
       if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
         this.files.forEach((element) => {
-          if (toSend.hasOwnProperty(element.name) && toSend[element.name]) {
+          if (Object.prototype.hasOwnProperty.call(toSend, element.name) && toSend[element.name]) {
             toSend[element.name] = req.protocol + '://' + req.headers.host + toSend[element.name]
           }
         })

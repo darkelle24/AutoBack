@@ -3,7 +3,7 @@ import { DB } from "../_helpers/models/modelsDb"
 import { AutoBack } from "./autoBack"
 import { TypeRoute, InfoPlace } from "../_helpers/models/routeModels"
 
-let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, {
+const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, {
   config: {
     basicUser: {
       username: 'admin',
@@ -13,7 +13,7 @@ let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", 
     }
 }}, true)
 //let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
-let test = autoback.defineTable('lol', {
+const test = autoback.defineTable('lol', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   bonjour: { type: ABDataType.BOOLEAN, defaultValue: true, allowNull: true },
   comment: { type: ABDataType.TEXT, defaultValue: 'No comment', allowNull: true },
@@ -45,7 +45,7 @@ if (test) {
     }
   })
 
-  let dab = autoback.defineTable('lel', {
+  const dab = autoback.defineTable('lel', {
     id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
     userId: { type: ABDataType.TABLE_LINK, tableToLink: autoback.userTable, columnsLink: 'id' },
   }, 'test')

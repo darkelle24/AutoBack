@@ -1,4 +1,3 @@
-import { type } from 'node:os';
 import { TableClass } from "back/table"
 import { ModelValidatior } from "./models"
 import { ABDataType, realDataTypeInfo } from "./modelsType"

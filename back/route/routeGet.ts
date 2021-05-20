@@ -52,7 +52,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
   }
 
   private gestGetRoute(req: any, res: any, route: RouteGet): any {
-    let filter = this.getFilter(req, this.filterlist)
+    const filter = this.getFilter(req, this.filterlist)
 
     if (route.limit)
       filter['limit'] = this.getValueFromRequest(req, (route.limit as RealFilterInfo))
@@ -60,7 +60,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       filter['offset'] = this.getValueFromRequest(req, (route.offset as RealFilterInfo))
 
     return this.sequelizeData.findAll(filter).then(datas => {
-      let toSend: any[] = []
+      const toSend: any[] = []
 
       datas.every((value, index) => {
         toSend.push(value.get())
@@ -74,7 +74,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
         toSend.forEach((oneInfo: any) => {
           this.files.forEach((element) => {
-            if (oneInfo.hasOwnProperty(element.name) && oneInfo[element.name]) {
+            if (Object.prototype.hasOwnProperty.call(oneInfo, element.name) && oneInfo[element.name]) {
               oneInfo[element.name] = req.protocol + '://' + req.headers.host + oneInfo[element.name]
             }
           })

@@ -10,7 +10,7 @@ export function applyValidator(name: string, valueToValidate: any, validator: Mo
         value = {}
       if (value.msg === undefined)
         value.msg = name + ' does not pass the test: ' + key
-      let undefinedString: string = name + ' has a type which is not supported for validation ' + key
+      const undefinedString: string = name + ' has a type which is not supported for validation ' + key
       switch (key) {
         case 'contains': {
           checkThrow(undefinedString, contains(valueToValidate, value), value.msg)
@@ -21,23 +21,23 @@ export function applyValidator(name: string, valueToValidate: any, validator: Mo
           break
         }
         case 'isAlpha': {
-          checkThrow(undefinedString, isAlpha(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isAlpha(valueToValidate), value.msg)
           break
         }
         case 'isAlphanumeric': {
-          checkThrow(undefinedString, isAlphanumeric(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isAlphanumeric(valueToValidate), value.msg)
           break
         }
         case 'isBoolean': {
-          checkThrow(undefinedString, isBoolean(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isBoolean(valueToValidate), value.msg)
           break
         }
         case 'isDataURI': {
-          checkThrow(undefinedString, isDataURI(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isDataURI(valueToValidate), value.msg)
           break
         }
         case 'isEmail': {
-          checkThrow(undefinedString, isEmail(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isEmail(valueToValidate), value.msg)
           break
         }
         case 'isEmpty': {
@@ -57,7 +57,7 @@ export function applyValidator(name: string, valueToValidate: any, validator: Mo
           break
         }
         case 'isJSON': {
-          checkThrow(undefinedString, isJSON(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isJSON(valueToValidate), value.msg)
           break
         }
         case 'isLength': {
@@ -65,7 +65,7 @@ export function applyValidator(name: string, valueToValidate: any, validator: Mo
           break
         }
         case 'isLowercase': {
-          checkThrow(undefinedString, isLowercase(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isLowercase(valueToValidate), value.msg)
           break
         }
         case 'isNumeric': {
@@ -73,7 +73,7 @@ export function applyValidator(name: string, valueToValidate: any, validator: Mo
           break
         }
         case 'isUppercase': {
-          checkThrow(undefinedString, isUppercase(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isUppercase(valueToValidate), value.msg)
           break
         }
         case 'isStrongPassword': {
@@ -92,12 +92,8 @@ export function applyValidator(name: string, valueToValidate: any, validator: Mo
           checkThrow(undefinedString, isBlacklisted(valueToValidate, value), value.msg)
           break
         }
-        case 'isBlacklisted': {
-          checkThrow(undefinedString, isBlacklisted(valueToValidate, value), value.msg)
-          break
-        }
         case 'isArray': {
-          checkThrow(undefinedString, isArray(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isArray(valueToValidate), value.msg)
           break
         }
         case 'isRegex': {
@@ -105,7 +101,7 @@ export function applyValidator(name: string, valueToValidate: any, validator: Mo
           break
         }
         case 'isDate': {
-          checkThrow(undefinedString, isDate(valueToValidate, value), value.msg)
+          checkThrow(undefinedString, isDate(valueToValidate), value.msg)
           break
         }
         default: {
@@ -140,10 +136,10 @@ function contains(value: any, option: any): boolean | undefined {
 }
 
 function equals(value: any, option: any): boolean | undefined {
-  if (isArray(value, undefined))
+  if (isArray(value))
     return _.isEqual(value, option.comparaison)
   else {
-    if (isArray(option.comparaison, undefined)) {
+    if (isArray(option.comparaison)) {
       return option.comparaison.some((element: any) => {
         return _.isEqual(value, element)
       });
@@ -153,21 +149,21 @@ function equals(value: any, option: any): boolean | undefined {
   }
 }
 
-function isAlpha(value: any, option: any): boolean | undefined {
+function isAlpha(value: any): boolean | undefined {
   if (typeof value === 'string') {
     return validator.isAlpha(value)
   }
   return undefined
 }
 
-function isAlphanumeric(value: any, option: any): boolean | undefined {
+function isAlphanumeric(value: any): boolean | undefined {
   if (typeof value === 'string') {
     return validator.isAlpha(value)
   }
   return undefined
 }
 
-function isBoolean(value: any, option: any): boolean | undefined {
+function isBoolean(value: any): boolean | undefined {
   if (typeof value === 'boolean')
     return true
   else if (typeof value === 'string') {
@@ -178,14 +174,14 @@ function isBoolean(value: any, option: any): boolean | undefined {
   return undefined
 }
 
-function isDataURI(value: any, option: any): boolean | undefined {
+function isDataURI(value: any): boolean | undefined {
   if (typeof value === 'string') {
     return validator.isDataURI(value)
   }
   return undefined
 }
 
-function isEmail(value: any, option: any): boolean | undefined {
+function isEmail(value: any): boolean | undefined {
   if (typeof value === 'string') {
     return validator.isEmail(value)
   }
@@ -223,7 +219,7 @@ function isFloat(value: any, option: any): boolean | undefined {
 
 function isIn(value: any, option: any): boolean | undefined {
   if (typeof value === 'string' || typeof value === 'object') {
-    if (isArray(option.values, undefined)) {
+    if (isArray(option.values)) {
       return option.values.some((element: any) => {
         return _.includes(value, element)
       });
@@ -231,7 +227,7 @@ function isIn(value: any, option: any): boolean | undefined {
       return _.includes(value, option.values)
     }
   }
-  if (isArray(value, undefined))
+  if (isArray(value))
     return _.includes(value, option.values)
   return undefined
 }
@@ -254,7 +250,7 @@ function isInt(value: any, option: any): boolean | undefined {
   return undefined
 }
 
-function isJSON(value: any, option: any): boolean | undefined {
+function isJSON(value: any): boolean | undefined {
   if (typeof value === 'string')
     return validator.isJSON(value)
   return undefined
@@ -278,7 +274,7 @@ function isLength(value: any, option: any): boolean | undefined {
   return undefined
 }
 
-function isLowercase(value: any, option: any): boolean | undefined {
+function isLowercase(value: any): boolean | undefined {
   if (typeof value === 'string')
     return validator.isLowercase(value)
   return undefined
@@ -302,7 +298,7 @@ function isNumeric(value: any, option: any): boolean | undefined {
   return undefined
 }
 
-function isUppercase(value: any, option: any): boolean | undefined {
+function isUppercase(value: any): boolean | undefined {
   if (typeof value === 'string')
     return validator.isUppercase(value)
   return undefined
@@ -350,19 +346,19 @@ function isBlacklisted(value: any, option: any): boolean | undefined {
   return undefined
 }
 
-function isArray(value: any, option: any): boolean | undefined {
+function isArray(value: any): boolean | undefined {
   return _.isArray(value)
 }
 
 function isRegex(value: any, option: any): boolean | undefined {
   if (typeof value === 'string') {
-    let reg = new RegExp(option.regex)
+    const reg = new RegExp(option.regex)
     return reg.test(value)
   }
   return undefined
 }
 
-function isDate(value: any, option: any): boolean | undefined {
+function isDate(value: any): boolean | undefined {
   if (_.isDate(value)) {
     return true
   } else if (typeof value === 'string') {

@@ -26,7 +26,7 @@ export class AutoBack {
   private defaultSaveDataInfo: any = defaultSaveDataInfo()
   private waitDestroyDb?: Promise<void>
   private _userTable?: UserTableClass<any> = undefined
-  get userTable() {
+  get userTable(): UserTableClass<any> | undefined  {
     return this._userTable
   }
   readonly fileInfo: filePathInfo
@@ -91,7 +91,7 @@ export class AutoBack {
       if (this.userTable && this.userTable.config.basicUser) {
         return this.userTable.sequelizeData.create(
           this.userTable.config.basicUser
-        ).then(data => {
+        ).then(() => {
           console.log('Succefully create basic user')
         }).catch(err => {
           if (err.errors !== undefined) {
@@ -131,7 +131,7 @@ export class AutoBack {
 
   private health() {
     this.server.get('/health', (req, res) => {
-      let time = Date.now() - this.startTime
+      const time = Date.now() - this.startTime
       res.status(StatusCodes.OK).json({
         uptime: {
           diff: time,
@@ -146,14 +146,14 @@ export class AutoBack {
   }
 
   private error404() {
-    this.server.use(function (req, res, next) {
+    this.server.use(function (req, res) {
       res.status(StatusCodes.NOT_FOUND).json({ message: "This route doesn't exist" })
     });
   }
 
   private defineUserTable(auth: userTableConfig): UserTableClass<any> | undefined {
     if (!this.userTable) {
-      let [tableSequelize, saveTableInfo] = this.defineStartTable("User", userTableDefine)
+      const [tableSequelize, saveTableInfo] = this.defineStartTable("User", userTableDefine)
 
       if (tableSequelize) {
         this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, '/auth')
@@ -172,7 +172,7 @@ export class AutoBack {
 
   private defineStartTable(nameTable: string, table: Table): [ModelCtor<any> | undefined, tempSaveTable] {
     let tableSequelize = undefined
-    let [tableSequelizeInfo, saveTableInfo] = this.createTableSequelizeInfo(table, nameTable, this.fileInfo)
+    const [tableSequelizeInfo, saveTableInfo] = this.createTableSequelizeInfo(table, nameTable, this.fileInfo)
 
     if (this.sequelize)
       tableSequelize = this.sequelize.define(nameTable, tableSequelizeInfo)
@@ -180,7 +180,7 @@ export class AutoBack {
   }
 
   defineTable(nameTable: string, table: Table, originRoutePath?: string): TableClass<any> | undefined {
-    let [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
+    const [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
     if (tableSequelize) {
       this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable)
@@ -198,7 +198,7 @@ export class AutoBack {
       unique: saveTableInfo.unique,
       get() {
         let value = this.getDataValue(key)
-        if (value !== undefined && value !== NaN && value !== null) {
+        if (value !== undefined && !isNaN(value) && value !== null) {
           if (type && type.DBToJson) {
             value = type.DBToJson(value)
           }
@@ -210,7 +210,7 @@ export class AutoBack {
         return value
       },
       set(value: any) {
-        if (value !== undefined && value !== NaN && value !== null) {
+        if (value !== undefined && !isNaN(value) && value !== null) {
           if (saveTableInfo.validate !== undefined) {
             // @ts-ignore
             applyValidator(key, value, saveTableInfo.validate)
@@ -236,7 +236,7 @@ export class AutoBack {
       unique: saveTableInfo.unique,
       get() {
         let value = this.getDataValue(key)
-        if (value !== undefined && value !== NaN && value !== null) {
+        if (value !== undefined && !isNaN(value) && value !== null) {
           if (type && type.DBToJson) {
             value = type.DBToJson(value)
           }
@@ -253,7 +253,7 @@ export class AutoBack {
         return value
       },
       set(value: any) {
-        if (value !== undefined && value !== NaN && value !== null) {
+        if (value !== undefined && !isNaN(value) && value !== null) {
           if (saveTableInfo.validate !== undefined) {
             // @ts-ignore
             applyValidator(key, value, saveTableInfo.validate)
@@ -265,10 +265,10 @@ export class AutoBack {
           if (type && type.JsonToDB)
             value = type.JsonToDB(value)
           if (type && fileInfo.folderPath) {
-            let oldValue = this.getDataValue(key)
+            const oldValue = this.getDataValue(key)
 
             if (oldValue) {
-              let pathOldValue = path.join(fileInfo.folderPath, nameTable, key, oldValue)
+              const pathOldValue = path.join(fileInfo.folderPath, nameTable, key, oldValue)
               removeFile(pathOldValue)
             }
           }
@@ -287,7 +287,7 @@ export class AutoBack {
       unique: saveTableInfo.unique,
       get() {
         let value = this.getDataValue(key)
-        if (value !== undefined && value !== NaN && value !== null) {
+        if (value !== undefined && !isNaN(value) && value !== null) {
           if (type && type.DBToJson) {
             value = type.DBToJson(value)
           }
@@ -299,7 +299,7 @@ export class AutoBack {
         return value
       },
       set(value: any) {
-        if (value !== undefined && value !== NaN && value !== null) {
+        if (value !== undefined && !isNaN(value) && value !== null) {
           if (saveTableInfo.validate !== undefined) {
             // @ts-ignore
             applyValidator(key, value, saveTableInfo.validate)
@@ -310,7 +310,7 @@ export class AutoBack {
           }
           if (type && type.JsonToDB)
             value = type.JsonToDB(value)
-          checkIfExistRowInTableLink(saveTableInfo.columnsLink, saveTableInfo.tableToLink.name, saveTableInfo.tableToLink.sequelizeData, value).then((data) => {
+          checkIfExistRowInTableLink(saveTableInfo.columnsLink, saveTableInfo.tableToLink.name, saveTableInfo.tableToLink.sequelizeData, value).then(() => {
               this.setDataValue(key, value)
             })
         } else {
@@ -321,9 +321,9 @@ export class AutoBack {
   }
 
   private createTableSequelizeInfo(table: Table, nameTable: string, fileInfo: filePathInfo): [any, tempSaveTable] {
-    let tableSequelizeInfo: any = {}
-    let saveTableInfo: saveTable = {}
-    let tempSaveTable: tempSaveTable = {
+    const tableSequelizeInfo: any = {}
+    const saveTableInfo: saveTable = {}
+    const tempSaveTable: tempSaveTable = {
       saveTable: {}
     }
 
@@ -332,7 +332,7 @@ export class AutoBack {
 
       if (table[key].type === ABDataType.TABLE_LINK) {
         type = this.getTableLinkDataType((table[key] as dataLinkTable))
-        let tabsInfo = (this.saveDataInfo(table[key], type) as realDataLinkTable)
+        const tabsInfo = (this.saveDataInfo(table[key], type) as realDataLinkTable)
         tabsInfo.tableToLink = this.tables[(table[key] as dataLinkTable).tableToLink.name]
         saveTableInfo[key] = tabsInfo
 
@@ -352,7 +352,7 @@ export class AutoBack {
   }
 
   private saveDataInfo(dataInfo: dataTableInfo, type: realDataTypeInfo): saveDataTableInfo {
-    let temp = _.merge({}, this.defaultSaveDataInfo, dataInfo)
+    const temp = _.merge({}, this.defaultSaveDataInfo, dataInfo)
     temp.type = type
 
     if (temp.validate)
@@ -368,12 +368,12 @@ export class AutoBack {
       throw Error('Wrong Table Link')
     }
 
-    let tableToLink = this.tables[link.tableToLink.name]
+    const tableToLink = this.tables[link.tableToLink.name]
 
     if (tableToLink) {
-      let columns = link.tableToLink.table[link.columnsLink]
+      const columns = link.tableToLink.table[link.columnsLink]
       if (columns) {
-        let toReturn = _.clone(columns.type)
+        const toReturn = _.clone(columns.type)
         toReturn.isTableLink = true
         return toReturn
       } else {
@@ -385,7 +385,7 @@ export class AutoBack {
   }
 
   private getDataType(data: ABDataType): realDataTypeInfo | undefined {
-    let type = this.DB.dataType[data]
+    const type = this.DB.dataType[data]
 
     if (data === ABDataType.TABLE_LINK)
       return undefined

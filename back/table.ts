@@ -20,7 +20,7 @@ export class TableClass<M extends Model> {
   table: saveTable
   private server: any
   routes: allRoutes = { originRoutePath: '/', get: [], post: [], put: [], delete: [] }
-  activeBasicRouting: boolean = false
+  activeBasicRouting = false
   private userTable?: UserTableClass<any> = undefined
   readonly upload?: multer.Multer
   readonly pathFolder?: string
@@ -36,12 +36,12 @@ export class TableClass<M extends Model> {
     else
       this.routes.originRoutePath = addPath('/', addPath(addPath(originServerPath, '/'), name))
 
-    let haveFile = Object.values(this.table).some((value: any) => { return value.type.autobackDataType === ABDataType.FILE })
+    const haveFile = Object.values(this.table).some((value: any) => { return value.type.autobackDataType === ABDataType.FILE })
 
     if (haveFile) {
-      let pathFolder = path.join(filePath, name)
+      const pathFolder = path.join(filePath, name)
 
-      let storage = multer.diskStorage({
+      const storage = multer.diskStorage({
         destination: function (req, file, cb) {
           if (!fs.existsSync(path.join(pathFolder, file.fieldname))){
             fs.mkdirSync(path.join(pathFolder, file.fieldname), { recursive: true });
@@ -138,22 +138,22 @@ export class TableClass<M extends Model> {
   addRoute(route: Route): RouteClass | undefined {
     switch (route.type) {
       case TypeRoute.POST: {
-        let routeClass = new RoutePostClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
+        const routeClass = new RoutePostClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
         this.routes.post.push(routeClass)
         return routeClass
       }
       case TypeRoute.GET: {
-        let routeClass = new RouteGetClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
+        const routeClass = new RouteGetClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
         this.routes.get.push(routeClass)
         return routeClass
       }
       case TypeRoute.PUT: {
-        let routeClass = new RoutePutClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
+        const routeClass = new RoutePutClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
         this.routes.put.push(routeClass)
         return routeClass
       }
       case TypeRoute.DELETE: {
-        let routeClass = new RouteDeleteClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
+        const routeClass = new RouteDeleteClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
         this.routes.delete.push(routeClass)
         return routeClass
       }

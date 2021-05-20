@@ -52,7 +52,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
         return res.status(404).json({ message: "Not found" })
       }
 
-      let toReturn: any = {}
+      const toReturn: any = {}
 
       if (route.columsAccept && req.body)
         req.body = this.list(req.body, route.columsAccept)
@@ -61,7 +61,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
         route.beforeSetValue(req, res, this)
       Object.entries(this.table).forEach(([key, value]) => {
         if (value.autoIncrement === false) {
-          toReturn[key] = this.setValue(req.body[key], value, false, data.get(key))
+          toReturn[key] = this.setValue(req.body[key], value, false)
         }
       })
 
@@ -76,7 +76,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
           route.beforeSend(req, res, this, toSend)
         if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
           this.files.forEach((element) => {
-            if (toSend.hasOwnProperty(element.name) && toSend[element.name]) {
+            if (Object.prototype.hasOwnProperty.call(toSend, element.name) && toSend[element.name]) {
               toSend[element.name] = req.protocol + '://' + req.headers.host + toSend[element.name]
             }
           })

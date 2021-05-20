@@ -2,7 +2,7 @@ import { TableClass } from './table';
 import { PostgresDb } from './db/postgres/postgres';
 import express from "express";
 import {StatusCodes} from 'http-status-codes';
-import { ModelCtor, Sequelize } from 'sequelize';
+import { ModelAttributes, ModelCtor, Sequelize } from 'sequelize';
 import { checkIfExistRowInTableLink, defaultSaveDataInfo, removeFile } from '../_helpers/fn';
 import * as _ from "lodash"
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
@@ -233,13 +233,15 @@ export class AutoBack {
       unique: saveTableInfo.unique,
       get() {
         let value = this.getDataValue(key)
-        if (value !== undefined && !isNaN(value) && value !== null) {
+        if (value !== undefined && value !== null) {
           if (type && type.DBToJson) {
             value = type.DBToJson(value)
           }
           if (type && fileInfo.virtualPath) {
+            const realPath = path.join(fileInfo.folderPath, nameTable, key, value)
             value = path.posix.join(fileInfo.virtualPath, nameTable, key, value)
-            if (!fs.existsSync(value))
+
+            if (!fs.existsSync(realPath))
               value = undefined
           }
           if (saveTableInfo && saveTableInfo.transformGet && tempSaveTable.table) {
@@ -249,7 +251,7 @@ export class AutoBack {
         return value
       },
       set(value: any) {
-        if (value !== undefined && !isNaN(value) && value !== null) {
+        if (value !== undefined && value !== null) {
           if (saveTableInfo.validate !== undefined) {
             applyValidator(key, value, saveTableInfo.validate)
           }
@@ -311,7 +313,7 @@ export class AutoBack {
     }
   }
 
-  private createTableSequelizeInfo(table: Table, nameTable: string, fileInfo: filePathInfo): [any, tempSaveTable] {
+  private createTableSequelizeInfo(table: Table, nameTable: string, fileInfo: filePathInfo): [ModelAttributes<any>, tempSaveTable] {
     const tableSequelizeInfo: any = {}
     const saveTableInfo: saveTable = {}
     const tempSaveTable: tempSaveTable = {

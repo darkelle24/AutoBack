@@ -1,12 +1,12 @@
-import { DataType } from './../../_helpers/models/models';
 import { UserTableClass } from './../special-table/userTable';
 import { access } from './../../_helpers/models/userTableModel';
-import { ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo, Route } from './../../_helpers/models/routeModels';
+import { acceptData, InfoPlace, ListFilter, ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo, Route } from './../../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize/types"
 import { autorizeFilterOperator, filterOperatorToSequelizeOperator, removeFile } from "../../_helpers/fn"
-import { routeTableInfo, saveDataTableInfo, saveTable } from "../../_helpers/models/models"
-import { acceptData, ListFilter, FilterInfo, InfoPlace } from "../../_helpers/models/routeModels"
 import multer from 'multer';
+import { routeTableInfo } from '../../_helpers/models/models';
+import { ABDataType } from '../../_helpers/models/modelsType';
+import { saveTable, saveDataTableInfo } from '../../_helpers/models/modelsTable';
 
 export class RouteBasicClass<M extends Model> {
 
@@ -255,7 +255,7 @@ export class RouteBasicClass<M extends Model> {
     let fields: any[] = []
 
     Object.entries(this.table).forEach(([key, value]) => {
-      if (value.type.autobackDataType === DataType.FILE) {
+      if (value.type.autobackDataType === ABDataType.FILE) {
         fields.push({name: key, maxCount: 1})
       }
     })
@@ -292,7 +292,7 @@ export class RouteBasicClass<M extends Model> {
     let fields: any[] = []
 
     Object.entries(this.table).forEach(([key, value]) => {
-      if (value.type.autobackDataType === DataType.FILE) {
+      if (value.type.autobackDataType === ABDataType.FILE) {
         fields.push({name: key, maxCount: 1})
       }
     })

@@ -2,16 +2,17 @@ import { UserTableClass } from './special-table/userTable';
 import { RoutePostClass } from './route/routePost';
 import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass, InfoPlace, basicRouteParams } from './../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize";
-import { DataType, saveTable } from "../_helpers/models/models";
 import { Route, TypeRoute } from "../_helpers/models/routeModels";
 import { activeAllFiltersForAllCols, addPath, getFileExtansion } from '../_helpers/fn';
 import { RouteGetClass } from './route/routeGet';
 import { RoutePutClass } from './route/routePut';
 import { RouteDeleteClass } from './route/routeDelete';
-import { access } from '_helpers/models/userTableModel';
+import { access } from '../_helpers/models/userTableModel';
 import multer from 'multer'
 import fs from 'fs'
 import path from 'path';
+import { saveTable } from '../_helpers/models/modelsTable';
+import { ABDataType } from '../_helpers/models/modelsType';
 
 export class TableClass<M extends Model> {
   readonly name: string
@@ -35,7 +36,7 @@ export class TableClass<M extends Model> {
     else
       this.routes.originRoutePath = addPath('/', addPath(addPath(originServerPath, '/'), name))
 
-    let haveFile = Object.values(this.table).some((value: any) => { return value.type.autobackDataType === DataType.FILE })
+    let haveFile = Object.values(this.table).some((value: any) => { return value.type.autobackDataType === ABDataType.FILE })
 
     if (haveFile) {
       let pathFolder = path.join(filePath, name)

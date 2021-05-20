@@ -1,7 +1,7 @@
 import { UserTableClass } from "back/special-table/userTable";
 import { Model, ModelCtor } from "sequelize";
 import { errorHandling } from "../../_helpers/fn";
-import { routeTableInfo, saveTable } from "../../_helpers/models/models";
+import { routeTableInfo } from "../../_helpers/models/models";
 import { RoutePut } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 

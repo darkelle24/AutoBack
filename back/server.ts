@@ -1,6 +1,7 @@
-import { DataType, DB } from "../_helpers/models/models"
-import { InfoPlace, TypeRoute } from "../_helpers/models/routeModels"
+import { ABDataType } from "../_helpers/models/modelsType"
+import { DB } from "../_helpers/models/modelsDb"
 import { AutoBack } from "./autoBack"
+import { TypeRoute, InfoPlace } from "../_helpers/models/routeModels"
 
 let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, {
   config: {
@@ -13,15 +14,15 @@ let autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", 
 }}, true)
 //let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
 let test = autoback.defineTable('lol', {
-  id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
-  bonjour: { type: DataType.BOOLEAN, defaultValue: true, allowNull: true },
-  comment: { type: DataType.TEXT, defaultValue: 'No comment', allowNull: true },
-  date: { type: DataType.DATE, allowNull: true },
-  array: { type: DataType.ARRAY, allowNull: true },
-  number: { type: DataType.BIGINT, allowNull: true },
-  file: { type: DataType.FILE, allowNull: true },
-  dab: { type: DataType.FILE, allowNull: true },
-  lol: {type: DataType.FILE, allowNull: true}
+  id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+  bonjour: { type: ABDataType.BOOLEAN, defaultValue: true, allowNull: true },
+  comment: { type: ABDataType.TEXT, defaultValue: 'No comment', allowNull: true },
+  date: { type: ABDataType.DATE, allowNull: true },
+  array: { type: ABDataType.ARRAY, allowNull: true },
+  number: { type: ABDataType.BIGINT, allowNull: true },
+  file: { type: ABDataType.FILE, allowNull: true },
+  dab: { type: ABDataType.FILE, allowNull: true },
+  lol: {type: ABDataType.FILE, allowNull: true}
 }, 'dab')
 
 if (test) {
@@ -33,10 +34,6 @@ if (test) {
       inverse: true,
       list: ["id"]
     },
-    /* returnColumns: {
-      list: ["id"],
-      inverse: true
-    }, */
     dataAs: {
       comment: {
         where: InfoPlace.QUERYPARAMS,
@@ -47,5 +44,13 @@ if (test) {
       role: ['User', 'Admin']
     }
   })
+
+  let dab = autoback.defineTable('lel', {
+    id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+    userId: { type: ABDataType.TABLE_LINK, tableToLink: autoback.userTable, columnsLink: 'id' },
+  }, 'test')
+  if (dab) {
+    dab.basicRouting()
+  }
 }
 autoback.start(8081)

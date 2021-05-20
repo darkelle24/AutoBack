@@ -1,14 +1,15 @@
 import { UserTableClass } from 'back/special-table/userTable';
-import { DataType, Table } from './models';
+import { ABDataType } from './modelsType';
+import { Table } from './modelsTable';
 import { basicRouteParams, Route, RouteBasic } from './routeModels';
 
 export let userTableDefine: Table = {
-  id: { type: DataType.BIGINT, primaryKey: true, autoIncrement: true },
-  username: { type: DataType.STRING, unique: true },
-  password: { type: DataType.STRING, validate: { isStrongPassword: { minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 }}, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
-  email: { type: DataType.STRING, validate: {isEmail: true} },
-  phone: { type: DataType.STRING, allowNull: true },
-  role: {type: DataType.STRING, validate: { equals: {comparaison: ["Admin", "SuperAdmin"]}}}
+  id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+  username: { type: ABDataType.STRING, unique: true },
+  password: { type: ABDataType.STRING, validate: { isStrongPassword: { minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 }}, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
+  email: { type: ABDataType.STRING, validate: {isEmail: true} },
+  phone: { type: ABDataType.STRING, allowNull: true },
+  role: {type: ABDataType.STRING, validate: { equals: {comparaison: ["Admin", "SuperAdmin"]}}}
 }
 
 export interface access {

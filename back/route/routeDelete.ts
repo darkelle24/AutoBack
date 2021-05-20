@@ -1,10 +1,10 @@
 import { UserTableClass } from "back/special-table/userTable";
 import { Model, ModelCtor } from "sequelize";
 import { errorHandling, removeFile } from "../../_helpers/fn";
-import { routeTableInfo, saveTable } from "../../_helpers/models/models";
 import { RouteDelete } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 import path from 'path';
+import { routeTableInfo } from "../../_helpers/models/models";
 
 export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RouteDelete

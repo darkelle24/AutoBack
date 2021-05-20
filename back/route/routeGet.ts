@@ -1,7 +1,7 @@
 import { RealFilterInfo } from './../../_helpers/models/routeModels';
 import { StatusCodes } from "http-status-codes";
 import { Model, ModelCtor } from "sequelize";
-import { routeTableInfo, saveTable } from "../../_helpers/models/models";
+import { routeTableInfo } from "../../_helpers/models/models";
 import { InfoPlace, RouteGet } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 import { UserTableClass } from 'back/special-table/userTable';

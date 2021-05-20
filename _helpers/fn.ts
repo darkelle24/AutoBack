@@ -1,10 +1,11 @@
-import { DataTypes, Op } from "sequelize"
-import { DataType, dataType, dataTypeInfo, realDataType, realDataTypeInfo, saveDataTableInfo, saveTable } from "./models/models"
-import { FilterInfoType, FilterOperators, ListFilter, RealFilterInfo } from "./models/routeModels"
+import { DataType, DataTypes, ModelCtor, Op } from "sequelize"
+import { FilterInfoType, FilterOperators, ListFilter } from "./models/routeModels"
 import * as _ from "lodash"
 import validator from "validator"
 import path from "path"
 import fs from 'fs'
+import { ABDataType, dataType, realDataType, realDataTypeInfo } from "./models/modelsType"
+import { saveTable } from "./models/modelsTable"
 
 export function defaultJsonToDB(data: any): any {
   return data
@@ -150,7 +151,7 @@ export function applyDefaultValueOnDataType(basic: dataType): realDataType {
   let toReturn: realDataType = {}
 
   Object.entries(basic).forEach(([key, value]) => {
-    if ((<any>Object).values(DataType).includes(key)) {
+    if ((<any>Object).values(ABDataType).includes(key)) {
       let temp: any = _.merge({}, value)
 
       temp.name = key
@@ -169,6 +170,7 @@ export function applyDefaultValueOnDataType(basic: dataType): realDataType {
       }
       if (!value.validate)
         temp.validate = {}
+      temp.isTableLInk = false
       toReturn[key] = temp
     }
   })
@@ -337,12 +339,26 @@ export function errorHandling(err: any, res: any): void {
 }
 
 export function removeFile(path: string): void {
-  if (fs.existsSync(path)) {
+  fs.access(path, (err) => {
+    if (err) {
+      return
+    }
     fs.unlink(path, (err) => {
       if (err) {
         console.error(err)
         return
       }
     })
+  })
+}
+
+export async function checkIfExistRowInTableLink(columnsName: string, tableName: string, sequelizeTable: ModelCtor<any>, value: any): Promise<void> {
+  let filter: any = {}
+  filter.where = {}
+  filter.where[columnsName] = value
+
+  let result = await sequelizeTable.findOne(filter)
+  if (!result) {
+    throw new Error('Not found row with value ' + value + ' in the table ' + tableName)
   }
 }

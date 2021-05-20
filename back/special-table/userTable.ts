@@ -2,12 +2,12 @@ import { ListFilter, Route } from './../../_helpers/models/routeModels';
 import { basicRole, userTableConfig, realUserTableConfig, access } from './../../_helpers/models/userTableModel';
 import { Model, ModelCtor } from 'sequelize';
 import { activeAllFiltersForAllCols } from '../../_helpers/fn';
-import { saveTable } from '../../_helpers/models/models';
 import { basicRouteParams, InfoPlace, TypeRoute } from '../../_helpers/models/routeModels';
 import { TableClass } from '../table';
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import _ from 'lodash';
+import { saveTable } from '../../_helpers/models/modelsTable';
 
 
 export class UserTableClass<M extends Model> extends TableClass<M> {

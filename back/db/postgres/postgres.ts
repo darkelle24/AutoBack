@@ -1,7 +1,7 @@
-import { realDataType } from './../../../_helpers/models/models';
-import { DataTypes } from "sequelize";
-import { addType, applyDefaultValueOnDataType, basicDataType } from "../../../_helpers/fn";
-import { dataType, DBInterface } from "../../../_helpers/models/models";
+import { applyDefaultValueOnDataType, basicDataType, addType } from "../../../_helpers/fn"
+import { realDataType } from "../../../_helpers/models/modelsType"
+import { DBInterface } from "../../../_helpers/models/modelsDb"
+
 
 export class PostgresDb implements DBInterface {
   readonly dbName: string = "Postgres"

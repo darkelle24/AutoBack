@@ -1,4 +1,3 @@
-import { saveTable } from './models';
 import { RoutePostClass } from './../../back/route/routePost';
 import { RouteGetClass } from './../../back/route/routeGet';
 import { RouteDeleteClass } from '../../back/route/routeDelete';

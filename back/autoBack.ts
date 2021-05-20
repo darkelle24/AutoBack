@@ -1,22 +1,20 @@
-import { filePathInfo, tempSaveTable } from './../_helpers/models/models';
 import { TableClass } from './table';
 import { PostgresDb } from './db/postgres/postgres';
-import { DB, Table, DBInterface, DataType, dataTypeInfo, saveDataTableInfo, dataTableInfo, saveTable, allTables, realDataTypeInfo, realDataType } from '../_helpers/models/models';
 import express from "express";
-import {
-	ReasonPhrases,
-	StatusCodes,
-} from 'http-status-codes';
+import {StatusCodes} from 'http-status-codes';
 import { ModelCtor, Sequelize } from 'sequelize';
-import { addPath, defaultDBToJson, defaultJsonToDB, defaultSaveDataInfo, removeFile } from '../_helpers/fn';
+import { checkIfExistRowInTableLink, defaultSaveDataInfo, removeFile } from '../_helpers/fn';
 import * as _ from "lodash"
-import { InfoPlace, TypeRoute } from '../_helpers/models/routeModels';
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
 import { applyValidator } from '../_helpers/validator';
 import cors from 'cors'
 import path from 'path';
 import fs from 'fs'
+import { filePathInfo } from '../_helpers/models/models';
+import { ABDataType, realDataType, realDataTypeInfo } from '../_helpers/models/modelsType';
+import { DBInterface, DB } from '../_helpers/models/modelsDb';
+import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable } from '../_helpers/models/modelsTable';
 
 export class AutoBack {
 
@@ -27,7 +25,10 @@ export class AutoBack {
   tables: allTables = {}
   private defaultSaveDataInfo: any = defaultSaveDataInfo()
   private waitDestroyDb?: Promise<void>
-  private userTable?: UserTableClass<any> = undefined
+  private _userTable?: UserTableClass<any> = undefined
+  get userTable() {
+    return this._userTable
+  }
   readonly fileInfo: filePathInfo
   readonly serverPath: string
 
@@ -69,7 +70,7 @@ export class AutoBack {
         auth = {}
       if (!auth.config)
         auth.config= {}
-      this.userTable = this.defineUserTable(auth.config)
+      this._userTable = this.defineUserTable(auth.config)
       if (this.userTable)
         this.userTable.basicRouting(auth.getRoute, auth.postRoute, auth.putRoute, auth.deleteRoute)
     }
@@ -160,7 +161,7 @@ export class AutoBack {
       }
 
       if (this.tables["User"]) {
-        this.userTable = (this.tables["User"] as UserTableClass<any>)
+        this._userTable = (this.tables["User"] as UserTableClass<any>)
         return this.userTable
       }
       return this.userTable
@@ -188,6 +189,137 @@ export class AutoBack {
     return this.tables[nameTable]
   }
 
+  private sequelizeClassicType(tempSaveTable: tempSaveTable, tableSequelizeInfo: any, key: string, type: realDataTypeInfo, saveTableInfo: saveDataTableInfo) {
+    tableSequelizeInfo[key] = {
+      type: type.sequelizeType,
+      primaryKey: saveTableInfo.primaryKey,
+      autoIncrement: saveTableInfo.autoIncrement,
+      allowNull: saveTableInfo.allowNull,
+      unique: saveTableInfo.unique,
+      get() {
+        let value = this.getDataValue(key)
+        if (value !== undefined && value !== NaN && value !== null) {
+          if (type && type.DBToJson) {
+            value = type.DBToJson(value)
+          }
+          if (saveTableInfo && saveTableInfo.transformGet) {
+            // @ts-ignore
+            value = saveTableInfo.transformGet(value, tempSaveTable.table)
+          }
+        }
+        return value
+      },
+      set(value: any) {
+        if (value !== undefined && value !== NaN && value !== null) {
+          if (saveTableInfo.validate !== undefined) {
+            // @ts-ignore
+            applyValidator(key, value, saveTableInfo.validate)
+          }
+          if (saveTableInfo && saveTableInfo.transformSet) {
+            // @ts-ignore
+            value = saveTableInfo.transformSet(value, tempSaveTable.table)
+          }
+          if (type && type.JsonToDB)
+            value = type.JsonToDB(value)
+        }
+        this.setDataValue(key, value)
+      }
+    }
+  }
+
+  private sequelizeFileType(tempSaveTable: tempSaveTable, tableSequelizeInfo: any, key: string, type: realDataTypeInfo, saveTableInfo: saveDataTableInfo, nameTable: string, fileInfo: filePathInfo) {
+    tableSequelizeInfo[key] = {
+      type: type.sequelizeType,
+      primaryKey: saveTableInfo.primaryKey,
+      autoIncrement: saveTableInfo.autoIncrement,
+      allowNull: saveTableInfo.allowNull,
+      unique: saveTableInfo.unique,
+      get() {
+        let value = this.getDataValue(key)
+        if (value !== undefined && value !== NaN && value !== null) {
+          if (type && type.DBToJson) {
+            value = type.DBToJson(value)
+          }
+          if (type && fileInfo.virtualPath) {
+            value = path.posix.join(fileInfo.virtualPath, nameTable, key, value)
+            if (!fs.existsSync(value))
+              value = undefined
+          }
+          if (saveTableInfo && saveTableInfo.transformGet) {
+            // @ts-ignore
+            value = saveTableInfo.transformGet(value, tempSaveTable.table)
+          }
+        }
+        return value
+      },
+      set(value: any) {
+        if (value !== undefined && value !== NaN && value !== null) {
+          if (saveTableInfo.validate !== undefined) {
+            // @ts-ignore
+            applyValidator(key, value, saveTableInfo.validate)
+          }
+          if (saveTableInfo && saveTableInfo.transformSet) {
+            // @ts-ignore
+            value = saveTableInfo.transformSet(value, tempSaveTable.table)
+          }
+          if (type && type.JsonToDB)
+            value = type.JsonToDB(value)
+          if (type && fileInfo.folderPath) {
+            let oldValue = this.getDataValue(key)
+
+            if (oldValue) {
+              let pathOldValue = path.join(fileInfo.folderPath, nameTable, key, oldValue)
+              removeFile(pathOldValue)
+            }
+          }
+        }
+        this.setDataValue(key, value)
+      }
+    }
+  }
+
+  private sequelizeTableLinkType(tempSaveTable: tempSaveTable, tableSequelizeInfo: any, key: string, type: realDataTypeInfo, saveTableInfo: realDataLinkTable) {
+    tableSequelizeInfo[key] = {
+      type: type.sequelizeType,
+      primaryKey: saveTableInfo.primaryKey,
+      autoIncrement: saveTableInfo.autoIncrement,
+      allowNull: saveTableInfo.allowNull,
+      unique: saveTableInfo.unique,
+      get() {
+        let value = this.getDataValue(key)
+        if (value !== undefined && value !== NaN && value !== null) {
+          if (type && type.DBToJson) {
+            value = type.DBToJson(value)
+          }
+          if (saveTableInfo && saveTableInfo.transformGet) {
+            // @ts-ignore
+            value = saveTableInfo.transformGet(value, tempSaveTable.table)
+          }
+        }
+        return value
+      },
+      set(value: any) {
+        if (value !== undefined && value !== NaN && value !== null) {
+          if (saveTableInfo.validate !== undefined) {
+            // @ts-ignore
+            applyValidator(key, value, saveTableInfo.validate)
+          }
+          if (saveTableInfo && saveTableInfo.transformSet) {
+            // @ts-ignore
+            value = saveTableInfo.transformSet(value, tempSaveTable.table)
+          }
+          if (type && type.JsonToDB)
+            value = type.JsonToDB(value)
+          checkIfExistRowInTableLink(saveTableInfo.columnsLink, saveTableInfo.tableToLink.name, saveTableInfo.tableToLink.sequelizeData, value).then((data) => {
+              this.setDataValue(key, value)
+            })
+        } else {
+          this.setDataValue(key, value)
+        }
+      }
+    }
+  }
+
   private createTableSequelizeInfo(table: Table, nameTable: string, fileInfo: filePathInfo): [any, tempSaveTable] {
     let tableSequelizeInfo: any = {}
     let saveTableInfo: saveTable = {}
@@ -197,56 +329,21 @@ export class AutoBack {
 
     Object.keys(table).forEach((key) => {
       let type = this.getDataType(table[key].type)
-      if (type) {
+
+      if (table[key].type === ABDataType.TABLE_LINK) {
+        type = this.getTableLinkDataType((table[key] as dataLinkTable))
+        let tabsInfo = (this.saveDataInfo(table[key], type) as realDataLinkTable)
+        tabsInfo.tableToLink = this.tables[(table[key] as dataLinkTable).tableToLink.name]
+        saveTableInfo[key] = tabsInfo
+
+        this.sequelizeTableLinkType(tempSaveTable, tableSequelizeInfo, key, type, (saveTableInfo[key] as realDataLinkTable))
+      } else if (type) {
         saveTableInfo[key] = this.saveDataInfo(table[key], type)
 
-        tableSequelizeInfo[key] = {
-          type: type.sequelizeType,
-          primaryKey: saveTableInfo[key].primaryKey,
-          autoIncrement: saveTableInfo[key].autoIncrement,
-          allowNull: saveTableInfo[key].allowNull,
-          unique: saveTableInfo[key].unique,
-          get() {
-            let value = this.getDataValue(key)
-            if (value !== undefined && value !== NaN && value !== null) {
-              if (type && type.DBToJson) {
-                value = type.DBToJson(value)
-              }
-              if (type && type.autobackDataType === DataType.FILE && fileInfo.virtualPath) {
-                value = path.posix.join(fileInfo.virtualPath, nameTable, key, value)
-                if (!fs.existsSync(value))
-                  value = undefined
-              }
-              if (saveTableInfo[key] && saveTableInfo[key].transformGet) {
-                // @ts-ignore
-                value = saveTableInfo[key].transformGet(value, tempSaveTable.table)
-              }
-            }
-            return value
-          },
-          set(value: any) {
-            if (value !== undefined && value !== NaN && value !== null) {
-              if (saveTableInfo[key].validate !== undefined) {
-                // @ts-ignore
-                applyValidator(key, value, saveTableInfo[key].validate)
-              }
-              if (saveTableInfo[key] && saveTableInfo[key].transformSet) {
-                // @ts-ignore
-                value = saveTableInfo[key].transformSet(value, tempSaveTable.table)
-              }
-              if (type && type.JsonToDB)
-                value = type.JsonToDB(value)
-              if (type && type.autobackDataType === DataType.FILE && fileInfo.folderPath) {
-                let oldValue = this.getDataValue(key)
-
-                if (oldValue) {
-                  let pathOldValue = path.join(fileInfo.folderPath, nameTable, key, oldValue)
-                  removeFile(pathOldValue)
-                }
-              }
-            }
-            this.setDataValue(key, value)
-          }
+        if (type.autobackDataType === ABDataType.FILE) {
+          this.sequelizeFileType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key], nameTable, fileInfo)
+        } else {
+          this.sequelizeClassicType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key])
         }
       }
     });
@@ -266,9 +363,32 @@ export class AutoBack {
     return temp
   }
 
-  private getDataType(data: DataType): realDataTypeInfo | undefined {
+  private getTableLinkDataType(link: dataLinkTable): realDataTypeInfo {
+    if (!link.tableToLink) {
+      throw Error('Wrong Table Link')
+    }
+
+    let tableToLink = this.tables[link.tableToLink.name]
+
+    if (tableToLink) {
+      let columns = link.tableToLink.table[link.columnsLink]
+      if (columns) {
+        let toReturn = _.clone(columns.type)
+        toReturn.isTableLink = true
+        return toReturn
+      } else {
+        throw Error('The table' + link.tableToLink.name + ' does not have a columns with the name ' + link.columnsLink + '.')
+      }
+    } else {
+      throw Error(link.tableToLink.name + ' is not avaible in this autoback class.')
+    }
+  }
+
+  private getDataType(data: ABDataType): realDataTypeInfo | undefined {
     let type = this.DB.dataType[data]
 
+    if (data === ABDataType.TABLE_LINK)
+      return undefined
     if (type === undefined) {
       console.error(data + " type in " + this.DB.dbName + " is not supported")
     }

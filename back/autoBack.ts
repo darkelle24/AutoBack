@@ -3,7 +3,7 @@ import { PostgresDb } from './db/postgres/postgres';
 import express from "express";
 import {StatusCodes} from 'http-status-codes';
 import { ModelAttributes, ModelCtor, Sequelize } from 'sequelize';
-import { checkHasTableLink, getRowInTableLink, defaultSaveDataInfo, removeFile } from '../_helpers/fn';
+import { checkHasTableLink, getRowInTableLink, defaultSaveDataInfo, removeFile, addPath } from '../_helpers/fn';
 import * as _ from "lodash"
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
@@ -38,11 +38,16 @@ export class AutoBack {
     this.server.use(express.json())
     this.server.use(cors());
 
-    if (!fileInfo)
+    if (!fileInfo) {
       fileInfo = {
         folderPath: 'uploads',
-        virtualPath: '/uploads'
+        virtualPath: 'uploads'
       }
+    }
+    if (fileInfo && !fileInfo.virtualPath) {
+      fileInfo.virtualPath = 'uploads'
+    }
+
     this.fileInfo = fileInfo
     this.serverPath = serverPath
 
@@ -50,10 +55,17 @@ export class AutoBack {
       fs.mkdirSync(this.fileInfo.folderPath);
     }
 
-    if (!fileInfo.virtualPath)
-      this.server.use(express.static(this.fileInfo.folderPath));
-    else
-      this.server.use(fileInfo.virtualPath, express.static(this.fileInfo.folderPath));
+    if (fileInfo.virtualPath) {
+      fileInfo.virtualPath = addPath('/', fileInfo.virtualPath)
+      this.server.use(fileInfo.virtualPath, (req, res) => {
+        const splitedUrl = req.originalUrl.split('/')
+        const path = addPath(this.fileInfo.folderPath, splitedUrl.slice(2).join('/'))
+        if (fs.existsSync(path))
+          res.download(path)
+        else
+          res.status(404).json({message: "File not found"})
+      });
+    }
 
     if (db === DB.POSTGRES) {
       this.DB = new PostgresDb();

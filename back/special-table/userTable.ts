@@ -150,6 +150,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         } else {
           res.status(401).json({ message: 'Username or password incorrect' });
           res.statusMessage = 'Username or password incorrect'
+          return
         }
       }
     })

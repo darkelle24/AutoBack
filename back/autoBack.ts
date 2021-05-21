@@ -102,11 +102,9 @@ export class AutoBack {
         return [formatDate(time), index, 'access.log'].join('-');
       };
 
-      morgan.token('auth', function (req: any, res: any) {
+      morgan.token('auth', function (req: any) {
         if (!req.user) {
-          if (res.statusCode >= 400)
-            return 'Error'
-          return 'Is Not authenticated'
+          return 'Is not authenticated'
         } else {
           return "id: " + req.user.id + " username: " + req.user.username + " role: " + req.user.role
         }

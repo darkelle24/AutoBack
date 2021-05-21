@@ -26,6 +26,11 @@ export class TableClass<M extends Model> {
   readonly upload?: multer.Multer
   readonly pathFolder?: string
 
+  private _listLinkColumns?: string[] = undefined
+  get listLinkColumns(): string[] | undefined  {
+    return this._listLinkColumns
+  }
+
   constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
     this.table = table
@@ -65,6 +70,7 @@ export class TableClass<M extends Model> {
       });
       this.pathFolder = pathFolder
     }
+    this.getLinkColumns()
   }
 
   basicRouting(getRoute: basicRouteParams = {}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
@@ -139,22 +145,22 @@ export class TableClass<M extends Model> {
   addRoute(route: Route): RouteClass | undefined {
     switch (route.type) {
       case TypeRoute.POST: {
-        const routeClass = new RoutePostClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
+        const routeClass = new RoutePostClass({ table: this.table, listLinkData: this._listLinkColumns || [], uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
         this.routes.post.push(routeClass)
         return routeClass
       }
       case TypeRoute.GET: {
-        const routeClass = new RouteGetClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
+        const routeClass = new RouteGetClass({ table: this.table, listLinkData: this._listLinkColumns || [], uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
         this.routes.get.push(routeClass)
         return routeClass
       }
       case TypeRoute.PUT: {
-        const routeClass = new RoutePutClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
+        const routeClass = new RoutePutClass({ table: this.table, listLinkData: this._listLinkColumns || [], uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
         this.routes.put.push(routeClass)
         return routeClass
       }
       case TypeRoute.DELETE: {
-        const routeClass = new RouteDeleteClass({ table: this.table, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
+        const routeClass = new RouteDeleteClass({ table: this.table, listLinkData: this._listLinkColumns || [], uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
         this.routes.delete.push(routeClass)
         return routeClass
       }
@@ -162,5 +168,15 @@ export class TableClass<M extends Model> {
         return undefined
       }
     }
+  }
+
+  private getLinkColumns(): void {
+    this._listLinkColumns = []
+
+    Object.entries(this.table).forEach(([key, value]) => {
+      if (value.type.isTableLink && this._listLinkColumns) {
+        this._listLinkColumns.push(key)
+      }
+    });
   }
 }

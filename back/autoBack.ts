@@ -3,7 +3,7 @@ import { PostgresDb } from './db/postgres/postgres';
 import express from "express";
 import {StatusCodes} from 'http-status-codes';
 import { ModelAttributes, ModelCtor, Sequelize } from 'sequelize';
-import { checkHasTableLink, checkIfExistRowInTableLink, defaultSaveDataInfo, removeFile } from '../_helpers/fn';
+import { checkHasTableLink, getRowInTableLink, defaultSaveDataInfo, removeFile } from '../_helpers/fn';
 import * as _ from "lodash"
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
@@ -177,7 +177,7 @@ export class AutoBack {
         for (const element of option.fields) {
           if (myTable[element] && myTable[element].type.isTableLink) {
             const dataLinkTable = (myTable[element] as realDataLinkTable)
-            const result = await checkIfExistRowInTableLink(dataLinkTable.columnsLink, dataLinkTable.tableToLink.sequelizeData, instance.dataValues[element])
+            const result = await getRowInTableLink(dataLinkTable.columnsLink, dataLinkTable.tableToLink.sequelizeData, instance.dataValues[element])
             if (!result) {
               throw new Error('Not found row with value ' + instance.dataValues[element] + ' in the table ' + dataLinkTable.tableToLink.name + ' in the column ' + dataLinkTable.columnsLink)
             }
@@ -218,7 +218,7 @@ export class AutoBack {
       unique: saveTableInfo.unique,
       get() {
         let value = this.getDataValue(key)
-        if (value !== undefined && !isNaN(value) && value !== null) {
+        if (value !== undefined && value !== null) {
           if (type && type.DBToJson) {
             value = type.DBToJson(value)
           }
@@ -229,7 +229,7 @@ export class AutoBack {
         return value
       },
       set(value: any) {
-        if (value !== undefined && !isNaN(value) && value !== null) {
+        if (value !== undefined && value !== null) {
           if (saveTableInfo.validate !== undefined) {
             applyValidator(key, value, saveTableInfo.validate)
           }

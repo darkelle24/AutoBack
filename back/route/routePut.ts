@@ -82,7 +82,10 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
             }
           })
         }
-        return res.status(200).json(toSend)
+
+        this.getLinkData(toSend)
+        .then(() => res.status(200).json(toSend))
+        .catch(err => errorHandling(err, res))
 
       }).catch(err => {
         return errorHandling(err, res)

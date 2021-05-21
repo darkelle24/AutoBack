@@ -60,7 +60,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     if (route.offset)
       filter['offset'] = this.getValueFromRequest(req, (route.offset as RealFilterInfo))
 
-    return this.sequelizeData.findAll(filter).then(datas => {
+    return this.sequelizeData.findAll(filter).then(async datas => {
       const toSend: any[] = []
 
       datas.every((value, index) => {
@@ -81,9 +81,19 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
           })
         })
       }
-      return res.status(StatusCodes.OK).json(toSend)
+      return this.getAllLinkData(toSend)
+        .then(() => res.status(StatusCodes.OK).json(toSend))
+        .catch(err => errorHandling(err, res))
     }).catch(err => {
       return errorHandling(err, res)
     })
+  }
+
+  private async getAllLinkData(toSend: any[]): Promise<unknown> {
+    if (this.listLinkData.length !== 0) {
+      return Promise.all(toSend.map(async (oneInfo) => {
+        return await this.getLinkData(oneInfo)
+      }));
+    }
   }
 }

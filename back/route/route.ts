@@ -2,11 +2,11 @@ import { UserTableClass } from './../special-table/userTable';
 import { access } from './../../_helpers/models/userTableModel';
 import { acceptData, InfoPlace, ListFilter, ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo, Route } from './../../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize/types"
-import { autorizeFilterOperator, filterOperatorToSequelizeOperator, removeFile } from "../../_helpers/fn"
+import { autorizeFilterOperator, filterOperatorToSequelizeOperator, getRowInTableLink, removeFile } from "../../_helpers/fn"
 import multer from 'multer';
 import { routeTableInfo } from '../../_helpers/models/models';
 import { ABDataType } from '../../_helpers/models/modelsType';
-import { saveTable, saveDataTableInfo } from '../../_helpers/models/modelsTable';
+import { saveTable, saveDataTableInfo, realDataLinkTable } from '../../_helpers/models/modelsTable';
 import express, { RequestHandler } from 'express';
 
 export class RouteBasicClass<M extends Model> {
@@ -21,6 +21,7 @@ export class RouteBasicClass<M extends Model> {
   protected uploads?: multer.Multer
   protected files: any[] = []
   readonly pathFolder?: string
+  readonly listLinkData: string[]
 
   constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: express.Application, path: string, userTable?: UserTableClass<any>) {
     this.sequelizeData = sequelizeData
@@ -30,6 +31,7 @@ export class RouteBasicClass<M extends Model> {
     this.userTable = userTable
     this.uploads = table.uploads
     this.pathFolder = table.pathFolder
+    this.listLinkData = table.listLinkData
     if (this.uploads)
       this.files = this.fileList()
   }
@@ -306,5 +308,23 @@ export class RouteBasicClass<M extends Model> {
     Object.entries(req.files).forEach(([, value]: [string, any]) => {
       removeFile(value[0].path)
     })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  public async getLinkData(data: any): Promise<void> {
+    if (this.listLinkData.length !== 0) {
+      for (const element of this.listLinkData) {
+        const tableLink = (this.table[element] as realDataLinkTable)
+        const result = await getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[element])
+        if (!result) {
+          throw new Error('Not found row with value ' + data[element] + ' in the table ' + tableLink.tableToLink.name + ' in the column ' + tableLink.columnsLink)
+        }
+        if (tableLink.rename) {
+          data[tableLink.rename] = result.get()
+          delete data[element]
+        } else
+          data[element] = result.get()
+      }
+    }
   }
 }

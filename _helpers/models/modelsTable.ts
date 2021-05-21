@@ -9,7 +9,8 @@ export interface Table {
 export type dataLinkTable = {
   tableToLink: TableClass<any>,
   columnsLink: string,
-  type: ABDataType.TABLE_LINK
+  type: ABDataType.TABLE_LINK,
+  rename?: string
 } & dataTableInfo
 
 export interface dataTableInfo {
@@ -44,7 +45,8 @@ export interface tempSaveTable {
 
 export type realDataLinkTable = {
   tableToLink: TableClass<any>,
-  columnsLink: string
+  columnsLink: string,
+  rename?: string
 } & saveDataTableInfo
 
 export interface saveDataTableInfo {

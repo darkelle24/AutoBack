@@ -355,12 +355,12 @@ export function removeFile(path: string): void {
   })
 }
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export async function checkIfExistRowInTableLink(columnsName: string, sequelizeTable: ModelCtor<any>, value: any): Promise<any | undefined> {
+export async function getRowInTableLink(columnsNameOfLinkTable: string, sequelizeOfLinkTable: ModelCtor<any>, value: any): Promise<any | undefined> {
   const filter: any = {}
   filter.where = {}
-  filter.where[columnsName] = value
+  filter.where[columnsNameOfLinkTable] = value
 
-  const result = await sequelizeTable.findOne(filter)
+  const result = await sequelizeOfLinkTable.findOne(filter)
   return result
 }
 

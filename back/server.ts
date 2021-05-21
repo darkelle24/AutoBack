@@ -47,7 +47,7 @@ if (test) {
 
   const dab = autoback.defineTable('lel', {
     id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
-    userId: { type: ABDataType.TABLE_LINK, tableToLink: autoback.userTable, columnsLink: 'id' },
+    userId: { type: ABDataType.TABLE_LINK, tableToLink: autoback.userTable, columnsLink: 'id', rename: 'user' },
   }, 'test')
   if (dab) {
     dab.basicRouting()

@@ -3,6 +3,7 @@ import { saveTable } from "./modelsTable"
 
 export interface routeTableInfo {
   table: saveTable,
+  listLinkData: string[]
   uploads?: multer.Multer,
   pathFolder?: string
 }

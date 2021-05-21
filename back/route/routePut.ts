@@ -41,6 +41,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     } catch (err) {
       console.error(err)
       res.status(500).send(err);
+      res.statusMessage = err.toString()
     }
     if (res.statusCode !== 200 && req.files) {
         this.ereaseAllNewFiles(req)
@@ -50,7 +51,9 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
   private gestPutRoute(req: any, res: any, route: RoutePut): any {
     return this.sequelizeData.findOne(this.getFilter(req, this.filterlist)).then(data => {
       if (!data) {
-        return res.status(404).json({ message: "Not found" })
+        res.status(404).json({ message: "Not found" })
+        res.statusMessage = "Not found"
+        return res
       }
 
       const toReturn: any = {}

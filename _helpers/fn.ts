@@ -336,9 +336,13 @@ export function getFileExtansion(filename: string): string | undefined {
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function errorHandling(err: any, res: express.Response): express.Response {
   if (err.errors !== undefined) {
-    return res.status(400).json({ message: err.name + ': ' + err.errors[0].message })
+    res.status(400).json({ message: err.name + ': ' + err.errors[0].message })
+    res.statusMessage = err.name + ': ' + err.errors[0].message
+    return res
   }
-  return res.status(400).json({ message: err.toString() })
+  res.status(400).json({ message: err.toString() })
+  res.statusMessage = err.toString()
+  return res
 }
 
 export function removeFile(path: string): void {
@@ -369,4 +373,21 @@ export function checkHasTableLink(table: saveTable): boolean {
     if (values.type.isTableLink)
       return true
   })
+}
+
+
+export function formatDate(d: Date): string {
+  let month = '' + (d.getMonth() + 1).toString()
+  let day = '' + d.getDate().toString()
+  const year = d.getFullYear().toString()
+  let hour = d.getHours().toString()
+
+  if (month.length < 2)
+    month = '0' + month;
+  if (day.length < 2)
+    day = '0' + day;
+  if (hour.length < 2)
+    hour = '0' + hour;
+
+  return [year, month, day, hour].join('-');
 }

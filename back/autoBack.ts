@@ -3,7 +3,7 @@ import { PostgresDb } from './db/postgres/postgres';
 import express from "express";
 import {StatusCodes} from 'http-status-codes';
 import { ModelAttributes, ModelCtor, Sequelize } from 'sequelize';
-import { checkHasTableLink, getRowInTableLink, defaultSaveDataInfo, removeFile, addPath } from '../_helpers/fn';
+import { checkHasTableLink, getRowInTableLink, defaultSaveDataInfo, removeFile, addPath, formatDate } from '../_helpers/fn';
 import * as _ from "lodash"
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
@@ -16,6 +16,8 @@ import { ABDataType, realDataType, realDataTypeInfo } from '../_helpers/models/m
 import { DBInterface, DB } from '../_helpers/models/modelsDb';
 import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable } from '../_helpers/models/modelsTable';
 import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
+import morgan from 'morgan'
+import {Generator} from 'rotating-file-stream'
 
 export class AutoBack {
 
@@ -33,7 +35,7 @@ export class AutoBack {
   readonly fileInfo: filePathInfo
   readonly serverPath: string
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false) {
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
     this.server.use(cors());
@@ -62,8 +64,10 @@ export class AutoBack {
         const path = addPath(this.fileInfo.folderPath, splitedUrl.slice(2).join('/'))
         if (fs.existsSync(path))
           res.download(path)
-        else
-          res.status(404).json({message: "File not found"})
+        else {
+          res.status(404).json({ message: "File not found" })
+          res.statusMessage = "File not found"
+        }
       });
     }
 
@@ -86,6 +90,41 @@ export class AutoBack {
       this._userTable = this.defineUserTable(auth.config)
       if (this.userTable)
         this.userTable.basicRouting(auth.getRoute, auth.postRoute, auth.putRoute, auth.deleteRoute)
+    }
+
+    if (activeLog) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const rfs = require("rotating-file-stream");
+
+      const generator = (time: Date, index?: number) => {
+        if (!time) return "access.log";
+
+        return [formatDate(time), index, 'access.log'].join('-');
+      };
+
+      morgan.token('auth', function (req: any, res: any) {
+        if (!req.user) {
+          if (res.statusCode >= 400)
+            return 'Error'
+          return 'Is Not authenticated'
+        } else {
+          return "id: " + req.user.id + " username: " + req.user.username + " role: " + req.user.role
+        }
+      })
+
+      morgan.token('statusMessage', function (req: any, res: any) {
+        return res.statusMessage
+      })
+
+      const accessLogStream = rfs.createStream((generator as Generator), {
+        path: path.join(__dirname, 'logs'),
+        size: "10M",
+        maxFiles: 31,
+        intervalBoundary: true,
+        interval: "1d"
+      })
+
+      this.server.use(morgan(':remote-addr - :auth - [:date[web]] ":method :url HTTP/:http-version" :status ":statusMessage" :res[content-length] ":referrer" ":user-agent" - :response-time ms', { stream: accessLogStream }))
     }
   }
 
@@ -161,6 +200,7 @@ export class AutoBack {
   private error404() {
     this.server.use(function (req, res) {
       res.status(StatusCodes.NOT_FOUND).json({ message: "This route doesn't exist" })
+      res.statusMessage = "This route doesn't exist"
     });
   }
 

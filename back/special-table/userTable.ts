@@ -148,7 +148,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
             ...{ token: accessToken }
           });
         } else {
-          res.status(401).json({ message: 'Username or password incorrect'});
+          res.status(401).json({ message: 'Username or password incorrect' });
+          res.statusMessage = 'Username or password incorrect'
         }
       }
     })
@@ -161,7 +162,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     jwt.verify(token, this.config.tokenSecret, (err: any, user: any) => {
       if (err) {
         good = false
-        return res.status(403).json(err);
+        res.status(403).json({ message: err.toString() });
+        res.statusMessage = err.toString()
+        return res
       }
       req.user = user;
       good = true
@@ -178,7 +181,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       req.user = user.get()
       return true
     }
-    res.status(403).json({message: "The user does not exist"});
+    res.status(403).json({ message: "The user does not exist" });
+    res.statusMessage = "The user does not exist"
     return false
   }
 
@@ -193,8 +197,10 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
 
       if (route.auth.inverse)
         toReturn = !toReturn
-      if (!toReturn)
-        res.status(403).json({message: "You don't have right to access this route"});
+      if (!toReturn) {
+        res.status(403).json({ message: "You don't have right to access this route" });
+        res.statusMessage = "You don't have right to access this route"
+      }
       return toReturn
     }
     return true
@@ -215,6 +221,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
           return false
       } else {
         res.status(401).json({ message: 'Need to be auth to access this route' })
+        res.statusMessage = 'Need to be auth to access this route'
         return false
       }
     }

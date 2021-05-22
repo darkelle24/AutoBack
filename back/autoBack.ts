@@ -3,7 +3,7 @@ import { PostgresDb } from './db/postgres/postgres';
 import express from "express";
 import {StatusCodes} from 'http-status-codes';
 import { ModelAttributes, ModelCtor, Sequelize } from 'sequelize';
-import { checkHasTableLink, getRowInTableLink, defaultSaveDataInfo, removeFile, addPath, formatDate } from '../_helpers/fn';
+import { defaultSaveDataInfo, removeFile, addPath, formatDate } from '../_helpers/fn';
 import * as _ from "lodash"
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
@@ -14,8 +14,7 @@ import fs from 'fs'
 import { filePathInfo } from '../_helpers/models/models';
 import { ABDataType, realDataType, realDataTypeInfo } from '../_helpers/models/modelsType';
 import { DBInterface, DB } from '../_helpers/models/modelsDb';
-import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable } from '../_helpers/models/modelsTable';
-import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
+import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable, DeleteAction } from '../_helpers/models/modelsTable';
 import morgan from 'morgan'
 import compression from 'compression'
 
@@ -222,31 +221,12 @@ export class AutoBack {
     }
   }
 
-  private addHookCheckValaibleTableLink(table: ModelCtor<any>, myTable: saveTable): void {
-    table.addHook('beforeValidate', 'checkTableLinkExist', async (instance: any, option: ValidationOptions) => {
-      if (option.fields) {
-        for (const element of option.fields) {
-          if (myTable[element] && myTable[element].type.isTableLink) {
-            const dataLinkTable = (myTable[element] as realDataLinkTable)
-            const result = await getRowInTableLink(dataLinkTable.columnsLink, dataLinkTable.tableToLink.sequelizeData, instance.dataValues[element])
-            if (!result) {
-              throw new Error('Not found row with value ' + instance.dataValues[element] + ' in the table ' + dataLinkTable.tableToLink.name + ' in the column ' + dataLinkTable.columnsLink)
-            }
-          }
-        }
-      }
-    })
-  }
-
   private defineStartTable(nameTable: string, table: Table): [ModelCtor<any> | undefined, tempSaveTable] {
     let tableSequelize = undefined
     const [tableSequelizeInfo, saveTableInfo] = this.createTableSequelizeInfo(table, nameTable, this.fileInfo)
 
     if (this.sequelize)
       tableSequelize = this.sequelize.define(nameTable, tableSequelizeInfo)
-    if (tableSequelize && checkHasTableLink(saveTableInfo.saveTable)) {
-      this.addHookCheckValaibleTableLink(tableSequelize, saveTableInfo.saveTable)
-    }
     return [tableSequelize, saveTableInfo]
   }
 
@@ -358,10 +338,22 @@ export class AutoBack {
       if (table[key].type === ABDataType.TABLE_LINK) {
         type = this.getTableLinkDataType((table[key] as dataLinkTable))
         const tabsInfo = (this.saveDataInfo(table[key], type) as realDataLinkTable)
+        if (!(table[key] as dataLinkTable).onDelete) {
+          tabsInfo.onDelete = DeleteAction.DELETE
+        } else if ((table[key] as dataLinkTable).onDelete === DeleteAction.SET_DEFAULT && table[key].defaultValue === undefined) {
+          throw TypeError('Can t set DeleteAction.SET_DEFAULT on table ' + nameTable + ' columns ' + key + ' because defaultValue === undefined')
+        } else if ((table[key] as dataLinkTable).onDelete === DeleteAction.SET_NULL && (table[key].allowNull === undefined || table[key].allowNull === false)) {
+          throw TypeError('Can t set DeleteAction.SET_NULL on table ' + nameTable + ' columns ' + key + ' because allowNull === undefined or allowNull === false')
+        }
         tabsInfo.tableToLink = this.tables[(table[key] as dataLinkTable).tableToLink.name]
         saveTableInfo[key] = tabsInfo
-      }
-      if (type) {
+
+        if (type.autobackDataType === ABDataType.FILE) {
+          this.sequelizeFileType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key], nameTable, fileInfo)
+        } else {
+          this.sequelizeClassicType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key])
+        }
+      } else if (type) {
         saveTableInfo[key] = this.saveDataInfo(table[key], type)
 
         if (type.autobackDataType === ABDataType.FILE) {
@@ -376,7 +368,7 @@ export class AutoBack {
     return [tableSequelizeInfo, tempSaveTable]
   }
 
-  private saveDataInfo(dataInfo: dataTableInfo, type: realDataTypeInfo): saveDataTableInfo {
+  private saveDataInfo(dataInfo: dataTableInfo | dataLinkTable, type: realDataTypeInfo): saveDataTableInfo {
     const temp = _.merge({}, this.defaultSaveDataInfo, dataInfo)
     temp.type = type
 

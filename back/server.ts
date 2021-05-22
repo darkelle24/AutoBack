@@ -54,7 +54,7 @@ if (test) {
 
     const gitan = autoback.defineTable('gitan', {
       id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
-      userId: { type: ABDataType.TABLE_LINK, tableToLink: dab, columnsLink: 'id', rename: 'lel' },
+      lelId: { type: ABDataType.TABLE_LINK, tableToLink: dab, columnsLink: 'id', rename: 'lel' },
     }, 'test2')
     if (gitan) {
       gitan.basicRouting()

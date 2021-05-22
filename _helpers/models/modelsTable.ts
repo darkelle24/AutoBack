@@ -10,6 +10,7 @@ export type dataLinkTable = {
   tableToLink: TableClass<any>,
   columnsLink: string,
   type: ABDataType.TABLE_LINK,
+  onDelete?: DeleteAction,
   rename?: string
 } & dataTableInfo
 
@@ -43,9 +44,16 @@ export interface tempSaveTable {
   table?: TableClass<any>
 }
 
+export enum DeleteAction {
+  DELETE = "delete",
+  SET_DEFAULT = "default",
+  SET_NULL = "null",
+}
+
 export type realDataLinkTable = {
   tableToLink: TableClass<any>,
   columnsLink: string,
+  onDelete: DeleteAction,
   rename?: string
 } & saveDataTableInfo
 
@@ -72,4 +80,9 @@ export interface saveDataTableInfo {
 
 export interface allTables {
   [key: string]: TableClass<any>
+}
+
+export interface TableLinktoThisTable {
+  table: TableClass<any>,
+  columns: string
 }

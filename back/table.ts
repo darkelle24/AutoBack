@@ -11,9 +11,10 @@ import { access } from '../_helpers/models/userTableModel';
 import multer from 'multer'
 import fs from 'fs'
 import path from 'path';
-import { realDataLinkTable, saveTable } from '../_helpers/models/modelsTable';
+import { DeleteAction, realDataLinkTable, saveTable, TableLinktoThisTable } from '../_helpers/models/modelsTable';
 import { ABDataType } from '../_helpers/models/modelsType';
 import express from 'express';
+import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
 
 export class TableClass<M extends Model> {
   readonly name: string
@@ -29,6 +30,11 @@ export class TableClass<M extends Model> {
   private _listLinkColumns?: string[] = undefined
   get listLinkColumns(): string[] | undefined  {
     return this._listLinkColumns
+  }
+
+  private _tableLinktoThisTable: TableLinktoThisTable[] = []
+  get tableLinktoThisTable(): TableLinktoThisTable[]  {
+    return this._tableLinktoThisTable
   }
 
   constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>) {
@@ -71,6 +77,29 @@ export class TableClass<M extends Model> {
       this.pathFolder = pathFolder
     }
     this.getLinkColumns()
+    this.addHook()
+  }
+
+  private addHook() {
+    this.sequelizeData.addHook('afterDestroy', 'onDestroyLinks', (instance: any): void => {
+      this.onDeletedAction(instance.dataValues)
+    })
+
+    if (this._listLinkColumns && this._listLinkColumns.length !== 0) {
+      this.sequelizeData.addHook('beforeValidate', 'checkTableLinkExist', async (instance: any, option: ValidationOptions) => {
+        if (option.fields) {
+          for (const element of option.fields) {
+            if (this.table[element] && this.table[element].type.isTableLink) {
+              const dataLinkTable = (this.table[element] as realDataLinkTable)
+              const result = await getRowInTableLink(dataLinkTable.columnsLink, dataLinkTable.tableToLink.sequelizeData, instance.dataValues[element])
+              if (!result) {
+                throw new Error('Not found row with value ' + instance.dataValues[element] + ' in the table ' + dataLinkTable.tableToLink.name + ' in the column ' + dataLinkTable.columnsLink)
+              }
+            }
+          }
+        }
+      })
+    }
   }
 
   basicRouting(getRoute: basicRouteParams = {}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
@@ -174,8 +203,10 @@ export class TableClass<M extends Model> {
     this._listLinkColumns = []
 
     Object.entries(this.table).forEach(([key, value]) => {
-      if (value.type.isTableLink && this._listLinkColumns) {
+      if (value.type.isTableLink && this._listLinkColumns && Object.prototype.hasOwnProperty.call(this.table[key], 'tableToLink')) {
+        const tableToLink = (this.table[key] as realDataLinkTable)
         this._listLinkColumns.push(key)
+        tableToLink.tableToLink.addLinkToThisTable(this, key)
       }
     });
   }
@@ -215,5 +246,48 @@ export class TableClass<M extends Model> {
         }
       )
     }
+  }
+
+  public addLinkToThisTable(table: TableClass<any>, columnsLink: string): void {
+    this.tableLinktoThisTable.push({table: table, columns: columnsLink})
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected async onDeletedActionNullOrDefault(data: any, table: realDataLinkTable, oneTableInfo: TableLinktoThisTable, value: any): Promise<unknown> {
+    const filter: any = {}
+    filter.where = {}
+    filter.where[oneTableInfo.columns] = data[table.columnsLink]
+
+    return oneTableInfo.table.sequelizeData.findAll(filter)
+      .then((data: any) => {
+        data[oneTableInfo.columns] = value
+        return data.save({ fields: [oneTableInfo.columns] }).then((data: any) => data)
+      })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected async onDeletedActionDelete(data: any, table: realDataLinkTable, oneTableInfo: TableLinktoThisTable): Promise<unknown> {
+    const filter: any = {}
+    filter.where = {}
+    filter.where[oneTableInfo.columns] = data[table.columnsLink]
+
+    return oneTableInfo.table.sequelizeData.findAll(filter)
+      .then((data: any[]) => {
+        return Promise.all(data.map(async (element) => element.destroy()))
+      })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected async onDeletedAction(data: any): Promise<unknown> {
+    return Promise.all(this.tableLinktoThisTable.map(async (oneTableInfo) => {
+      const castTable = (oneTableInfo.table.table[oneTableInfo.columns] as realDataLinkTable)
+      if (castTable.onDelete === DeleteAction.SET_NULL) {
+        return this.onDeletedActionNullOrDefault(data, castTable, oneTableInfo, null)
+      } else if (castTable.onDelete === DeleteAction.SET_DEFAULT) {
+        return this.onDeletedActionNullOrDefault(data, castTable, oneTableInfo, castTable.defaultValue)
+      } else if (castTable.onDelete === DeleteAction.DELETE) {
+        return this.onDeletedActionDelete(data, castTable, oneTableInfo)
+      }
+    }))
   }
 }

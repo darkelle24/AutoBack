@@ -375,7 +375,6 @@ export function checkHasTableLink(table: saveTable): boolean {
   })
 }
 
-
 export function formatDate(d: Date): string {
   let month = '' + (d.getMonth() + 1).toString()
   let day = '' + d.getDate().toString()

@@ -17,7 +17,7 @@ import { DBInterface, DB } from '../_helpers/models/modelsDb';
 import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable } from '../_helpers/models/modelsTable';
 import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
 import morgan from 'morgan'
-import {Generator} from 'rotating-file-stream'
+import compression from 'compression'
 
 export class AutoBack {
 
@@ -36,6 +36,7 @@ export class AutoBack {
   readonly serverPath: string
 
   constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false) {
+    this.server.use(compression());
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
     this.server.use(cors());
@@ -48,6 +49,39 @@ export class AutoBack {
     }
     if (fileInfo && !fileInfo.virtualPath) {
       fileInfo.virtualPath = 'uploads'
+    }
+
+    if (activeLog) {
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const rfs = require("rotating-file-stream");
+
+      const generator = (time: Date, index?: number) => {
+        if (!time) return "access.log";
+
+        return [formatDate(time), index, 'access.log'].join('-');
+      };
+
+      morgan.token('auth', function (req: any) {
+        if (!req.user) {
+          return 'Is not authenticated'
+        } else {
+          return "id: " + req.user.id + " username: " + req.user.username + " role: " + req.user.role
+        }
+      })
+
+      morgan.token('statusMessage', function (req: any, res: any) {
+        return res.statusMessage
+      })
+
+      const accessLogStream = rfs.createStream(generator, {
+        path: path.join(__dirname, 'logs'),
+        size: "10M",
+        maxFiles: 31,
+        intervalBoundary: true,
+        interval: "1d",
+      })
+
+      this.server.use(morgan(':remote-addr - :auth - [:date[web]] ":method :url HTTP/:http-version" :status ":statusMessage" :res[content-length] ":referrer" ":user-agent" - :response-time ms', { stream: accessLogStream }))
     }
 
     this.fileInfo = fileInfo
@@ -90,39 +124,6 @@ export class AutoBack {
       this._userTable = this.defineUserTable(auth.config)
       if (this.userTable)
         this.userTable.basicRouting(auth.getRoute, auth.postRoute, auth.putRoute, auth.deleteRoute)
-    }
-
-    if (activeLog) {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const rfs = require("rotating-file-stream");
-
-      const generator = (time: Date, index?: number) => {
-        if (!time) return "access.log";
-
-        return [formatDate(time), index, 'access.log'].join('-');
-      };
-
-      morgan.token('auth', function (req: any) {
-        if (!req.user) {
-          return 'Is not authenticated'
-        } else {
-          return "id: " + req.user.id + " username: " + req.user.username + " role: " + req.user.role
-        }
-      })
-
-      morgan.token('statusMessage', function (req: any, res: any) {
-        return res.statusMessage
-      })
-
-      const accessLogStream = rfs.createStream((generator as Generator), {
-        path: path.join(__dirname, 'logs'),
-        size: "10M",
-        maxFiles: 31,
-        intervalBoundary: true,
-        interval: "1d"
-      })
-
-      this.server.use(morgan(':remote-addr - :auth - [:date[web]] ":method :url HTTP/:http-version" :status ":statusMessage" :res[content-length] ":referrer" ":user-agent" - :response-time ms', { stream: accessLogStream }))
     }
   }
 

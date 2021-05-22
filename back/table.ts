@@ -183,18 +183,20 @@ export class TableClass<M extends Model> {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public async getLinkData(data: any): Promise<unknown> {
     if (this._listLinkColumns && this._listLinkColumns.length !== 0) {
-      return Promise.all(this._listLinkColumns.map( async (element) => {
-        const tableLink = (this.table[element] as realDataLinkTable)
-        return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[element])
-          .then(result => {
-            if (tableLink.rename) {
-              data[tableLink.rename] = result.get()
-              delete data[element]
-            } else
-              data[element] = result.get()
-          }).catch(() => {
-            throw new Error('Not found row with value ' + data[element] + ' in the table ' + tableLink.tableToLink.name + ' in the column ' + tableLink.columnsLink)
-          })
+      return Promise.all(this._listLinkColumns.map(async (element) => {
+        if (data[element] !== undefined && data[element] !== null) {
+          const tableLink = (this.table[element] as realDataLinkTable)
+          return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[element])
+            .then(result => {
+              if (tableLink.rename) {
+                data[tableLink.rename] = result.get()
+                delete data[element]
+              } else
+                data[element] = result.get()
+            }).catch(() => {
+              throw new Error('Not found row with value ' + data[element] + ' in the table ' + tableLink.tableToLink.name + ' in the column ' + tableLink.columnsLink)
+            })
+        }
       }))
     }
   }

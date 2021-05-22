@@ -1,9 +1,8 @@
+import { TableClass } from 'back/table';
 import multer from "multer"
-import { saveTable } from "./modelsTable"
 
 export interface routeTableInfo {
-  table: saveTable,
-  listLinkData: string[]
+  classTable: TableClass<any>
   uploads?: multer.Multer,
   pathFolder?: string
 }

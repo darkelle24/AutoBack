@@ -3,7 +3,7 @@ import { RoutePostClass } from './route/routePost';
 import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass, InfoPlace, basicRouteParams } from './../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize";
 import { Route, TypeRoute } from "../_helpers/models/routeModels";
-import { activeAllFiltersForAllCols, addPath, getFileExtansion } from '../_helpers/fn';
+import { activeAllFiltersForAllCols, addPath, getFileExtansion, getRowInTableLink } from '../_helpers/fn';
 import { RouteGetClass } from './route/routeGet';
 import { RoutePutClass } from './route/routePut';
 import { RouteDeleteClass } from './route/routeDelete';
@@ -11,7 +11,7 @@ import { access } from '../_helpers/models/userTableModel';
 import multer from 'multer'
 import fs from 'fs'
 import path from 'path';
-import { saveTable } from '../_helpers/models/modelsTable';
+import { realDataLinkTable, saveTable } from '../_helpers/models/modelsTable';
 import { ABDataType } from '../_helpers/models/modelsType';
 import express from 'express';
 
@@ -145,22 +145,22 @@ export class TableClass<M extends Model> {
   addRoute(route: Route): RouteClass | undefined {
     switch (route.type) {
       case TypeRoute.POST: {
-        const routeClass = new RoutePostClass({ table: this.table, listLinkData: this._listLinkColumns || [], uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
+        const routeClass = new RoutePostClass({ classTable: this, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
         this.routes.post.push(routeClass)
         return routeClass
       }
       case TypeRoute.GET: {
-        const routeClass = new RouteGetClass({ table: this.table, listLinkData: this._listLinkColumns || [], uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
+        const routeClass = new RouteGetClass({ classTable: this, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
         this.routes.get.push(routeClass)
         return routeClass
       }
       case TypeRoute.PUT: {
-        const routeClass = new RoutePutClass({ table: this.table, listLinkData: this._listLinkColumns || [], uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
+        const routeClass = new RoutePutClass({ classTable: this, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
         this.routes.put.push(routeClass)
         return routeClass
       }
       case TypeRoute.DELETE: {
-        const routeClass = new RouteDeleteClass({ table: this.table, listLinkData: this._listLinkColumns || [], uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
+        const routeClass = new RouteDeleteClass({ classTable: this, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
         this.routes.delete.push(routeClass)
         return routeClass
       }
@@ -178,5 +178,40 @@ export class TableClass<M extends Model> {
         this._listLinkColumns.push(key)
       }
     });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  public async getLinkData(data: any): Promise<unknown> {
+    if (this._listLinkColumns && this._listLinkColumns.length !== 0) {
+      return Promise.all(this._listLinkColumns.map( async (element) => {
+        const tableLink = (this.table[element] as realDataLinkTable)
+        return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[element])
+          .then(result => {
+            if (tableLink.rename) {
+              data[tableLink.rename] = result.get()
+              delete data[element]
+            } else
+              data[element] = result.get()
+          }).catch(() => {
+            throw new Error('Not found row with value ' + data[element] + ' in the table ' + tableLink.tableToLink.name + ' in the column ' + tableLink.columnsLink)
+          })
+      }))
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  public async getLinkDataRecursive(data: any, depth: number): Promise<unknown> {
+    if (depth !== 0) {
+      return this.getLinkData(data).then(
+        () => {
+          if (this._listLinkColumns && this._listLinkColumns.length !== 0) {
+            return Promise.all(this._listLinkColumns.map(async (element) => {
+              const tableLink = (this.table[element] as realDataLinkTable)
+              return tableLink.tableToLink.getLinkDataRecursive(data[tableLink.rename || tableLink.columnsLink], depth - 1).then(res => res)
+            }))
+          }
+        }
+      )
+    }
   }
 }

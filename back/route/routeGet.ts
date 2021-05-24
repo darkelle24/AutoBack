@@ -93,7 +93,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
   private async getAllLinkData(toSend: any[]): Promise<unknown> {
     if (this.listLinkData.length !== 0) {
       return Promise.all(toSend.map(async (oneInfo) => {
-        return await this.tableClass.getLinkDataRecursive(oneInfo, 4)
+        return await this.tableClass.getLinkDataRecursive(oneInfo, -1)
       }));
     }
   }

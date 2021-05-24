@@ -9,9 +9,10 @@ export interface Table {
 export type dataLinkTable = {
   tableToLink: TableClass<any>,
   columnsLink: string,
-  type: ABDataType.TABLE_LINK,
+  type: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE ,
   onDelete?: DeleteAction,
-  rename?: string
+  rename?: string,
+  multipleResult?: boolean
 } & dataTableInfo
 
 export interface dataTableInfo {
@@ -54,7 +55,9 @@ export type realDataLinkTable = {
   tableToLink: TableClass<any>,
   columnsLink: string,
   onDelete: DeleteAction,
-  rename?: string
+  rename?: string,
+  multipleResult: boolean,
+  subType: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE
 } & saveDataTableInfo
 
 export interface saveDataTableInfo {

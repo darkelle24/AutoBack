@@ -76,5 +76,6 @@ export enum ABDataType {
   BIGINT = "bigInt",
   STRING = "string",
   FILE = "file",
-  TABLE_LINK = "tableLink"
+  TABLE_LINK = "tableLink",
+  MULTIPLE_LINK_TABLE= "multipleTableLink"
 }

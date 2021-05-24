@@ -78,7 +78,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
           }
         })
       }
-      this.tableClass.getLinkData(toSend)
+      this.tableClass.getLinkDataRecursive(toSend, -1)
         .then(() => res.status(201).json(toSend))
         .catch(err => errorHandling(err, res))
     }).catch(err => {

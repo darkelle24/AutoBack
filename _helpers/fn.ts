@@ -173,7 +173,7 @@ export function applyDefaultValueOnDataType(basic: dataType): realDataType {
       }
       if (!value.validate)
         temp.validate = {}
-      temp.isTableLInk = false
+      temp.isTableLink = false
       toReturn[key] = temp
     }
   })
@@ -359,13 +359,23 @@ export function removeFile(path: string): void {
   })
 }
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export async function getRowInTableLink(columnsNameOfLinkTable: string, sequelizeOfLinkTable: ModelCtor<any>, value: any): Promise<any | undefined> {
+export async function getRowInTableLink(columnsNameOfLinkTable: string, sequelizeOfLinkTable: ModelCtor<any>, value: any, multipleResult: boolean = false): Promise<any | undefined> {
   const filter: any = {}
   filter.where = {}
   filter.where[columnsNameOfLinkTable] = value
+  let result
 
-  const result = await sequelizeOfLinkTable.findOne(filter)
+  if (!multipleResult)
+    result = await sequelizeOfLinkTable.findOne(filter)
+  else
+    result = await sequelizeOfLinkTable.findAll(filter)
   return result
+}
+
+export async function getRowInTableMultipleLink(columnsNameOfLinkTable: string, sequelizeOfLinkTable: ModelCtor<any>, value: any[], multipleResult: boolean = false): Promise<any | undefined> {
+  return await Promise.all(value.map(async (element: any) => {
+    return getRowInTableLink(columnsNameOfLinkTable, sequelizeOfLinkTable, element, multipleResult)
+  }))
 }
 
 export function checkHasTableLink(table: saveTable): boolean {

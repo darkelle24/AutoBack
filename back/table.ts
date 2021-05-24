@@ -1,9 +1,9 @@
 import { UserTableClass } from './special-table/userTable';
 import { RoutePostClass } from './route/routePost';
 import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass, InfoPlace, basicRouteParams } from './../_helpers/models/routeModels';
-import { Model, ModelCtor } from "sequelize";
+import { Model, ModelCtor, Op } from "sequelize";
 import { Route, TypeRoute } from "../_helpers/models/routeModels";
-import { activeAllFiltersForAllCols, addPath, getFileExtansion, getRowInTableLink } from '../_helpers/fn';
+import { activeAllFiltersForAllCols, addPath, getFileExtansion, getRowInTableLink, getRowInTableMultipleLink } from '../_helpers/fn';
 import { RouteGetClass } from './route/routeGet';
 import { RoutePutClass } from './route/routePut';
 import { RouteDeleteClass } from './route/routeDelete';
@@ -91,9 +91,16 @@ export class TableClass<M extends Model> {
           for (const element of option.fields) {
             if (this.table[element] && this.table[element].type.isTableLink) {
               const dataLinkTable = (this.table[element] as realDataLinkTable)
-              const result = await getRowInTableLink(dataLinkTable.columnsLink, dataLinkTable.tableToLink.sequelizeData, instance.dataValues[element])
-              if (!result) {
-                throw new Error('Not found row with value ' + instance.dataValues[element] + ' in the table ' + dataLinkTable.tableToLink.name + ' in the column ' + dataLinkTable.columnsLink)
+              if (instance.dataValues[element] !== null && instance.dataValues[element] !== undefined) {
+                let result
+                if (dataLinkTable.subType !== ABDataType.MULTIPLE_LINK_TABLE)
+                  result = await getRowInTableLink(dataLinkTable.columnsLink, dataLinkTable.tableToLink.sequelizeData, instance.dataValues[element])
+                else {
+                  result = await getRowInTableMultipleLink(dataLinkTable.columnsLink, dataLinkTable.tableToLink.sequelizeData, JSON.parse(instance.dataValues[element]))
+                }
+                if (!result) {
+                  throw new Error('Not found row with value ' + instance.dataValues[element] + ' in the table ' + dataLinkTable.tableToLink.name + ' in the column ' + dataLinkTable.columnsLink)
+                }
               }
             }
           }
@@ -212,39 +219,112 @@ export class TableClass<M extends Model> {
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected getLinkDataSingle(tableLink: realDataLinkTable, data: any, element: string): Promise<any> {
+    return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[element], tableLink.multipleResult)
+      .then(result => {
+        if (!tableLink.multipleResult) {
+          if (tableLink.rename) {
+            data[tableLink.rename] = result.get()
+            delete data[element]
+          } else
+            data[element] = result.get()
+        } else {
+          data[tableLink.rename || element] = []
+          result.forEach((element: any) => {
+            data[tableLink.rename || element].push(element.get())
+          });
+          if (tableLink.rename)
+            delete data[element]
+        }
+      }).catch(() => {
+        throw new Error('Not found row with value ' + data[element] + ' in the table ' + tableLink.tableToLink.name + ' in the column ' + tableLink.columnsLink)
+      })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected getLinkDataArray(tableLink: realDataLinkTable, data: any[], index: number): Promise<any> {
+    return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[index], tableLink.multipleResult)
+      .then(result => {
+        if (!tableLink.multipleResult) {
+          data[index] = result.get()
+        } else {
+          data[index] = []
+          result.forEach((element: any) => {
+            data[index].push(element.get())
+          });
+        }
+      }).catch(() => {
+        throw new Error('Not found row with value ' + data[index] + ' in the table ' + tableLink.tableToLink.name + ' in the column ' + tableLink.columnsLink)
+      })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected getLinkDataMultiple(tableLink: realDataLinkTable, data: any, element: string): Promise<any> {
+    return Promise.all(data[element].map(async (_oneData: any, index: number) => {
+      return this.getLinkDataArray(tableLink, data[element], index)
+    })).then(() => {
+      if (tableLink.rename) {
+        data[tableLink.rename] = data[element]
+        delete data[element]
+      }
+    })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public async getLinkData(data: any): Promise<unknown> {
     if (this._listLinkColumns && this._listLinkColumns.length !== 0) {
       return Promise.all(this._listLinkColumns.map(async (element) => {
         if (data[element] !== undefined && data[element] !== null) {
           const tableLink = (this.table[element] as realDataLinkTable)
-          return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[element])
-            .then(result => {
-              if (tableLink.rename) {
-                data[tableLink.rename] = result.get()
-                delete data[element]
-              } else
-                data[element] = result.get()
-            }).catch(() => {
-              throw new Error('Not found row with value ' + data[element] + ' in the table ' + tableLink.tableToLink.name + ' in the column ' + tableLink.columnsLink)
-            })
+          if (tableLink.subType === ABDataType.TABLE_LINK)
+            return this.getLinkDataSingle(tableLink, data, element)
+          else if (tableLink.subType === ABDataType.MULTIPLE_LINK_TABLE) {
+            return this.getLinkDataMultiple(tableLink, data, element)
+          }
         }
       }))
     }
   }
 
+  public async getLinkArray(data: any[]): Promise<unknown> {
+    return Promise.all(data.map(async (_element: any, index: number) => {
+      return this.getLinkData(data[index])
+    }))
+  }
+
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  public async getLinkDataRecursive(data: any, depth: number): Promise<unknown> {
+  protected async linkDataRecursiveMultiple(data: any, depth: number): Promise<unknown> {
+    if (this._listLinkColumns && this._listLinkColumns.length !== 0) {
+      return Promise.all(this._listLinkColumns.map(async (element) => {
+        const tableLink = (this.table[element] as realDataLinkTable)
+        return tableLink.tableToLink.getLinkDataRecursive(data[tableLink.rename || tableLink.columnsLink], depth - 1, tableLink.subType === ABDataType.MULTIPLE_LINK_TABLE).then(res => res)
+      }))
+    }
+  }
+
+   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+   protected async checkDataIsArrayRecursive(data: any, depth: number, isMultipleLink: boolean = false): Promise<unknown> {
+    if (isMultipleLink && Array.isArray(data)) {
+      return Promise.all(data.map(async (element: any, index: number) => {
+        return this.getSingleLinkDataRecursive(data[index], depth)
+      }))
+    } else {
+      return this.getSingleLinkDataRecursive(data, depth)
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  public async getSingleLinkDataRecursive(data: any, depth: number): Promise<unknown> {
+    return this.getLinkData(data)
+      .then(() => {
+        return this.linkDataRecursiveMultiple(data, depth)
+      })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  public async getLinkDataRecursive(data: any, depth: number, isMultipleLink: boolean = false): Promise<unknown> {
     if (depth !== 0) {
-      return this.getLinkData(data).then(
-        () => {
-          if (this._listLinkColumns && this._listLinkColumns.length !== 0) {
-            return Promise.all(this._listLinkColumns.map(async (element) => {
-              const tableLink = (this.table[element] as realDataLinkTable)
-              return tableLink.tableToLink.getLinkDataRecursive(data[tableLink.rename || tableLink.columnsLink], depth - 1).then(res => res)
-            }))
-          }
-        }
-      )
+      return this.checkDataIsArrayRecursive(data, depth, isMultipleLink)
     }
   }
 
@@ -256,6 +336,7 @@ export class TableClass<M extends Model> {
   protected async onDeletedActionNullOrDefault(data: any, table: realDataLinkTable, oneTableInfo: TableLinktoThisTable, value: any): Promise<unknown> {
     const filter: any = {}
     filter.where = {}
+    if (table.subType !== ABDataType.MULTIPLE_LINK_TABLE) {
     filter.where[oneTableInfo.columns] = data[table.columnsLink]
 
     return oneTableInfo.table.sequelizeData.findAll(filter)
@@ -263,18 +344,68 @@ export class TableClass<M extends Model> {
         data[oneTableInfo.columns] = value
         return data.save({ fields: [oneTableInfo.columns] }).then((data: any) => data)
       })
+    } else {
+      filter.where[oneTableInfo.columns] = {
+        [Op.not]: null,
+        [Op.ne]: '[]'
+      }
+
+      return oneTableInfo.table.sequelizeData.findAll(filter)
+        .then((returnData: any[]) => {
+          return Promise.all(returnData.map(async (element) => {
+            const getValue = element.get(oneTableInfo.columns)
+            if (getValue !== null && getValue !== undefined && Array.isArray(getValue) && getValue.length !== 0) {
+              let newArray
+              if (value === null) {
+                newArray = getValue.filter((info: any) => {
+                  if (info !== data[table.columnsLink]) {
+                    return true
+                  }
+                  return false
+                })
+              } else {
+                newArray = getValue.map((info: any) => {
+                  if (info === data[table.columnsLink]) {
+                    return value
+                  }
+                  return info
+                })
+              }
+              element[oneTableInfo.columns] = newArray
+              return element.save()
+            }
+          }))
+        })
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected async onDeletedActionDelete(data: any, table: realDataLinkTable, oneTableInfo: TableLinktoThisTable): Promise<unknown> {
     const filter: any = {}
     filter.where = {}
-    filter.where[oneTableInfo.columns] = data[table.columnsLink]
+    if (table.subType !== ABDataType.MULTIPLE_LINK_TABLE) {
+      filter.where[oneTableInfo.columns] = data[table.columnsLink]
 
-    return oneTableInfo.table.sequelizeData.findAll(filter)
-      .then((data: any[]) => {
-        return Promise.all(data.map(async (element) => element.destroy()))
-      })
+      return oneTableInfo.table.sequelizeData.findAll(filter)
+        .then((returnData: any[]) => {
+          return Promise.all(returnData.map(async (element) => element.destroy()))
+        })
+    } else {
+      filter.where[oneTableInfo.columns] = {
+        [Op.not]: null,
+        [Op.ne]: '[]'
+      }
+
+      return oneTableInfo.table.sequelizeData.findAll(filter)
+        .then((returnData: any[]) => {
+          return Promise.all(returnData.map(async (element) => {
+            const value = element.get(oneTableInfo.columns)
+            if (value !== null && value !== undefined && Array.isArray(value) && value.length !== 0 && value.find(info => info === data[table.columnsLink])) {
+              return element.destroy()
+            }
+          }))
+        })
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

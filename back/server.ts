@@ -2,6 +2,7 @@ import { ABDataType } from "../_helpers/models/modelsType"
 import { DB } from "../_helpers/models/modelsDb"
 import { AutoBack } from "./autoBack"
 import { TypeRoute, InfoPlace } from "../_helpers/models/routeModels"
+import { DeleteAction } from "../_helpers/models/modelsTable"
 
 const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, {
   config: {
@@ -48,16 +49,26 @@ if (test) {
   const dab = autoback.defineTable('lel', {
     id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
     userId: { type: ABDataType.TABLE_LINK, tableToLink: autoback.userTable, columnsLink: 'id', rename: 'user' },
+    testArray: {type: ABDataType.ARRAY, allowNull: true}
   }, 'test')
   if (dab) {
     dab.basicRouting()
 
     const gitan = autoback.defineTable('gitan', {
       id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
-      lelId: { type: ABDataType.TABLE_LINK, tableToLink: dab, columnsLink: 'id', rename: 'lel' },
+      lelId: { type: ABDataType.TABLE_LINK, tableToLink: dab, columnsLink: 'id', rename: 'lel', multipleResult: false },
     }, 'test2')
+
     if (gitan) {
       gitan.basicRouting()
+
+      const multiple = autoback.defineTable('multiple', {
+        id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+        gitanId: { type: ABDataType.MULTIPLE_LINK_TABLE, allowNull: true, tableToLink: gitan, columnsLink: 'id', rename: 'gitan', onDelete: DeleteAction.SET_NULL, multipleResult: false },
+      })
+      if (multiple) {
+        multiple.basicRouting()
+      }
     }
   }
 }

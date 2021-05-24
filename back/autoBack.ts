@@ -74,7 +74,6 @@ export class AutoBack {
 
       const accessLogStream = rfs.createStream(generator, {
         path: path.join(__dirname, 'logs'),
-        size: "10M",
         maxFiles: 31,
         intervalBoundary: true,
         interval: "1d",
@@ -335,15 +334,22 @@ export class AutoBack {
     Object.keys(table).forEach((key) => {
       let type = this.getDataType(table[key].type)
 
-      if (table[key].type === ABDataType.TABLE_LINK) {
+      if (table[key].type === ABDataType.TABLE_LINK || table[key].type === ABDataType.MULTIPLE_LINK_TABLE) {
+        const subType: any = table[key].type
         type = this.getTableLinkDataType((table[key] as dataLinkTable))
         const tabsInfo = (this.saveDataInfo(table[key], type) as realDataLinkTable)
+
+        tabsInfo.subType = subType
         if (!(table[key] as dataLinkTable).onDelete) {
           tabsInfo.onDelete = DeleteAction.DELETE
         } else if ((table[key] as dataLinkTable).onDelete === DeleteAction.SET_DEFAULT && table[key].defaultValue === undefined) {
           throw TypeError('Can t set DeleteAction.SET_DEFAULT on table ' + nameTable + ' columns ' + key + ' because defaultValue === undefined')
-        } else if ((table[key] as dataLinkTable).onDelete === DeleteAction.SET_NULL && (table[key].allowNull === undefined || table[key].allowNull === false)) {
+        } else if (tabsInfo.subType !== ABDataType.MULTIPLE_LINK_TABLE && (table[key] as dataLinkTable).onDelete === DeleteAction.SET_NULL && (table[key].allowNull === undefined || table[key].allowNull === false)) {
           throw TypeError('Can t set DeleteAction.SET_NULL on table ' + nameTable + ' columns ' + key + ' because allowNull === undefined or allowNull === false')
+        }
+
+        if (!(table[key] as dataLinkTable).multipleResult) {
+          tabsInfo.multipleResult = false
         }
         tabsInfo.tableToLink = this.tables[(table[key] as dataLinkTable).tableToLink.name]
         saveTableInfo[key] = tabsInfo
@@ -389,8 +395,13 @@ export class AutoBack {
 
     if (tableToLink) {
       const columns = link.tableToLink.table[link.columnsLink]
+      let toReturn: any
       if (columns) {
-        const toReturn = _.clone(columns.type)
+        if (link.type === ABDataType.MULTIPLE_LINK_TABLE) {
+          toReturn = _.clone(this.DB.dataType[ABDataType.ARRAY])
+        } else {
+          toReturn = _.clone(columns.type)
+        }
         toReturn.isTableLink = true
         return toReturn
       } else {
@@ -404,7 +415,7 @@ export class AutoBack {
   private getDataType(data: ABDataType): realDataTypeInfo | undefined {
     const type = this.DB.dataType[data]
 
-    if (data === ABDataType.TABLE_LINK)
+    if (data === ABDataType.TABLE_LINK || data === ABDataType.MULTIPLE_LINK_TABLE)
       return undefined
     if (type === undefined) {
       console.error(data + " type in " + this.DB.dbName + " is not supported")

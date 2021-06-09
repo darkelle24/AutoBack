@@ -118,8 +118,10 @@ export class AutoBack {
       if (auth === true)
         auth = {}
       if (!auth.config)
-        auth.config= {}
-      this._userTable = this.defineUserTable(auth.config)
+        auth.config = {}
+      const userTable = this.defineUserTable(auth.config)
+      if (userTable)
+        this._userTable = userTable
       if (this.userTable)
         this.userTable.basicRouting(auth.getRoute, auth.postRoute, auth.putRoute, auth.deleteRoute)
     }

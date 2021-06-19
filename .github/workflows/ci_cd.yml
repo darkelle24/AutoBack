@@ -1,0 +1,33 @@
+name: Backend API Rest factory test
+
+on:
+  push:
+  pull_request:
+  release:
+
+jobs:
+  tests:
+    name: Mocka tests
+    runs-on: ubuntu-20.04
+
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Retrieving Latest Code
+        uses: actions/checkout@v2
+
+      - name: Installing NodeJS
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Installing Project Dependencies
+        run: npm install
+
+      - name: Installing mocka local dependency
+        run: npm install mocka
+
+      - name: Run mocka tests
+        run: npm run test

@@ -16,7 +16,7 @@ const autoback = new AutoBack(`postgres://${process.env.POSTGRES_USER}:${process
       email: 'darkelle24@gmail.com',
       role: 'Admin'
     }
-}}, true)
+}}, true, undefined, undefined, undefined, process.env.MODE === 'test' ? true : undefined)
 
 const test = autoback.defineTable('test', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
@@ -33,14 +33,14 @@ if (test) {
     const basicEntry = {bonjour: false, comment: "comment test"}
     return axios.post('http://app:8000' + table.routes.originRoutePath, basicEntry).then(result => {
       table.sequelizeData.findAll().then(datas => {
-        console.log(datas)
         let entry_found: boolean = false
         for(const data of datas) {
+          console.log(data.get())
           if (data.get().id === result.data.id) {
             entry_found = true
           }
         }
-        assert.isTrue(entry_found, "The new entry must be found in the get")
+        assert.isTrue(false, "The new entry must be found in the get")
       })
     })
   })

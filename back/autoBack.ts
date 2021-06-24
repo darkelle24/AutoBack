@@ -132,8 +132,7 @@ export class AutoBack {
   }
 
   private async resetDb() {
-    await this.sequelize.drop()
-    await this.sequelize.sync().then(() => console.log('All tables dropped'))
+    await this.sequelize.sync({force: true}).then(() => console.log('All tables dropped'))
   }
 
   private async startFn(port: number = 8080) {

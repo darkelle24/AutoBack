@@ -13,7 +13,6 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
 
   constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: express.Application, path: string, routeInfo: RouteGet, userTable?: UserTableClass<any>) {
     super(table, sequelizeData, server, path, userTable)
-
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
     this.changeAccess(routeInfo.auth)

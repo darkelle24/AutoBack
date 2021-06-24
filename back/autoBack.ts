@@ -153,9 +153,13 @@ export class AutoBack {
         })
       }
     })
-    this.server.listen(port, () => {
+    const instance = this.server.listen(port, async () => {
       console.log('Server listening on port ' + port)
-    });
+      if (process.env.MODE === "test") {
+        await this.launchTest()
+        instance.close()
+      }
+    })
     this.error404()
   }
 
@@ -423,5 +427,12 @@ export class AutoBack {
       console.error(data + " type in " + this.DB.dbName + " is not supported")
     }
     return type
+  }
+
+  public async launchTest(): Promise<unknown> {
+    for (const key of Object.keys(this.tables)) {
+      await this.tables[key].runningTest()
+    }
+    return true
   }
 }

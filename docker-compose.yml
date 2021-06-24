@@ -13,12 +13,19 @@ services:
           interval: 5s
           timeout: 5s
           retries: 5
-    # app:
-    #   build: .
-    #   ports:
-    #     - "8000:8000"
-    #   links:
-    #     - postgres
-    #   depends_on:
-    #     postgres:
-    #       condition: service_healthy
+    app:
+      build: .
+      environment:
+        - POSTGRES_USER
+        - POSTGRES_PASSWORD
+        - POSTGRES_DB
+        - POSTGRES_HOST
+        - MODE
+        - PORT
+      ports:
+        - "8000:8000"
+      links:
+        - postgres
+      depends_on:
+        postgres:
+          condition: service_healthy

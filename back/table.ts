@@ -15,6 +15,8 @@ import { DeleteAction, realDataLinkTable, saveTable, TableLinktoThisTable } from
 import { ABDataType } from '../_helpers/models/modelsType';
 import express from 'express';
 import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
+import  axios from 'axios'
+import {assert} from 'chai'
 
 export class TableClass<M extends Model> {
   readonly name: string
@@ -22,6 +24,7 @@ export class TableClass<M extends Model> {
   table: saveTable
   private server: express.Application
   routes: allRoutes = { originRoutePath: '/', get: [], post: [], put: [], delete: [] }
+  tests: {(table: TableClass<M>): Promise<unknown>} [] = []
   activeBasicRouting = false
   private userTable?: UserTableClass<any> = undefined
   readonly upload?: multer.Multer
@@ -126,6 +129,7 @@ export class TableClass<M extends Model> {
   }
 
   protected basicGet(accessRule?: access): void {
+    this.tests.push(this.basicGetTest)
     this.addRoute({
       path: '/',
       type: TypeRoute.GET,
@@ -137,6 +141,7 @@ export class TableClass<M extends Model> {
   }
 
   protected basicPost(accessRule?: access): void {
+    this.tests.push(this.basicPostTest)
     this.addRoute({
       path: '/',
       type: TypeRoute.POST,
@@ -145,6 +150,7 @@ export class TableClass<M extends Model> {
   }
 
   protected basicDelete(accessRule?: access): void {
+    this.tests.push(this.basicDelTest)
     this.addRoute({
       path: '/:id',
       type: TypeRoute.DELETE,
@@ -162,6 +168,7 @@ export class TableClass<M extends Model> {
   }
 
   protected basicPut(accessRule?: access): void {
+    this.tests.push(this.basicPutTest)
     this.addRoute({
       path: '/:id',
       type: TypeRoute.PUT,
@@ -420,5 +427,120 @@ export class TableClass<M extends Model> {
         return this.onDeletedActionDelete(data, castTable, oneTableInfo)
       }
     }))
+  }
+
+  private getBasicEntry(): any {
+    const basicEntry: any = {}
+    for (const key of  Object.keys(this.table)) {
+      if (!this.table[key].primaryKey) {
+        switch (this.table[key].type.name) {
+          case ABDataType.INT:
+            basicEntry[key] = Math.floor(Math.random() * 42)
+            break
+          case ABDataType.TEXT:
+            basicEntry[key] = "test text"
+            break
+          case ABDataType.ARRAY:
+            basicEntry[key] = [1, 2, 3]
+            break
+          case ABDataType.FLOAT:
+            basicEntry[key] = Math.random() * 42
+            break
+          case ABDataType.BOOLEAN:
+            basicEntry[key] = true
+            break
+          case ABDataType.BIGINT:
+            basicEntry[key] = Math.floor(Math.random() * 420000)
+            break
+          case ABDataType.STRING:
+            basicEntry[key] = "test string"
+            break
+          
+        }
+      }
+    }
+    return basicEntry
+  }
+
+  private basicGetTest(table: TableClass<M>): Promise<unknown> {
+    const basicEntry = table.getBasicEntry()
+    return table.sequelizeData.create(basicEntry).then((data) => {
+      const new_entry = data.get()
+      return axios.get('http://app:8000' + table.routes.originRoutePath).then(result => {
+        let entry_found: boolean = false
+        for(const entry of result.data) {
+          if (entry.id === new_entry.id) {
+            entry_found = true
+          }
+        }
+        assert.isTrue(entry_found, "The new entry must be found in the get")
+      })
+    })
+  }
+
+  private basicPostTest(table: TableClass<M>): Promise<unknown> {
+    const basicEntry = table.getBasicEntry()
+    return axios.post('http://app:8000' + table.routes.originRoutePath, basicEntry).then(result => {
+      table.sequelizeData.findAll().then(datas => {
+        let entry_found: boolean = false
+        for(const data of datas) {
+          if (data.get().id === result.data.id) {
+            entry_found = true
+          }
+        }
+        assert.isTrue(entry_found, "The new entry must be found in the get")
+      })
+    })
+  }
+
+  private basicPutTest(table: TableClass<M>): Promise<unknown> {
+    const basicEntry = table.getBasicEntry()
+    const basicEntry2 = table.getBasicEntry()
+    return table.sequelizeData.create(basicEntry).then((data) => {
+      const new_entry = data.get()
+      return axios.put('http://app:8000' + table.routes.originRoutePath + "/" + new_entry.id, basicEntry2).then(result => {
+        let entry_found: boolean = false
+        if (result.data.id === new_entry.id) {
+            entry_found = true
+        }
+        assert.isTrue(entry_found, "The new entry must be found in the get")
+      })
+    })
+  }
+
+  private basicDelTest(table: TableClass<M>): Promise<unknown> {
+    const basicEntry = table.getBasicEntry()
+    return table.sequelizeData.create(basicEntry).then((data) => {
+      const new_entry = data.get()
+      return axios.delete('http://app:8000' + table.routes.originRoutePath + "/" + new_entry.id).then(() => {
+        table.sequelizeData.findAll().then(datas => {
+          let entry_found: boolean = false
+          for(const data of datas) {
+            if (data.get().id === new_entry.id) {
+              entry_found = true
+            }
+          }
+          assert.isNotTrue(entry_found, "The new entry must not be found in the get")
+        })
+      })
+    })
+  }
+
+  public addTest(test: {(table: TableClass<M>): Promise<unknown>}): void {
+    this.tests.push(test)
+  }
+
+  public async runningTest(): Promise<unknown> {
+    try {
+      for (const fun of this.tests) {
+        await fun(this)
+      }
+      console.log("All tests for " + this.name + " succeed")
+      return Promise.resolve(true)
+    }
+    catch (e){
+      console.log(e)
+      return Promise.resolve(true)
+    }
   }
 }

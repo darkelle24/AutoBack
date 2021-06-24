@@ -180,3 +180,42 @@ Par defaut chaque paramétres  a pour valeur
   auth: undefined
 }
 ```
+
+### Méthode addRoute de la classe TableClass
+
+La methode addRoute permet de créer une route.
+
+```ts
+test.addRoute({
+    type: TypeRoute.POST,
+    path: '/postTest',
+    columsAccept: {
+      inverse: true,
+      list: ["id"]
+    },
+    dataAs: {
+      comment: {
+        where: InfoPlace.QUERYPARAMS,
+        force: false
+      }
+    },
+    auth: {
+      role: ['User', 'Admin']
+    }
+  })
+```
+
+#### Définition de addRoute
+
+```ts
+addRoute(
+  route: Route
+): RouteClass | undefined
+```
+
+#### Paramétres de addRoute
+
+##### route
+
+route doit contenir un objet Route. Cette objet permet de definir le comportement de la route créer.
+

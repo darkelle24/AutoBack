@@ -25,7 +25,13 @@ test.basicRouting({auth: {role: ["Admin"]}})
 autoback.start(8081)
 ```
 
-## Documentation des Classes
+## Index
+
+1. [Installation](#Installation)
+2. [Documentation des Classes](#Documentation-des-Classes)
+3. [Documentation des Interfaces](#Documentation-des-Interfaces)
+
+## Documentation des Classes <a name="Documentation-des-Classes"></a>
 
 ### Index des Classes
 
@@ -35,6 +41,8 @@ autoback.start(8081)
    * [Méthode start](#Méthode-start)
    * [Méthode defineTable](#Méthode-defineTable)
 2. [Classe TableClass](#Classe-TableClass)
+   * [Méthode basicRouting](#Méthode-basicRouting)
+   * [Méthode addRoute](#Méthode-addRoute)
 
 ### Classe Autoback <a name="Classe-Autoback"></a>
 
@@ -161,7 +169,9 @@ Par defaut cette valeur est le nom de la table.
 
 ### Classe TableClass <a name="Classe-TableClass"></a>
 
-#### Méthode basicRouting de la classe TableClass
+TableCLass est la classe des tables créer grace à la méthode `defineTable` de la class `AutoBack` du projet Autoback. Elle permet de créer et centraliser toutes les routes lier a cette table.
+
+#### Méthode basicRouting <a name="Méthode-basicRouting"></a>
 
 La methode basicRouting permet de definir les routes de base de la table. Les routes GET POST PUT DELETE
 
@@ -192,7 +202,7 @@ Par defaut chaque paramétres  a pour valeur
 }
 ```
 
-#### Méthode addRoute
+#### Méthode addRoute <a name="Méthode-addRoute"></a>
 
 La methode addRoute permet de créer une route.
 
@@ -230,7 +240,7 @@ addRoute(
 
 route doit contenir un objet Route. Cette objet permet de definir le comportement de la route créer.
 
-## Documentation des Interfaces
+## Documentation des Interfaces <a name="Documentation-des-Interfaces"></a>
 
 ### Index des Interfaces
 

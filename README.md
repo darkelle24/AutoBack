@@ -348,7 +348,7 @@ Si doSomething n'est pas égale a undefined alors toutes les autres function du 
 #### Définition de Route de type GET <a name="Définition-de-Route-Get"></a>
 
 ```js
-type RouteGet = {
+export type RouteGet = {
    readonly type: TypeRoute.GET,
    limit?: FilterInfo,
    offset?: FilterInfo,

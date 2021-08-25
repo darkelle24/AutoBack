@@ -64,28 +64,28 @@ AutoBack(
 
 #### Paramétres de Autoback <a name="Paramétres-de-Autoback"></a>
 
-##### connnectionStr
+##### *connnectionStr*
 
 connectionStr doit contenir la string de connexion a la base de donnée.
 
-##### db
+##### *db*
 
 db doit contenir la classe correspondant au nom de la base donnée utilisée.
 Par defaut cette valeur est `DB.POSTGRES`.
 
-##### auth
+##### *auth*
 
 auth doit contenir un objet authConfigAutoBack, un boolean ou juste undefined.
 Elle permet de utiliser la table user predefinie et grace a authConfigAutoBack on peut definir le premier utilisateur de la table user.
 Par defaut cette valeur est false.
 
-##### activeHealthRoute
+##### *activeHealthRoute*
 
 activeHealthRoute doit contenir un boolean.
 Il permet d'activer la route `GET ${serverPath}/health`. Cette route permet de savoir si le serveur est en ligne et depuis combien de temps.
 Par defaut cette valeur est true.
 
-##### fileInfo
+##### *fileInfo*
 
 fileInfo doit contenir un objet filePathInfo ou undefined.
 L'objet permet de definir le path du dossier sur la machine contenant les fichiers et le path virtuel du dossier.
@@ -98,19 +98,19 @@ Par defaut cette valeur est
 }
 ```
 
-##### serverPath
+##### *serverPath*
 
 serverPath doit contenir une string. Cette string permet de definir le debut de toutes les routes de l'autoback.
 Par defaut cette valeur est `api/`
 
-##### activeLog
+##### *activeLog*
 
 serverPath doit contenir un boolean. Ce boolean permet de definir si oui ou non l'autoback devra etre logger. Les logs se trouveront dans le dossier logs.
 Par defaut cette valeur est true
 
 #### Méthode start <a name="Méthode-start"></a>
 
-La methode defineTable permet de démarrer le serveur Autoback.
+La methode start permet de démarrer le serveur Autoback.
 
 ```js
 autoback.start(8081)
@@ -126,7 +126,7 @@ async start(
 
 ##### Paramétres de start
 
-###### port
+###### *port*
 
 port doit contenir un nombre. Ce nombre permet de definir le port de connexion du serveur AutoBack.
 Par defaut cette valeur est 8080
@@ -154,15 +154,15 @@ defineTable(
 
 ##### Paramétres de defineTable
 
-###### nameTable
+###### *nameTable*
 
 nameTable doit contenir une string. Cette string permet de definir le nom de la table.
 
-###### table
+###### *table*
 
 table doit contenir un objet Table. Cette objet permet de definir le template de la table.
 
-###### originRoutePath
+###### *originRoutePath*
 
 originRoutePath doit contenir une string ou undefined. Cette string permet de definir la suite de la route. Toutes les routes qui appartiennent a cette table auront avant leur path originRoutePath. Exemple `${serverPath}/${originRoutePath}/${path_des_routes_de_cette_table}`.
 Par defaut cette valeur est le nom de la table.
@@ -236,7 +236,7 @@ addRoute(
 
 ##### Paramétres de addRoute
 
-###### route
+###### *route*
 
 route doit contenir un objet Route. Cette objet permet de definir le comportement de la route créer.
 
@@ -291,19 +291,19 @@ export interface RouteBasic {
 
 #### Paramétres de Route
 
-##### path
+##### *path*
 
 path doit contenir le path de la route. Il peut etre formatter comme sur Express. Le debut du path va etre le path du serveur + le path de la table lier.
 
 Exemple `${serverPath}/${originRoutePath}/${path_des_routes_de_cette_table}`
 
-##### auth
+##### *auth*
 
 auth doit contenir un access ou undefined. auth ne marchera que si la table user de l'Autoback est crée et activée.
 
 Si l'auth est égale a undefined, l'utilisateur n'as pas besoin d'étre authentifier pour avoir acces a la route.
 
-##### doSomething
+##### *doSomething*
 
 doSomething doit contenir une fonction ou undefined.
 

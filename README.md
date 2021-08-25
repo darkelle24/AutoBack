@@ -279,7 +279,7 @@ Cette objet permet de definir le comportement de la route créer.
    * [Route de type DELETE](#Définition-de-Route-Delete)
       * [Définition de Route de type DELETE](#Définition-de-Route-Delete)
       * [Paramétres de Route de type DELETE](#Paramétres-de-Route-Delete)
-2. [Classe Autoback](#Classe-TableClass)
+2. [Interface Table](#Interface-Table)
 
 ### Interface Route <a name="Interface-Route"></a>
 
@@ -363,17 +363,49 @@ type RouteGet = {
 
 ##### *type*
 
+type doit contenir un TypeRoute.
+
+Permet de définir le type de route.
+
 ##### *limit*
+
+limit doit contenir un FilterInfo ou undefined.
+
+Permet de définir le moyen de récuperer la valeur pour avoir définir le nombre d'objet maximum a retourner.
+Si limit est undefined alors l'utilisateur n'as pas de moyen de définir le nombre d'objet maximum a retourner.
 
 ##### *offset*
 
+offset doit contenir un FilterInfo ou undefined.
+
+Permet de définir le moyen de récuperer la valeur pour avoir le début de sélection des objets a retourner.
+Si offset est undefined alors l'utilisateur n'as pas de moyen de définir le début de sélection des objets a retourner.
+
 ##### *returnColumns*
+
+returnColumns doit contenir un acceptData ou undefined.
+
+Permet de définir les colonnes de la table a retourné pour chaque data.
+Si returnColumns est undefined alors toutes les colonnes de la table sont retournés.
 
 ##### *filters*
 
+filters doit contenir un ListFilter ou undefined.
+
+Permet de définir les filtres activés.
+Si filters est undefined alors juste les filtres de base des types sont activés.
+
 ##### *fileReturnWithHost*
 
+fileReturnWithHost doit contenir un boolean ou undefined.
+
+Si true ou undefined alors le path des fichier sera renvoyer avec l'hostname du serveur.
+
 ##### *beforeSend*
+
+beforeSend doit contenir une fonction ou undefined.
+
+Permet de de pouvoir executée une fonction juste avant d'envoyer les données.
 
 #### Définition de Route de type POST <a name="Définition-de-Route-Post"></a>
 
@@ -393,17 +425,34 @@ type RoutePost = {
 
 ##### *type*
 
+type doit contenir un TypeRoute.
+
+Permet de définir le type de route.
+
 ##### *columsAccept*
 
 ##### *returnColumns*
+
+returnColumns doit contenir un acceptData ou undefined.
+
+Permet de définir les colonnes de la table a retourné pour chaque data.
+Si returnColumns est undefined alors toutes les colonnes de la table sont retournés.
 
 ##### *dataAs*
 
 ##### *fileReturnWithHost*
 
+fileReturnWithHost doit contenir un boolean ou undefined.
+
+Si true ou undefined alors le path des fichier sera renvoyer avec l'hostname du serveur.
+
 ##### *beforeSetValue*
 
 ##### *beforeSend*
+
+beforeSend doit contenir une fonction ou undefined.
+
+Permet de de pouvoir executée une fonction juste avant d'envoyer les données.
 
 #### Définition de Route de type PUT <a name="Définition-de-Route-Put"></a>
 
@@ -424,19 +473,41 @@ type RoutePut = {
 
 ##### *type*
 
+type doit contenir un TypeRoute.
+
+Permet de définir le type de route.
+
 ##### *columsAccept*
 
 ##### *returnColumns*
+
+returnColumns doit contenir un acceptData ou undefined.
+
+Permet de définir les colonnes de la table a retourné pour chaque data.
+Si returnColumns est undefined alors toutes les colonnes de la table sont retournés.
 
 ##### *dataAs*
 
 ##### *filters*
 
+filters doit contenir un ListFilter ou undefined.
+
+Permet de définir les filtres activés.
+Si filters est undefined alors juste les filtres de base des types sont activés.
+
 ##### *fileReturnWithHost*
+
+fileReturnWithHost doit contenir un boolean ou undefined.
+
+Si true ou undefined alors le path des fichier sera renvoyer avec l'hostname du serveur.
 
 ##### *beforeSetValue*
 
 ##### *beforeSend*
+
+beforeSend doit contenir une fonction ou undefined.
+
+Permet de de pouvoir executée une fonction juste avant d'envoyer les données.
 
 #### Définition de Route de type DELETE <a name="Définition-de-Route-Delete"></a>
 
@@ -452,7 +523,16 @@ type RouteDelete = {
 
 ##### *type*
 
+type doit contenir un TypeRoute.
+
+Permet de définir le type de route.
+
 ##### *filters*
+
+filters doit contenir un ListFilter ou undefined.
+
+Permet de définir les filtres activés.
+Si filters est undefined alors juste les filtres de base des types sont activés.
 
 ##### *beforeDelete*
 

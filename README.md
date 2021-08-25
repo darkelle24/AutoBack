@@ -25,20 +25,22 @@ test.basicRouting({auth: {role: ["Admin"]}})
 autoback.start(8081)
 ```
 
-## Documentation
+## Documentation des Classes
 
-### Table of contents
+### Index des Classes
 
-1. [Class Autoback](#introduction)
-2. [Some paragraph](#paragraph1)
-    1. [Sub paragraph](#subparagraph1)
-3. [Another paragraph](#paragraph2)
+1. [Classe Autoback](#Classe-Autoback)
+   * [Définition de Autoback](#Définition-de-Autoback)
+   * [Paramétres de Autoback](#Paramétres-de-Autoback)
+   * [Méthode start](#Méthode-start)
+   * [Méthode defineTable](#Méthode-defineTable)
+2. [Classe Autoback](#Classe-TableClass)
 
-### Class Autoback <a name="introduction"></a>
+### Classe Autoback <a name="Classe-Autoback"></a>
 
 Autoback est la classe principale du projet Autoback. Elle permet de centraliser toutes les tables créées et les routes liées a ces table.
 
-#### Définition de Autoback
+#### Définition de Autoback <a name="Définition-de-Autoback"></a>
 
 ```ts
 AutoBack(
@@ -52,7 +54,7 @@ AutoBack(
 )
 ```
 
-#### Paramétres de Autoback
+#### Paramétres de Autoback <a name="Paramétres-de-Autoback"></a>
 
 ##### connnectionStr
 
@@ -98,7 +100,7 @@ Par defaut cette valeur est `api/`
 serverPath doit contenir un boolean. Ce boolean permet de definir si oui ou non l'autoback devra etre logger. Les logs se trouveront dans le dossier logs.
 Par defaut cette valeur est true
 
-### Méthode start de la classe AutoBack
+#### Méthode start <a name="Méthode-start"></a>
 
 La methode defineTable permet de démarrer le serveur Autoback.
 
@@ -106,7 +108,7 @@ La methode defineTable permet de démarrer le serveur Autoback.
 autoback.start(8081)
 ```
 
-#### Définition de start
+##### Définition de start
 
 ```ts
 async start(
@@ -114,14 +116,14 @@ async start(
 ): Promise<void>
 ```
 
-#### Paramétres de start
+##### Paramétres de start
 
-##### port
+###### port
 
 port doit contenir un nombre. Ce nombre permet de definir le port de connexion du serveur AutoBack.
 Par defaut cette valeur est 8080
 
-### Méthode defineTable de la classe AutoBack
+#### Méthode defineTable <a name="Méthode-defineTable"></a>
 
 La methode defineTable permet de definir des tables dans Autoback.
 
@@ -132,7 +134,7 @@ autoback.defineTable('testTable', {
 }, 'testRoute')
 ```
 
-#### Définition de defineTable
+##### Définition de defineTable
 
 ```ts
 defineTable(
@@ -142,22 +144,24 @@ defineTable(
 ): TableClass<any> | undefined
 ```
 
-#### Paramétres de defineTable
+##### Paramétres de defineTable
 
-##### nameTable
+###### nameTable
 
 nameTable doit contenir une string. Cette string permet de definir le nom de la table.
 
-##### table
+###### table
 
 table doit contenir un objet Table. Cette objet permet de definir le template de la table.
 
-##### originRoutePath
+###### originRoutePath
 
 originRoutePath doit contenir une string ou undefined. Cette string permet de definir la suite de la route. Toutes les routes qui appartiennent a cette table auront avant leur path originRoutePath. Exemple `${serverPath}/${originRoutePath}/${path_des_routes_de_cette_table}`.
 Par defaut cette valeur est le nom de la table.
 
-### Méthode basicRouting de la classe TableClass
+### Classe TableClass <a name="Classe-TableClass"></a>
+
+#### Méthode basicRouting de la classe TableClass
 
 La methode basicRouting permet de definir les routes de base de la table. Les routes GET POST PUT DELETE
 
@@ -165,7 +169,7 @@ La methode basicRouting permet de definir les routes de base de la table. Les ro
 test.basicRouting({auth: {role: ["Admin"]}})
 ```
 
-#### Définition de basicRouting
+##### Définition de basicRouting
 
 ```ts
 basicRouting(
@@ -176,7 +180,7 @@ basicRouting(
 ): void
 ```
 
-#### Paramétres de basicRouting
+##### Paramétres de basicRouting
 
 getRoute, postRoute, putRoute, deleteRoute doivent contenir un objet basicRouteParams ou undefined. L'objet basicRouteParams permet de definir si la route est activer et/ou definir les role d'utilisateur qui on le droit d'accéder a cette route.
 Par defaut chaque paramétres  a pour valeur
@@ -188,7 +192,7 @@ Par defaut chaque paramétres  a pour valeur
 }
 ```
 
-### Méthode addRoute de la classe TableClass
+#### Méthode addRoute
 
 La methode addRoute permet de créer une route.
 
@@ -212,7 +216,7 @@ test.addRoute({
   })
 ```
 
-#### Définition de addRoute
+##### Définition de addRoute
 
 ```ts
 addRoute(
@@ -220,11 +224,22 @@ addRoute(
 ): RouteClass | undefined
 ```
 
-#### Paramétres de addRoute
+##### Paramétres de addRoute
 
-##### route
+###### route
 
 route doit contenir un objet Route. Cette objet permet de definir le comportement de la route créer.
+
+## Documentation des Interfaces
+
+### Index des Interfaces
+
+1. [Classe Autoback](#Classe-Autoback)
+   * [Définition de Autoback](#Définition-de-Autoback)
+   * [Paramétres de Autoback](#Paramétres-de-Autoback)
+   * [Méthode start](#Méthode-start)
+   * [Méthode defineTable](#Méthode-defineTable)
+2. [Classe Autoback](#Classe-TableClass)
 
 ### Interface Route
 
@@ -299,3 +314,6 @@ export type RouteGet = {
 ```
 
 #### Paramétres de Route
+
+
+### Interface Table <a name="Interface-Table"></a>

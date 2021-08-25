@@ -104,13 +104,13 @@ Par defaut cette valeur est true
 
 La methode defineTable permet de démarrer le serveur Autoback.
 
-```ts
+```js
 autoback.start(8081)
 ```
 
 ##### Définition de start
 
-```ts
+```js
 async start(
   port: number = 8080
 ): Promise<void>

@@ -34,7 +34,7 @@ autoback.start(8081)
    * [Paramétres de Autoback](#Paramétres-de-Autoback)
    * [Méthode start](#Méthode-start)
    * [Méthode defineTable](#Méthode-defineTable)
-2. [Classe Autoback](#Classe-TableClass)
+2. [Classe TableClass](#Classe-TableClass)
 
 ### Classe Autoback <a name="Classe-Autoback"></a>
 

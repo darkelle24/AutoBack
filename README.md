@@ -42,7 +42,7 @@ Autoback est la classe principale du projet Autoback. Elle permet de centraliser
 
 #### Définition de Autoback <a name="Définition-de-Autoback"></a>
 
-```ts
+```js
 AutoBack(
   connnectionStr: string,
   db: DB = DB.POSTGRES,

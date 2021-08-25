@@ -27,7 +27,14 @@ autoback.start(8081)
 
 ## Documentation
 
-### Class Autoback
+### Table of contents
+
+1. [Class Autoback](#introduction)
+2. [Some paragraph](#paragraph1)
+    1. [Sub paragraph](#subparagraph1)
+3. [Another paragraph](#paragraph2)
+
+### Class Autoback <a name="introduction"></a>
 
 Autoback est la classe principale du projet Autoback. Elle permet de centraliser toutes les tables créées et les routes liées a ces table.
 
@@ -219,3 +226,76 @@ addRoute(
 
 route doit contenir un objet Route. Cette objet permet de definir le comportement de la route créer.
 
+### Interface Route
+
+Cette interface permet de définir une route.
+
+```ts
+let route = {
+  type: TypeRoute.POST,
+  path: '/postTest',
+  columsAccept: {
+    inverse: true,
+    list: ["id"]
+  },
+  dataAs: {
+    comment: {
+      where: InfoPlace.QUERYPARAMS,
+      force: false
+    }
+  },
+  auth: {
+    role: ['User', 'Admin']
+  }
+}
+```
+
+il a différent interface route en fonction du type de route que vous-soulez créer.
+
+Il y a 4 types possibles de route: GET, POST, PUT, DELETE. Mais ils ont tous en commun l'interface RouteBasic.
+
+#### Définition de RouteBasic
+
+```ts
+export interface RouteBasic {
+   path: string,
+   auth?: access,
+   doSomething?(req: any, res: any, route: RouteClass): any
+}
+```
+
+#### Paramétres de Route
+
+##### path
+
+path doit contenir le path de la route. Il peut etre formatter comme sur Express. Le debut du path va etre le path du serveur + le path de la table lier.
+
+Exemple `${serverPath}/${originRoutePath}/${path_des_routes_de_cette_table}`
+
+##### auth
+
+auth doit contenir un access ou undefined. auth ne marchera que si la table user de l'Autoback est crée et activée.
+
+Si l'auth est égale a undefined, l'utilisateur n'as pas besoin d'étre authentifier pour avoir acces a la route.
+
+##### doSomething
+
+doSomething doit contenir une fonction ou undefined.
+
+Si doSomething n'est pas égale a undefined alors toutes les autres function du code a l'exception de JsonToDB, DBToJson, checkError, transformSet seront passées
+
+#### Définition de Route de type GET
+
+```ts
+export type RouteGet = {
+   readonly type: TypeRoute.GET,
+   limit?: FilterInfo,
+   offset?: FilterInfo,
+   returnColumns?: acceptData,
+   filters?: ListFilter,
+   fileReturnWithHost?: boolean,
+   beforeSend?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void,
+} & RouteBasic
+```
+
+#### Paramétres de Route

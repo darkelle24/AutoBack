@@ -127,7 +127,7 @@ Par defaut cette valeur est 8080
 
 La methode defineTable permet de definir des tables dans Autoback.
 
-```ts
+```js
 autoback.defineTable('testTable', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   status: { type: ABDataType.BOOLEAN, defaultValue: true, allowNull: true }
@@ -136,7 +136,7 @@ autoback.defineTable('testTable', {
 
 ##### Définition de defineTable
 
-```ts
+```js
 defineTable(
   nameTable: string,
   table: Table,
@@ -165,13 +165,13 @@ Par defaut cette valeur est le nom de la table.
 
 La methode basicRouting permet de definir les routes de base de la table. Les routes GET POST PUT DELETE
 
-```ts
+```js
 test.basicRouting({auth: {role: ["Admin"]}})
 ```
 
 ##### Définition de basicRouting
 
-```ts
+```js
 basicRouting(
   getRoute: basicRouteParams = {},
   postRoute: basicRouteParams = {},
@@ -185,7 +185,7 @@ basicRouting(
 getRoute, postRoute, putRoute, deleteRoute doivent contenir un objet basicRouteParams ou undefined. L'objet basicRouteParams permet de definir si la route est activer et/ou definir les role d'utilisateur qui on le droit d'accéder a cette route.
 Par defaut chaque paramétres  a pour valeur
 
-```ts
+```js
 {
   active: true,
   auth: undefined
@@ -196,7 +196,7 @@ Par defaut chaque paramétres  a pour valeur
 
 La methode addRoute permet de créer une route.
 
-```ts
+```js
 test.addRoute({
     type: TypeRoute.POST,
     path: '/postTest',
@@ -218,7 +218,7 @@ test.addRoute({
 
 ##### Définition de addRoute
 
-```ts
+```js
 addRoute(
   route: Route
 ): RouteClass | undefined
@@ -245,7 +245,7 @@ route doit contenir un objet Route. Cette objet permet de definir le comportemen
 
 Cette interface permet de définir une route.
 
-```ts
+```js
 let route = {
   type: TypeRoute.POST,
   path: '/postTest',
@@ -271,7 +271,7 @@ Il y a 4 types possibles de route: GET, POST, PUT, DELETE. Mais ils ont tous en 
 
 #### Définition de RouteBasic
 
-```ts
+```js
 export interface RouteBasic {
    path: string,
    auth?: access,
@@ -301,7 +301,7 @@ Si doSomething n'est pas égale a undefined alors toutes les autres function du 
 
 #### Définition de Route de type GET
 
-```ts
+```js
 export type RouteGet = {
    readonly type: TypeRoute.GET,
    limit?: FilterInfo,

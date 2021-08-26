@@ -171,7 +171,7 @@ Cette string permet de definir le nom de la table.
 
 ###### *table*
 
-table doit contenir un objet Table.
+table doit contenir un objet [Table](#Interface-Table).
 
 Cette objet permet de definir le template de la table.
 
@@ -255,7 +255,7 @@ addRoute(
 
 ###### *route*
 
-route doit contenir un objet Route.
+route doit contenir un objet [Route](#Interface-Route).
 
 Cette objet permet de definir le comportement de la route créer.
 

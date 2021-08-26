@@ -280,9 +280,16 @@ Cette objet permet de definir le comportement de la route créer.
       * [Définition de Route de type DELETE](#Définition-de-Route-Delete)
       * [Paramétres de Route de type DELETE](#Paramétres-de-Route-Delete)
 2. [Interface Table](#Interface-Table)
-3. [Interface basicRouteParams](#Interface-basicRouteParams)
-    * [Définition de basicRouteParams](#Définition-de-basicRouteParams)
-    * [Paramétres de basicRouteParams](#Paramétres-de-basicRouteParams)
+   * [Définition de Table](#Définition-de-Table)
+3. [Interface dataTableInfo](#Interface-dataTableInfo)
+   * [Définition de dataTableInfo](#Définition-de-dataTableInfo)
+   * [Paramétres de dataTableInfo](#Paramétres-de-dataTableInfo)
+4. [Interface dataLinkTable](#Interface-dataLinkTable)
+   * [Définition de dataLinkTable](#Définition-de-dataLinkTable)
+   * [Paramétres de dataLinkTable](#Paramétres-de-dataLinkTable)
+5. [Interface basicRouteParams](#Interface-basicRouteParams)
+   * [Définition de basicRouteParams](#Définition-de-basicRouteParams)
+   * [Paramétres de basicRouteParams](#Paramétres-de-basicRouteParams)
 
 ### Interface Route <a name="Interface-Route"></a>
 
@@ -314,7 +321,7 @@ Il y a 4 types possibles de route: GET, POST, PUT, DELETE. Mais ils ont tous en 
 
 #### Définition de RouteBasic <a name="Définition-de-RouteBasic"></a>
 
-```js
+```ts
 interface RouteBasic {
    path: string,
    auth?: access,
@@ -570,6 +577,91 @@ beforeSetValue doit contenir une fonction ou undefined.
 Permet de pouvoir executée une fonction juste avant de supprimé les données.
 
 ### Interface Table <a name="Interface-Table"></a>
+
+#### Définition de Table <a name="Définition-de-Table"></a>
+
+```ts
+interface Table {
+  [key: string]: dataTableInfo | dataLinkTable
+}
+```
+
+C'est un dictionnaire js qui va contenir des string en key et en value des [dataTableInfo](#Interface-dataTableInfo) ou dataLinkTable
+
+### Interface dataTableInfo <a name="Interface-dataTableInfo"></a>
+
+#### Définition de dataTableInfo <a name="Définition-de-dataTableInfo"></a>
+
+```ts
+interface dataTableInfo {
+  type: ABDataType,
+  primaryKey?: boolean,
+  autoIncrement?: boolean,
+  allowNull?: boolean,
+  initValue?: any,
+  defaultValue?: any,
+  unique?: boolean,
+  keepOldValue?: boolean,
+  transformSet?(value: any, table: TableClass<any>): any
+  transformGet?(value: any, table: TableClass<any>): any,
+  validate?: ModelValidatior
+}
+```
+
+#### Paramétres de dataTableInfo <a name="Paramétres-de-dataTableInfo"></a>
+
+##### *type*
+
+##### *primaryKey*
+
+##### *autoIncrement*
+
+##### *allowNull*
+
+##### *initValue*
+
+##### *defaultValue*
+
+##### *unique*
+
+##### *keepOldValue*
+
+##### *transformSet*
+
+##### *transformGet*
+
+##### *validate*
+
+### Interface dataLinkTable <a name="Interface-dataLinkTable"></a>
+
+#### Définition de dataLinkTable <a name="Définition-de-dataLinkTable"></a>
+
+```ts
+type dataLinkTable = {
+  tableToLink: TableClass<any>,
+  columnsLink: string,
+  type: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE ,
+  onDelete?: DeleteAction,
+  rename?: string,
+  multipleResult?: boolean
+} & dataTableInfo
+```
+
+dataLinkTable herite de [dataTableInfo](#Interface-dataTableInfo)
+
+#### Paramétres de dataLinkTable <a name="Paramétres-de-dataLinkTable"></a>
+
+##### *tableToLink*
+
+##### *columnsLink*
+
+##### *type*
+
+##### *onDelete*
+
+##### *rename*
+
+##### *multipleResult*
 
 ### Interface basicRouteParams <a name="Interface-basicRouteParams"></a>
 

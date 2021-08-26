@@ -75,9 +75,9 @@ Par defaut cette valeur est `DB.POSTGRES`.
 
 ##### *auth*
 
-auth doit contenir un objet authConfigAutoBack, un boolean ou juste undefined.
+auth doit contenir un objet [authConfigAutoBack](#Interface-authConfigAutoBack), un boolean ou juste undefined.
 
-Elle permet de utiliser la table user predefinie et grace a authConfigAutoBack on peut definir le premier utilisateur de la table user.
+Elle permet de utiliser la table user predefinie et grace a [authConfigAutoBack](#Interface-authConfigAutoBack) on peut definir le premier utilisateur de la table user.
 Par defaut cette valeur est false.
 
 ##### *activeHealthRoute*
@@ -290,6 +290,15 @@ Cette objet permet de definir le comportement de la route créer.
 5. [Interface basicRouteParams](#Interface-basicRouteParams)
    * [Définition de basicRouteParams](#Définition-de-basicRouteParams)
    * [Paramétres de basicRouteParams](#Paramétres-de-basicRouteParams)
+6. [Interface access](#Interface-access)
+   * [Définition de access](#Définition-de-access)
+   * [Paramétres de access](#Paramétres-de-access)
+7. [Interface authConfigAutoBack](#Interface-authConfigAutoBack)
+   * [Définition de authConfigAutoBack](#Définition-de-authConfigAutoBack)
+   * [Paramétres de authConfigAutoBack](#Paramétres-de-authConfigAutoBack)
+8. [Interface userTableConfig](#Interface-userTableConfig)
+   * [Définition de userTableConfig](#Définition-de-userTableConfig)
+   * [Paramétres de userTableConfig](#Paramétres-de-userTableConfig)
 
 ### Interface Route <a name="Interface-Route"></a>
 
@@ -343,7 +352,7 @@ Exemple `${serverPath}/${originRoutePath}/${path_des_routes_de_cette_table}`
 
 ##### *auth*
 
-auth doit contenir un access ou undefined.
+auth doit contenir un [access](#Interface-access) ou undefined.
 
 auth ne marchera que si la table user de l'Autoback est crée et activée.
 
@@ -685,7 +694,91 @@ Par défaut la value est true.
 
 ##### *auth*
 
-active doit contenir un access ou undefined.
+active doit contenir un [access](#Interface-access) ou undefined.
 
 Permet de pouvoir définir le processus d'authenfication sur cette basic route.
 
+### Interface access <a name="Interface-access"></a>
+
+#### Définition de access <a name="Définition-de-access"></a>
+
+```ts
+export interface access {
+  role?: string[],
+  inverse?: boolean
+}
+```
+
+#### Paramétres de access <a name="Paramétres-de-access"></a>
+
+##### *role*
+
+##### *inverse*
+
+### Interface authConfigAutoBack <a name="Interface-authConfigAutoBack"></a>
+
+#### Définition de authConfigAutoBack <a name="Définition-de-authConfigAutoBack"></a>
+
+```ts
+interface authConfigAutoBack {
+  config?: userTableConfig,
+  getRoute?: basicRouteParams,
+  postRoute?: basicRouteParams,
+  putRoute?: basicRouteParams,
+  deleteRoute?: basicRouteParams
+}
+```
+
+#### Paramétres de authConfigAutoBack <a name="Paramétres-de-authConfigAutoBack"></a>
+
+##### *config*
+
+##### *getRoute*
+
+##### *postRoute*
+
+##### *putRoute*
+
+##### *deleteRoute*
+
+### Interface userTableConfig <a name="Interface-userTableConfig"></a>
+
+#### Définition de userTableConfig <a name="Définition-de-userTableConfig"></a>
+
+```ts
+interface userTableConfig {
+  readonly tokenSecret?: string,
+  readonly passwordSecret?: string,
+  expiresIn?: string,
+  roles?: string[],
+  basicUser?: {
+    username: string,
+    password: string,
+    email: string,
+    phone?: number,
+    role: string
+  }
+}
+```
+
+#### Paramétres de userTableConfig <a name="Paramétres-de-userTableConfig"></a>
+
+##### *tokenSecret*
+
+##### *passwordSecret*
+
+##### *expiresIn*
+
+##### *roles*
+
+##### *basicUser*
+
+##### *basicUser username*
+
+##### *basicUser password*
+
+##### *basicUser email*
+
+##### *basicUser phone*
+
+##### *basicUser role*

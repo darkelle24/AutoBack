@@ -299,6 +299,9 @@ Cette objet permet de definir le comportement de la route créer.
 8. [Interface userTableConfig](#Interface-userTableConfig)
    * [Définition de userTableConfig](#Définition-de-userTableConfig)
    * [Paramétres de userTableConfig](#Paramétres-de-userTableConfig)
+9. [Interface acceptData](#Interface-acceptData)
+   * [Définition de acceptData](#Définition-de-acceptData)
+   * [Paramétres de acceptData](#Paramétres-de-acceptData)
 
 ### Interface Route <a name="Interface-Route"></a>
 
@@ -402,7 +405,7 @@ Si offset est undefined alors l'utilisateur n'as pas de moyen de définir le dé
 
 ##### *returnColumns*
 
-returnColumns doit contenir un acceptData ou undefined.
+returnColumns doit contenir un [acceptData](#Interface-acceptData) ou undefined.
 
 Permet de définir les colonnes de la table a retourné pour chaque data.
 Si returnColumns est undefined alors toutes les colonnes de la table sont retournés.
@@ -450,14 +453,14 @@ Permet de définir le type de route.
 
 ##### *columsAccept*
 
-columsAccept doit contenir un acceptData ou undefined.
+columsAccept doit contenir un [acceptData](#Interface-acceptData) ou undefined.
 
 Permet de définir les donnée pris en compte par le serveur.
 Si columsAccept est undefined alors toutes les donnée seront pris en compte.
 
 ##### *returnColumns*
 
-returnColumns doit contenir un acceptData ou undefined.
+returnColumns doit contenir un [acceptData](#Interface-acceptData) ou undefined.
 
 Permet de définir les colonnes de la table a retourné pour chaque data.
 Si returnColumns est undefined alors toutes les colonnes de la table sont retournés.
@@ -511,14 +514,14 @@ Permet de définir le type de route.
 
 ##### *columsAccept*
 
-columsAccept doit contenir un acceptData ou undefined.
+columsAccept doit contenir un [acceptData](#Interface-acceptData) ou undefined.
 
 Permet de définir les donnée pris en compte par le serveur.
 Si columsAccept est undefined alors toutes les donnée seront pris en compte.
 
 ##### *returnColumns*
 
-returnColumns doit contenir un acceptData ou undefined.
+returnColumns doit contenir un [acceptData](#Interface-acceptData) ou undefined.
 
 Permet de définir les colonnes de la table a retourné pour chaque data.
 Si returnColumns est undefined alors toutes les colonnes de la table sont retournés.
@@ -782,3 +785,20 @@ interface userTableConfig {
 ##### *basicUser phone*
 
 ##### *basicUser role*
+
+### Interface acceptData <a name="Interface-acceptData"></a>
+
+#### Définition de acceptData <a name="Définition-de-acceptData"></a>
+
+```ts
+interface acceptData {
+    list?: string[] | null,
+    inverse?: boolean
+}
+```
+
+#### Paramétres de acceptData <a name="Paramétres-de-acceptData"></a>
+
+##### *list*
+
+##### *inverse*

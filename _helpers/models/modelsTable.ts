@@ -1,5 +1,5 @@
 import { TableClass } from "back/table"
-import { ModelValidatior } from "./models"
+import { ModelValidator } from "./models"
 import { ABDataType, realDataTypeInfo } from "./modelsType"
 
 export interface Table {
@@ -33,7 +33,7 @@ export interface dataTableInfo {
      * Execute after execute dataTypeInfo.DBToJson
   */
   transformGet?(value: any, table: TableClass<any>): any,
-  validate?: ModelValidatior
+  validate?: ModelValidator
 }
 
 export interface saveTable {
@@ -78,7 +78,7 @@ export interface saveDataTableInfo {
       * Execute after execute dataTypeInfo.DBToJson
    */
   transformGet?(value: any, table: TableClass<any>): any,
-  validate?: ModelValidatior
+  validate?: ModelValidator
 }
 
 export interface allTables {

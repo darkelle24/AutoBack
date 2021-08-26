@@ -1,5 +1,5 @@
 import { DataTypeAbstract } from "sequelize"
-import { ModelValidatior } from "./models"
+import { ModelValidator } from "./models"
 import { FilterInfoType } from "./routeModels"
 
 export type dataType = {
@@ -30,7 +30,7 @@ export interface dataTypeInfo {
     */
     transform?(data: any): any
   },
-  validate?: ModelValidatior
+  validate?: ModelValidator
 }
 
 export type realDataType = {
@@ -62,7 +62,7 @@ export interface realDataTypeInfo {
     */
     transform?(data: any): any
   },
-  validate: ModelValidatior,
+  validate: ModelValidator,
   isTableLink: boolean
 }
 

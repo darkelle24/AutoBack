@@ -12,7 +12,7 @@ export interface filePathInfo {
   virtualPath?: string
 }
 
-export interface ModelValidatior {
+export interface ModelValidator {
   contains?: {
     seed: string,
     msg?: string

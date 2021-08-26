@@ -626,7 +626,7 @@ interface dataTableInfo {
   keepOldValue?: boolean,
   transformSet?(value: any, table: TableClass<any>): any
   transformGet?(value: any, table: TableClass<any>): any,
-  validate?: ModelValidatior
+  validate?: ModelValidator
 }
 ```
 
@@ -703,7 +703,7 @@ Par defaut transformGet est égale à undefined.
 
 ##### *validate*
 
-validate doit contenir une [ModelValidatior](#Interface-ModelValidatior) ou undefined.
+validate doit contenir une [ModelValidator](#Interface-ModelValidator) ou undefined.
 
 Permet de définir de défénir des contrainte sur les données entrente dans cette colonne en plus de celle imposer par les ABDataType.
 Par defaut validate est égale à .

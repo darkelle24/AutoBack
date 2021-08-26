@@ -184,7 +184,7 @@ Par defaut cette valeur est le nom de la table.
 
 ### Classe TableClass <a name="Classe-TableClass"></a>
 
-TableCLass est la classe des tables créer grace à la méthode `defineTable` de la class `AutoBack` du projet Autoback. Elle permet de créer et centraliser toutes les routes lier a cette table.
+TableCLass est la classe des tables créer grace à la [méthode defineTable](#Méthode-defineTable) de la [classe Autoback](#Classe-Autoback) du projet Autoback. Elle permet de créer et centraliser toutes les routes lier a cette table.
 
 #### Méthode basicRouting <a name="Méthode-basicRouting"></a>
 
@@ -339,7 +339,7 @@ let route = {
 
 il a différent interface route en fonction du type de route que vous-soulez créer.
 
-Il y a 4 types possibles de route: GET, POST, PUT, DELETE. Mais ils ont tous en commun l'interface RouteBasic.
+Il y a 4 types possibles de route: GET, POST, PUT, DELETE. Mais ils ont tous en commun l'interface [RouteBasic](#Définition-de-RouteBasic).
 
 #### Définition de RouteBasic <a name="Définition-de-RouteBasic"></a>
 

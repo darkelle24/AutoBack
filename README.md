@@ -405,7 +405,7 @@ Si true ou undefined alors le path des fichier sera renvoyer avec l'hostname du 
 
 beforeSend doit contenir une fonction ou undefined.
 
-Permet de de pouvoir executée une fonction juste avant d'envoyer les données.
+Permet de pouvoir executée une fonction juste avant d'envoyer les données.
 
 #### Définition de Route de type POST <a name="Définition-de-Route-Post"></a>
 
@@ -431,6 +431,11 @@ Permet de définir le type de route.
 
 ##### *columsAccept*
 
+columsAccept doit contenir un acceptData ou undefined.
+
+Permet de définir les donnée pris en compte par le serveur.
+Si columsAccept est undefined alors toutes les donnée seront pris en compte.
+
 ##### *returnColumns*
 
 returnColumns doit contenir un acceptData ou undefined.
@@ -440,6 +445,10 @@ Si returnColumns est undefined alors toutes les colonnes de la table sont retour
 
 ##### *dataAs*
 
+dataAs doit contenir un ListValueInfo ou undefined.
+
+Permet de chercher des informations ailleurs que dans le body et les mettre dans le body.
+
 ##### *fileReturnWithHost*
 
 fileReturnWithHost doit contenir un boolean ou undefined.
@@ -448,11 +457,15 @@ Si true ou undefined alors le path des fichier sera renvoyer avec l'hostname du 
 
 ##### *beforeSetValue*
 
+beforeSetValue doit contenir une fonction ou undefined.
+
+Permet de pouvoir executée une fonction juste avant d'enregistrer les données.
+
 ##### *beforeSend*
 
 beforeSend doit contenir une fonction ou undefined.
 
-Permet de de pouvoir executée une fonction juste avant d'envoyer les données.
+Permet de pouvoir executée une fonction juste avant d'envoyer les données.
 
 #### Définition de Route de type PUT <a name="Définition-de-Route-Put"></a>
 
@@ -479,6 +492,11 @@ Permet de définir le type de route.
 
 ##### *columsAccept*
 
+columsAccept doit contenir un acceptData ou undefined.
+
+Permet de définir les donnée pris en compte par le serveur.
+Si columsAccept est undefined alors toutes les donnée seront pris en compte.
+
 ##### *returnColumns*
 
 returnColumns doit contenir un acceptData ou undefined.
@@ -487,6 +505,10 @@ Permet de définir les colonnes de la table a retourné pour chaque data.
 Si returnColumns est undefined alors toutes les colonnes de la table sont retournés.
 
 ##### *dataAs*
+
+dataAs doit contenir un ListValueInfo ou undefined.
+
+Permet de chercher des informations ailleurs que dans le body et les mettre dans le body.
 
 ##### *filters*
 
@@ -503,11 +525,15 @@ Si true ou undefined alors le path des fichier sera renvoyer avec l'hostname du 
 
 ##### *beforeSetValue*
 
+beforeSetValue doit contenir une fonction ou undefined.
+
+Permet de pouvoir executée une fonction juste avant d'enregistrer les données.
+
 ##### *beforeSend*
 
 beforeSend doit contenir une fonction ou undefined.
 
-Permet de de pouvoir executée une fonction juste avant d'envoyer les données.
+Permet de pouvoir executée une fonction juste avant d'envoyer les données.
 
 #### Définition de Route de type DELETE <a name="Définition-de-Route-Delete"></a>
 
@@ -535,5 +561,9 @@ Permet de définir les filtres activés.
 Si filters est undefined alors juste les filtres de base des types sont activés.
 
 ##### *beforeDelete*
+
+beforeSetValue doit contenir une fonction ou undefined.
+
+Permet de pouvoir executée une fonction juste avant de supprimé les données.
 
 ### Interface Table <a name="Interface-Table"></a>

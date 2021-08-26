@@ -207,7 +207,7 @@ basicRouting(
 
 ##### Paramétres de basicRouting
 
-getRoute, postRoute, putRoute, deleteRoute doivent contenir un objet basicRouteParams ou undefined.
+getRoute, postRoute, putRoute, deleteRoute doivent contenir un objet [basicRouteParams](#Interface-basicRouteParams) ou undefined.
 
 L'objet basicRouteParams permet de definir si la route est activer et/ou definir les role d'utilisateur qui on le droit d'accéder a cette route.
 Par defaut chaque paramétres a pour valeur
@@ -280,6 +280,9 @@ Cette objet permet de definir le comportement de la route créer.
       * [Définition de Route de type DELETE](#Définition-de-Route-Delete)
       * [Paramétres de Route de type DELETE](#Paramétres-de-Route-Delete)
 2. [Interface Table](#Interface-Table)
+3. [Interface basicRouteParams](#Interface-basicRouteParams)
+    * [Définition de basicRouteParams](#Définition-de-basicRouteParams)
+    * [Paramétres de basicRouteParams](#Paramétres-de-basicRouteParams)
 
 ### Interface Route <a name="Interface-Route"></a>
 
@@ -567,3 +570,30 @@ beforeSetValue doit contenir une fonction ou undefined.
 Permet de pouvoir executée une fonction juste avant de supprimé les données.
 
 ### Interface Table <a name="Interface-Table"></a>
+
+### Interface basicRouteParams <a name="Interface-basicRouteParams"></a>
+
+#### Définition de basicRouteParams <a name="Définition-de-basicRouteParams"></a>
+
+```js
+interface basicRouteParams {
+   active?: boolean,
+   auth?: access
+}
+```
+
+#### Paramétres de basicRouteParams <a name="Paramétres-de-basicRouteParams"></a>
+
+##### *active*
+
+active doit contenir un boolean ou undefined.
+
+Permet de pouvoir activer ou non une basic route.
+Par défaut la value est true.
+
+##### *auth*
+
+active doit contenir un access ou undefined.
+
+Permet de pouvoir définir le processus d'authenfication sur cette basic route.
+

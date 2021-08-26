@@ -307,6 +307,11 @@ Cette objet permet de definir le comportement de la route créer.
 11. [Interface FilterInfo](#Interface-FilterInfo)
     * [Définition de FilterInfo](#Définition-de-FilterInfo)
     * [Paramétres de FilterInfo](#Paramétres-de-FilterInfo)
+12. [Interface ListValueInfo](#Interface-ListValueInfo)
+    * [Définition de ListValueInfo](#Définition-de-ListValueInfo)
+13. [Interface ValueInfo](#Interface-ValueInfo)
+    * [Définition de ValueInfo](#Définition-de-ValueInfo)
+    * [Paramétres de ValueInfo](#Paramétres-de-ValueInfo)
 
 ### Interface Route <a name="Interface-Route"></a>
 
@@ -472,7 +477,7 @@ Si returnColumns est undefined alors toutes les colonnes de la table sont retour
 
 ##### *dataAs*
 
-dataAs doit contenir un ListValueInfo ou undefined.
+dataAs doit contenir un [ListValueInfo](#Interface-ListValueInfo) ou undefined.
 
 Permet de chercher des informations ailleurs que dans le body et les mettre dans le body.
 
@@ -533,7 +538,7 @@ Si returnColumns est undefined alors toutes les colonnes de la table sont retour
 
 ##### *dataAs*
 
-dataAs doit contenir un ListValueInfo ou undefined.
+dataAs doit contenir un [ListValueInfo](#Interface-ListValueInfo) ou undefined.
 
 Permet de chercher des informations ailleurs que dans le body et les mettre dans le body.
 
@@ -839,3 +844,38 @@ interface FilterInfo {
 ##### *where*
 
 ##### *transformValue*
+
+### Interface ListValueInfo <a name="Interface-ListValueInfo"></a>
+
+#### Définition de ListValueInfo <a name="Définition-de-ListValueInfo"></a>
+
+```ts
+interface ListValueInfo {
+   [columnsName: string]: ValueInfo
+}
+```
+
+C'est un dictionnaire js qui va contenir des string en key qui corresponde au nom des colonne de la [Table](#Interface-Table) et en value des [ValueInfo](#Interface-ValueInfo)
+
+### Interface ValueInfo <a name="Interface-ValueInfo"></a>
+
+#### Définition de ValueInfo <a name="Définition-de-ValueInfo"></a>
+
+```ts
+interface ValueInfo {
+  name?: string
+  where?: InfoPlace,
+  transformValue?(value: any): any,
+  force?: boolean
+}
+```
+
+#### Paramétres de ValueInfo <a name="Paramétres-de-ValueInfo"></a>
+
+##### *name*
+
+##### *where*
+
+##### *transformValue*
+
+##### *force*

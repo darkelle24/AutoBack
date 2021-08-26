@@ -575,7 +575,7 @@ Permet de pouvoir executée une fonction juste avant de supprimé les données.
 
 #### Définition de basicRouteParams <a name="Définition-de-basicRouteParams"></a>
 
-```js
+```ts
 interface basicRouteParams {
    active?: boolean,
    auth?: access

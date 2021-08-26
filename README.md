@@ -634,25 +634,79 @@ interface dataTableInfo {
 
 ##### *type*
 
+type doit contenir un ABDataType.
+
+Permet de pouvoir définir le type de donnée enregistrer dans cette colonne.
+
 ##### *primaryKey*
+
+primaryKey doit contenir un boolean ou undefined.
+
+Permet de définir si cette colonne est la primary key de la table.
+Si undefined alors primaryKey est égale a false.
 
 ##### *autoIncrement*
 
+autoIncrement doit contenir un boolean ou undefined.
+
+Permet de définir si cette colonne doit s'auto incrementé pour chaque valeur ajouter. Fonctionne que si le type de la collonne est de type nombre.
+Si undefined alors autoIncrement est égale a false.
+
 ##### *allowNull*
+
+allowNull doit contenir un boolean ou undefined.
+
+Permet de définir si l'utilisateur peut ne rien envoyer ou envoyer null pour cette colonne.
+Si undefined alors allowNull est égale a false.
 
 ##### *initValue*
 
+initValue doit contenir une valeur ou undefined.
+
+Permet de définir si l'utilisateur créer une nouvelle entrer de mettre des valeur initial.
+Par defaut initValue est égale à undefined.
+
 ##### *defaultValue*
+
+defaultValue doit contenir une valeur ou undefined.
+
+Permet de définir si l'utilisateur envoie null ou undefined pour cette colonne de mettre une valeur.
+Par defaut defaultValue est égale à undefined.
 
 ##### *unique*
 
+unique doit contenir une boolean ou undefined.
+
+Permet de définir si l'utilisateur peut envoyer plusieurs fois la meme valeur.
+Par defaut unique est égale à false.
+
 ##### *keepOldValue*
+
+keepOldValue doit contenir une boolean ou undefined.
+
+Permet de définir si l'utilisateur envoye null a pour cette colonne de garder l'ancienne valeur.
+Par defaut keepOldValue est égale à true.
 
 ##### *transformSet*
 
+transformSet doit contenir une fonction ou undefined.
+
+Permet de définir d'executer une fonction avant l'execution de la fonction dataTypeInfo.JsonToDB mais aprés validate.
+Par defaut transformSet est égale à undefined.
+
 ##### *transformGet*
 
+transformGet doit contenir une fonction ou undefined.
+
+Permet de définir d'executer une fonction aprés l'execution de la fonction dataTypeInfo.DBToJson.
+Par defaut transformGet est égale à undefined.
+
 ##### *validate*
+
+validate doit contenir une [ModelValidatior](#Interface-ModelValidatior) ou undefined.
+
+Permet de définir de défénir des contrainte sur les données entrente dans cette colonne en plus de celle imposer par les ABDataType.
+Par defaut validate est égale à .
 
 ### Interface dataLinkTable <a name="Interface-dataLinkTable"></a>
 

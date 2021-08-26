@@ -302,6 +302,8 @@ Cette objet permet de definir le comportement de la route créer.
 9. [Interface acceptData](#Interface-acceptData)
    * [Définition de acceptData](#Définition-de-acceptData)
    * [Paramétres de acceptData](#Paramétres-de-acceptData)
+10. [Interface ListFilter](#Interface-ListFilter)
+   * [Définition de ListFilter](#Définition-de-ListFilter)
 
 ### Interface Route <a name="Interface-Route"></a>
 
@@ -802,3 +804,13 @@ interface acceptData {
 ##### *list*
 
 ##### *inverse*
+
+### Interface ListFilter <a name="Interface-ListFilter"></a>
+
+#### Définition de ListFilter <a name="Définition-de-ListFilter"></a>
+
+```ts
+interface ListFilter {
+  [columnsName: string]: FilterOperators
+}
+```

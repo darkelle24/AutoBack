@@ -595,7 +595,7 @@ interface Table {
 }
 ```
 
-C'est un dictionnaire js qui va contenir des string en key et en value des [dataTableInfo](#Interface-dataTableInfo) ou dataLinkTable
+C'est un dictionnaire js qui va contenir des string en key et en value des [dataTableInfo](#Interface-dataTableInfo) ou [dataLinkTable](#Interface-dataLinkTable)
 
 ### Interface dataTableInfo <a name="Interface-dataTableInfo"></a>
 

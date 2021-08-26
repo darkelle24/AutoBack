@@ -304,6 +304,9 @@ Cette objet permet de definir le comportement de la route créer.
    * [Paramétres de acceptData](#Paramétres-de-acceptData)
 10. [Interface ListFilter](#Interface-ListFilter)
     * [Définition de ListFilter](#Définition-de-ListFilter)
+11. [Interface FilterInfo](#Interface-FilterInfo)
+    * [Définition de FilterInfo](#Définition-de-FilterInfo)
+    * [Paramétres de FilterInfo](#Paramétres-de-FilterInfo)
 
 ### Interface Route <a name="Interface-Route"></a>
 
@@ -393,14 +396,14 @@ Permet de définir le type de route.
 
 ##### *limit*
 
-limit doit contenir un FilterInfo ou undefined.
+limit doit contenir un [FilterInfo](#Interface-FilterInfo) ou undefined.
 
 Permet de définir le moyen de récuperer la valeur pour avoir définir le nombre d'objet maximum a retourner.
 Si limit est undefined alors l'utilisateur n'as pas de moyen de définir le nombre d'objet maximum a retourner.
 
 ##### *offset*
 
-offset doit contenir un FilterInfo ou undefined.
+offset doit contenir un [FilterInfo](#Interface-FilterInfo) ou undefined.
 
 Permet de définir le moyen de récuperer la valeur pour avoir le début de sélection des objets a retourner.
 Si offset est undefined alors l'utilisateur n'as pas de moyen de définir le début de sélection des objets a retourner.
@@ -414,7 +417,7 @@ Si returnColumns est undefined alors toutes les colonnes de la table sont retour
 
 ##### *filters*
 
-filters doit contenir un ListFilter ou undefined.
+filters doit contenir un [ListFilter](#Interface-ListFilter) ou undefined.
 
 Permet de définir les filtres activés.
 Si filters est undefined alors juste les filtres de base des types sont activés.
@@ -536,7 +539,7 @@ Permet de chercher des informations ailleurs que dans le body et les mettre dans
 
 ##### *filters*
 
-filters doit contenir un ListFilter ou undefined.
+filters doit contenir un [ListFilter](#Interface-ListFilter) ou undefined.
 
 Permet de définir les filtres activés.
 Si filters est undefined alors juste les filtres de base des types sont activés.
@@ -579,7 +582,7 @@ Permet de définir le type de route.
 
 ##### *filters*
 
-filters doit contenir un ListFilter ou undefined.
+filters doit contenir un [ListFilter](#Interface-ListFilter) ou undefined.
 
 Permet de définir les filtres activés.
 Si filters est undefined alors juste les filtres de base des types sont activés.
@@ -814,3 +817,25 @@ interface ListFilter {
   [columnsName: string]: FilterOperators
 }
 ```
+
+C'est un dictionnaire js qui va contenir des string en key qui corresponde au nom des colonne de la [Table](#Interface-Table) et en value des FilterOperators
+
+### Interface FilterInfo <a name="Interface-FilterInfo"></a>
+
+#### Définition de FilterInfo <a name="Définition-de-FilterInfo"></a>
+
+```ts
+interface FilterInfo {
+  name?: string
+  where?: InfoPlace,
+  transformValue?(value: any): any
+}
+```
+
+#### Paramétres de FilterInfo <a name="Paramétres-de-FilterInfo"></a>
+
+##### *name*
+
+##### *where*
+
+##### *transformValue*

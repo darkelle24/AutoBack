@@ -812,7 +812,19 @@ export interface access {
 
 ##### *role*
 
+role doit contenir un string[] ou undefined.
+
+Permet de défénir les role qui auront accés a la route.
+Si undefined alors tous les roles sont acceptée.
+Par défaut la valeur est undefined.
+
 ##### *inverse*
+
+inverse doit contenir un boolean ou undefined.
+
+Permet d'inverser la séléction des roles.
+Par exemple, si role est undefined alors tous les roles sont refusée.
+Par défaut la value est false.
 
 ### Interface authConfigAutoBack <a name="Interface-authConfigAutoBack"></a>
 

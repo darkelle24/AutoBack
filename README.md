@@ -729,15 +729,47 @@ dataLinkTable herite de [dataTableInfo](#Interface-dataTableInfo)
 
 ##### *tableToLink*
 
+tableToLink doit contenir un TableClass. Celui ca peut etre obtenu grace a la [méthode defineTable](#Méthode-defineTable).
+
+Permet de définir la table qui sera lier a cette colonne.
+
 ##### *columnsLink*
+
+columnsLink doit contenir un string.
+
+Permet de définir la colonne qui sera utiliser pour trouver les comparée les donnée dans la table lier.
+
+Par exemple `columnsLink = 'id'` permettera de chercher grace a l'id les donnée que l'utilisateur a stocker dans la table lier.
 
 ##### *type*
 
+columnsLink doit contenir un `ABDataType.TABLE_LINK` ou `ABDataType.MULTIPLE_LINK_TABLE`.
+
+Permet de définir si il y a plusieur lien a une meme table grace a `ABDataType.MULTIPLE_LINK_TABLE` ou si type est egale a `ABDataType.TABLE_LINK` alors il y a qu un seul lien dans l'autre table.
+
 ##### *onDelete*
+
+onDelete doit contenir soit `DELETE`, `SET_DEFAULT`, `SET_NULL`.
+
+`DELETE` si la / les lignes liées sont détruite alors le lien sera supprimer seront supprimer.
+`SET_DEFAULT` si la / les lignes liées sont détruite alors le lien sera remis a la valeur par defaut.
+`SET_NULL` si la / les lignes liées sont détruite alors le lien sera egale a null.
+
+Par default onDelete est egale a DELETE.
 
 ##### *rename*
 
+rename doit contenir une string ou undefined.
+
+Permet de renommer la colonne quandd la ligne est renvoyer a l'utilisateur.
+Par defaut rename est égale à undefined.
+
 ##### *multipleResult*
+
+multipleResult doit contenir une boolean ou undefined.
+
+Permet de de definir si quand la ligne est renvoyer a l'utilisateur d'afficher plusieur resultat sous la forme d'une array.
+Par defaut rename est égale à true.
 
 ### Interface basicRouteParams <a name="Interface-basicRouteParams"></a>
 

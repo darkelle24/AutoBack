@@ -209,7 +209,7 @@ basicRouting(
 
 getRoute, postRoute, putRoute, deleteRoute doivent contenir un objet [basicRouteParams](#Interface-basicRouteParams) ou undefined.
 
-L'objet basicRouteParams permet de definir si la route est activer et/ou definir les role d'utilisateur qui on le droit d'accéder a cette route.
+L'objet [basicRouteParams](#Interface-basicRouteParams) permet de definir si la route est activer et/ou definir les role d'utilisateur qui on le droit d'accéder a cette route.
 Par defaut chaque paramétres a pour valeur
 
 ```js
@@ -844,13 +844,42 @@ interface authConfigAutoBack {
 
 ##### *config*
 
+config doit contenir un [userTableConfig](#Interface-userTableConfig) ou undefined.
+
+Permet de définir la configuration des compte. Voir plus dans le chapitre lié a [userTableConfig](#Interface-userTableConfig).
+Par défaut la valeur de config est
+
+```js
+  tokenSecret: "wVmNfh6YPJMHtwtbj0Wa43wSh3cvJpoKqoQzZK8QbwjTGEVBNYO8xllNQC2G0U7lfKcVMK5lsn1Tshwl",
+  passwordSecret: "pBvhLoQrwTKyk9amfwSabc0zwh5EuV7DDTYpbGG4K52vV9WGftSDhmlz90hMvASJlHk1azg24Uvdturqomx819kz10NS9S",
+  expiresIn: "7 days",
+  roles: ["SuperAdmin", "Admin", "User"],
+  basicUser: auth.basicUser
+```
+
 ##### *getRoute*
+
+getRoute doivent contenir un objet [basicRouteParams](#Interface-basicRouteParams) ou undefined.
+
+L'objet [basicRouteParams](#Interface-basicRouteParams) permet de definir si la route est activer et/ou definir les role d'utilisateur qui on le droit d'accéder a cette route.
 
 ##### *postRoute*
 
+postRoute doivent contenir un objet [basicRouteParams](#Interface-basicRouteParams) ou undefined.
+
+L'objet [basicRouteParams](#Interface-basicRouteParams) permet de definir si la route est activer et/ou definir les role d'utilisateur qui on le droit d'accéder a cette route.
+
 ##### *putRoute*
 
+putRoute doivent contenir un objet [basicRouteParams](#Interface-basicRouteParams) ou undefined.
+
+L'objet [basicRouteParams](#Interface-basicRouteParams) permet de definir si la route est activer et/ou definir les role d'utilisateur qui on le droit d'accéder a cette route.
+
 ##### *deleteRoute*
+
+deleteRoute doivent contenir un objet [basicRouteParams](#Interface-basicRouteParams) ou undefined.
+
+L'objet [basicRouteParams](#Interface-basicRouteParams) permet de definir si la route est activer et/ou definir les role d'utilisateur qui on le droit d'accéder a cette route.
 
 ### Interface userTableConfig <a name="Interface-userTableConfig"></a>
 

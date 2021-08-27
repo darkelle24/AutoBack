@@ -905,23 +905,33 @@ interface userTableConfig {
 
 ##### *tokenSecret*
 
+tokenSecret doit contenir un string ou undefined.
+
+Permet de définir le secret dans laquel les token seront crypter.
+
 ##### *passwordSecret*
+
+passwordSecret doit contenir un string ou undefined.
+
+Permet de définir le secret dans laquel les password seront crypter.
 
 ##### *expiresIn*
 
+passwordSecret doit contenir un string ou undefined.
+
+Permet de définir la durée de vie du token.
+
 ##### *roles*
+
+roles doit contenir un string[] ou undefined.
+
+Permet de définir les role possible.
 
 ##### *basicUser*
 
-##### *basicUser username*
+basicUser doit contenir un objet ou undefined.
 
-##### *basicUser password*
-
-##### *basicUser email*
-
-##### *basicUser phone*
-
-##### *basicUser role*
+Permet de créer un utilisateur a la création de la data base.
 
 ### Interface acceptData <a name="Interface-acceptData"></a>
 
@@ -938,7 +948,18 @@ interface acceptData {
 
 ##### *list*
 
+list doit contenir un string[] ou undefined ou null.
+
+Permet de défénir la liste des donnée qui sont accepter.
+Si undefined alors tous les donnée sont acceptée a l'exception de la primaryKey.
+Si null alors tous les donnée sont acceptée a l'exception de la primaryKey.
+
 ##### *inverse*
+
+inverse doit contenir un boolean ou undefined.
+
+Permet d'inverser la liste.
+Par défaut la value est false.
 
 ### Interface ListFilter <a name="Interface-ListFilter"></a>
 

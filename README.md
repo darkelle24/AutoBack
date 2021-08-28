@@ -989,9 +989,24 @@ interface FilterInfo {
 
 ##### *name*
 
+name doit contenir un string ou undefined.
+
+Permet de définir le nom de la donnée qui sera sélectionner.
+Par défaut la value est `{nom_de_la_colonne}_{name_du_filtre}`.
+
 ##### *where*
 
+where doit contenir un InfoPlace ou undefined.
+
+Permet de définir l'endroit ou est stocker la donnée.
+Par défaut la value est `InfoPlace.QUERYPARAMS`.
+
 ##### *transformValue*
+
+transformValue doit contenir un fonction ou undefined.
+
+Permet d'executer une fonction quand la donnée sera recupérer.
+Par défaut la value est `transform` de `dataTypeInfo` si `transformValue` est égale undefined et `dataTypeInfo.transform` est différent de undefined.
 
 ### Interface ListValueInfo <a name="Interface-ListValueInfo"></a>
 

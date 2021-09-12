@@ -4,7 +4,9 @@ import { AutoBack } from "./autoBack"
 import { TypeRoute, InfoPlace } from "../_helpers/models/routeModels"
 import { DeleteAction } from "../_helpers/models/modelsTable"
 
-const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, {
+const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, true)
+//let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
+autoback.activeAuth({
   config: {
     basicUser: {
       username: 'admin',
@@ -12,8 +14,7 @@ const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test"
       email: 'darkelle24@gmail.com',
       role: 'Admin'
     }
-}}, true)
-//let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
+}})
 const test = autoback.defineTable('lol', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   bonjour: { type: ABDataType.BOOLEAN, defaultValue: true, allowNull: true },

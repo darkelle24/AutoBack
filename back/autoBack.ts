@@ -34,7 +34,7 @@ export class AutoBack {
   readonly fileInfo: filePathInfo
   readonly serverPath: string
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, auth?: authConfigAutoBack | boolean, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false) {
     this.server.use(compression());
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
@@ -114,17 +114,6 @@ export class AutoBack {
     }
     if (activeHealthRoute)
       this.health()
-    if (auth) {
-      if (auth === true)
-        auth = {}
-      if (!auth.config)
-        auth.config = {}
-      const userTable = this.defineUserTable(auth.config)
-      if (userTable)
-        this._userTable = userTable
-      if (this.userTable)
-        this.userTable.basicRouting(auth.getRoute, auth.postRoute, auth.putRoute, auth.deleteRoute)
-    }
   }
 
   public addTypes(newTypes: realDataType): void {
@@ -144,7 +133,7 @@ export class AutoBack {
           this.userTable.config.basicUser
         ).then(() => {
           console.log('Succefully create basic user')
-        }).catch(err => {
+        }).catch((err: any) => {
           if (err.errors !== undefined) {
             console.warn(err.name + ': ' + err.errors[0].message )
           } else {
@@ -157,6 +146,24 @@ export class AutoBack {
       console.log('Server listening on port ' + port)
     });
     this.error404()
+  }
+
+  /**
+     * Call after you construct AutoBack class
+  */
+
+  public activeAuth(auth?: authConfigAutoBack | boolean, userDefine: Table = userTableDefine, userTableClass: typeof UserTableClass = UserTableClass): void {
+    if (auth) {
+      if (auth === true)
+        auth = {}
+      if (!auth.config)
+        auth.config = {}
+      const userTable = this.defineUserTable(auth.config, userDefine, userTableClass)
+      if (userTable)
+        this._userTable = userTable
+      if (this.userTable)
+        this.userTable.basicRouting(auth.getRoute, auth.postRoute, auth.putRoute, auth.deleteRoute)
+    }
   }
 
   /**
@@ -203,12 +210,13 @@ export class AutoBack {
     });
   }
 
-  private defineUserTable(auth: userTableConfig): UserTableClass<any> | undefined {
+  private defineUserTable(auth: userTableConfig, userDefine: Table = userTableDefine, userTableClass: typeof UserTableClass = UserTableClass): UserTableClass<any> | undefined {
     if (!this.userTable) {
-      const [tableSequelize, saveTableInfo] = this.defineStartTable("User", userTableDefine)
+      userDefine = _.merge(userTableDefine, userDefine)
+      const [tableSequelize, saveTableInfo] = this.defineStartTable("User", userDefine)
 
       if (tableSequelize) {
-        this.tables["User"] = new UserTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, '/auth')
+        this.tables["User"] = new userTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, '/auth')
         saveTableInfo.table = this.tables["User"]
       }
 

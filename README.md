@@ -4,12 +4,14 @@
 import { DB } from "../_helpers/models/modelsDb"
 import { AutoBack } from "./autoBack"
 
-const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, {
+const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES)
+
+autoback.activeAuth({
   config: {
     basicUser: {
       username: 'admin',
       password: 'adminTest24',
-      email: 'exemple@gmail.com',
+      email: 'darkelle24@gmail.com',
       role: 'Admin'
     }
 }})
@@ -40,6 +42,7 @@ autoback.start(8081)
    * [Paramétres de Autoback](#Paramétres-de-Autoback)
    * [Méthode start](#Méthode-start)
    * [Méthode defineTable](#Méthode-defineTable)
+   * [Méthode activeAuth](#Méthode-activeAuth)
 2. [Classe TableClass](#Classe-TableClass)
    * [Méthode basicRouting](#Méthode-basicRouting)
    * [Méthode addRoute](#Méthode-addRoute)
@@ -54,7 +57,6 @@ Autoback est la classe principale du projet Autoback. Elle permet de centraliser
 AutoBack(
   connnectionStr: string,
   db: DB = DB.POSTGRES,
-  auth?: authConfigAutoBack | boolean,
   activeHealthRoute: boolean = true,
   fileInfo?: filePathInfo,
   serverPath: string = "api/",
@@ -72,13 +74,6 @@ connectionStr doit contenir la string de connexion a la base de donnée.
 
 db doit contenir la classe correspondant au nom de la base donnée utilisée.
 Par defaut cette valeur est `DB.POSTGRES`.
-
-##### *auth*
-
-auth doit contenir un objet [authConfigAutoBack](#Interface-authConfigAutoBack), un boolean ou juste undefined.
-
-Elle permet de utiliser la table user predefinie et grace a [authConfigAutoBack](#Interface-authConfigAutoBack) on peut definir le premier utilisateur de la table user.
-Par defaut cette valeur est false.
 
 ##### *activeHealthRoute*
 
@@ -181,6 +176,66 @@ originRoutePath doit contenir une string ou undefined.
 
 Cette string permet de definir la suite de la route. Toutes les routes qui appartiennent a cette table auront avant leur path originRoutePath. Exemple `${serverPath}/${originRoutePath}/${path_des_routes_de_cette_table}`.
 Par defaut cette valeur est le nom de la table.
+
+#### Méthode activeAuth <a name="Méthode-activeAuth"></a>
+
+La methode activeAuth permet de definir des tables dans Autoback.
+
+```js
+autoback.activeAuth({
+  config: {
+    basicUser: {
+      username: 'admin',
+      password: 'adminTest24',
+      email: 'zoulou@gmail.com',
+      role: 'Admin'
+    }
+}})
+```
+
+##### Définition de activeAuth
+
+```js
+activeAuth(
+  auth?: authConfigAutoBack | boolean,
+  userDefine: Table = userTableDefine,
+  userTableClass: typeof UserTableClass = UserTableClass
+): void
+```
+
+##### Paramétres de activeAuth
+
+###### *auth*
+
+auth doit contenir un objet [authConfigAutoBack](#Interface-authConfigAutoBack), un boolean ou juste undefined.
+
+Elle permet de utiliser la table user predefinie et grace a [authConfigAutoBack](#Interface-authConfigAutoBack) on peut definir le premier utilisateur de la table user.
+Par defaut cette valeur est false.
+
+###### *userDefine*
+
+userDefine doit contenir un objet [Table](#Interface-Table) ou juste undefined.
+
+Elle permet de pouvoir définir les colonnes de la table User.
+Par defaut cette valeur est
+```js
+{
+  id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+  username: { type: ABDataType.STRING, unique: true },
+  password: { type: ABDataType.STRING, validate: { isStrongPassword: { minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 }}, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
+  email: { type: ABDataType.STRING, validate: {isEmail: true} },
+  phone: { type: ABDataType.STRING, allowNull: true },
+  role: {type: ABDataType.STRING, validate: { equals: {comparaison: ["Admin", "SuperAdmin"]}}}
+}
+```
+Chaque valeur manquante sera remplacer par celle par défaut grace à [loadash merge](https://lodash.com/docs/#merge).
+
+###### *userTableClass*
+
+userDefine doit contenir une classe non construite de type UserTableClass ou juste undefined.
+
+Permet de définir le comportement de la table User.
+Par defaut cette valeur est UserTableClass.
 
 ### Classe TableClass <a name="Classe-TableClass"></a>
 

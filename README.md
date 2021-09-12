@@ -33,6 +33,18 @@ autoback.start(8081)
 2. [Documentation des Classes](#Documentation-des-Classes)
 3. [Documentation des Interfaces](#Documentation-des-Interfaces)
 
+## Installation <a name="Installation"></a>
+
+Il s'agit d'un module Node.js disponible via le registre npm.
+
+S'il s'agit d'un tout nouveau projet, assurez-vous de créer d'abord un ```package.json``` avec la commande ```npm init```.
+
+L'installation se fait à l'aide de la commande ```npm install``` :
+
+```
+npm install autoback
+```
+
 ## Documentation des Classes <a name="Documentation-des-Classes"></a>
 
 ### Index des Classes

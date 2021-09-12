@@ -1,13 +1,17 @@
 {
-    "name": "auto_back_express",
+    "name": "autoback",
     "version": "1.0.0",
-    "main": "index.js",
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": ["/dist", "README.md", "docker-compose.yml", "Dockerfile"],
+    "prepublish": "tsc",
     "scripts": {
         "start": "ts-node ./back/server.ts",
         "test": "echo \"Error: no test specified\" && exit 1",
         "server": "nodemon ./back/server.ts",
         "debug": "nodemon --watch ./**/* -e ts,json --exec node --inspect-brk -r ts-node/register back/server.ts",
-        "lint": "eslint ."
+        "lint": "eslint .",
+        "build": "tsc"
     },
     "repository": {
         "type": "git",

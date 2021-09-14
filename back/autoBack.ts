@@ -188,7 +188,7 @@ export class AutoBack {
   }
 
   private health() {
-    this.server.get('/health', (req, res) => {
+    this.server.get(addPath('/', addPath(this.serverPath, '/health')), (req, res) => {
       const time = Date.now() - this.startTime
       res.status(StatusCodes.OK).json({
         uptime: {

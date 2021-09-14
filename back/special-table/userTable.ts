@@ -1,7 +1,7 @@
 import { ListFilter, Route } from './../../_helpers/models/routeModels';
 import { basicRole, userTableConfig, realUserTableConfig, access } from './../../_helpers/models/userTableModel';
 import { Model, ModelCtor } from 'sequelize';
-import { activeAllFiltersForAllCols } from '../../_helpers/fn';
+import { activeAllFiltersForAllCols, errorHandling } from '../../_helpers/fn';
 import { basicRouteParams, InfoPlace, TypeRoute } from '../../_helpers/models/routeModels';
 import { TableClass } from '../table';
 import jwt from 'jsonwebtoken'
@@ -134,6 +134,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       path: '/login',
       type: TypeRoute.POST,
       doSomething: async (req, res, route) => {
+        if (!req.body['username'] || !req.body['password']) {
+          return errorHandling(new Error('Missing a username or / and a password.'), res)
+        }
         const { username, password } = req.body;
 
         const user = await route.sequelizeData.findOne({ where: { username: username, password: this.getHash().update(password).digest('hex') } })

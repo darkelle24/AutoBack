@@ -11,10 +11,14 @@ autoback.activeAuth({
     basicUser: {
       username: 'admin',
       password: 'adminTest24',
-      email: 'darkelle24@gmail.com',
+      email: 'zoulou@gmail.com',
       role: 'Admin'
     }
-}})
+}},
+  {
+    test: {type: ABDataType.STRING, allowNull: true}
+  }
+)
 const test = autoback.defineTable('lol', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   bonjour: { type: ABDataType.BOOLEAN, defaultValue: true, allowNull: true },

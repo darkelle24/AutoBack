@@ -210,9 +210,10 @@ export class AutoBack {
     });
   }
 
-  private defineUserTable(auth: userTableConfig, userDefine: Table = userTableDefine, userTableClass: typeof UserTableClass = UserTableClass): UserTableClass<any> | undefined {
+  private defineUserTable(auth: userTableConfig, userDefine: Table = userTableDefine, userTableClass: typeof UserTableClass = UserTableClass, mergeUserDefine: boolean = true): UserTableClass<any> | undefined {
     if (!this.userTable) {
-      userDefine = _.merge(userTableDefine, userDefine)
+      if (mergeUserDefine)
+        userDefine = _.merge(userTableDefine, userDefine)
       const [tableSequelize, saveTableInfo] = this.defineStartTable("User", userDefine)
 
       if (tableSequelize) {

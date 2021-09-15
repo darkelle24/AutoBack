@@ -211,7 +211,8 @@ autoback.activeAuth({
 activeAuth(
   auth?: authConfigAutoBack | boolean,
   userDefine: Table = userTableDefine,
-  userTableClass: typeof UserTableClass = UserTableClass
+  userTableClass: typeof UserTableClass = UserTableClass,
+  mergeUserDefine: boolean = true
 ): void
 ```
 
@@ -248,6 +249,13 @@ userDefine doit contenir une classe non construite de type UserTableClass ou jus
 
 Permet de définir le comportement de la table User.
 Par defaut cette valeur est UserTableClass.
+
+###### *mergeUserDefine*
+
+userDefine doit contenir un boolean ou juste undefined.
+
+Permet de définir si le `userDefine` va merge avec les valeurs par defauts.
+Par defaut cette valeur est `true`.
 
 ### Classe TableClass <a name="Classe-TableClass"></a>
 

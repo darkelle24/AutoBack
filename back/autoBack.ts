@@ -152,13 +152,13 @@ export class AutoBack {
      * Call after you construct AutoBack class
   */
 
-  public activeAuth(auth?: authConfigAutoBack | boolean, userDefine: Table = userTableDefine, userTableClass: typeof UserTableClass = UserTableClass): void {
+  public activeAuth(auth?: authConfigAutoBack | boolean, userDefine: Table = userTableDefine, userTableClass: typeof UserTableClass = UserTableClass, mergeUserDefine: boolean = true): void {
     if (auth) {
       if (auth === true)
         auth = {}
       if (!auth.config)
         auth.config = {}
-      const userTable = this.defineUserTable(auth.config, userDefine, userTableClass)
+      const userTable = this.defineUserTable(auth.config, userDefine, userTableClass, mergeUserDefine)
       if (userTable)
         this._userTable = userTable
       if (this.userTable)

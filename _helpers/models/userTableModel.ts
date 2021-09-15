@@ -32,11 +32,7 @@ export interface userTableConfig {
   expiresIn?: string,
   roles?: string[],
   basicUser?: {
-    username: string,
-    password: string,
-    email: string,
-    phone?: number,
-    role: string
+    [key: string]: any
   }
 }
 
@@ -46,11 +42,7 @@ export interface realUserTableConfig {
   expiresIn: string,
   readonly roles: string[],
   readonly basicUser?: {
-    username: string,
-    password: string,
-    email: string,
-    phone?: number,
-    role: string
+    [key: string]: any
   }
 }
 

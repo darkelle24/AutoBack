@@ -14,6 +14,7 @@ import express from 'express';
 export class UserTableClass<M extends Model> extends TableClass<M> {
 
   readonly config: realUserTableConfig
+  readonly passwordEncode: (value: any, table: TableClass<any>) => any
 
   constructor(auth: userTableConfig, name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string) {
     if (table.role.validate) {
@@ -35,6 +36,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       roles: auth.roles ? auth.roles : basicRole,
       basicUser: auth.basicUser
     }
+    if (table.password && table.password.transformSet)
+      this.passwordEncode = table.password.transformSet
   }
 
   basicRouting(getRoute: basicRouteParams = {}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
@@ -139,7 +142,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         }
         const { username, password } = req.body;
 
-        const user = await route.sequelizeData.findOne({ where: { username: username, password: this.getHash().update(password).digest('hex') } })
+        const user = await route.sequelizeData.findOne({ where: { username: username, password: this.passwordEncode(password, this) } })
 
         if (user) {
           const temp = user.get()

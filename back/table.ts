@@ -23,7 +23,7 @@ export class TableClass<M extends Model> {
   private server: express.Application
   routes: allRoutes = { originRoutePath: '/', get: [], post: [], put: [], delete: [] }
   activeBasicRouting = false
-  private userTable?: UserTableClass<any> = undefined
+  userTable?: UserTableClass<any> = undefined
   readonly upload?: multer.Multer
   readonly pathFolder?: string
 

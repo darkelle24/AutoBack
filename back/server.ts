@@ -14,7 +14,12 @@ autoback.activeAuth({
       email: 'zoulou@gmail.com',
       role: 'Admin'
     }
-}},
+},
+  getRoute: {
+    active: true,
+    auth: {role: ['Admin']}
+  }
+},
   {
     test: {type: ABDataType.STRING, allowNull: true}
   }

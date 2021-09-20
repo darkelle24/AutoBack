@@ -1,5 +1,5 @@
 import { DataType, DataTypes, ModelCtor, Op } from "sequelize"
-import { FilterInfoType, FilterOperators, ListFilter } from "./models/routeModels"
+import { FilterInfoType, FilterOperators, InfoPlace, ListFilter, TypeRoute } from "./models/routeModels"
 import * as _ from "lodash"
 import validator from "validator"
 import path from "path"
@@ -7,6 +7,7 @@ import fs from 'fs'
 import { ABDataType, dataType, realDataType, realDataTypeInfo } from "./models/modelsType"
 import { saveTable } from "./models/modelsTable"
 import express from "express"
+import { AutoBack } from "../back/autoBack"
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function defaultJsonToDB(data: any): any {
@@ -399,4 +400,35 @@ export function formatDate(d: Date): string {
     hour = '0' + hour;
 
   return [year, month, day, hour].join('-');
+}
+
+export function infoPlaceToString(place: InfoPlace) {
+  if (place === InfoPlace.BODY) {
+    return "Body"
+  } else if (place === InfoPlace.HEADER) {
+    return "Header"
+  } else if (place === InfoPlace.QUERYPARAMS) {
+    return "Querry parameters"
+  } else if (place === InfoPlace.PARAMS) {
+    return "Parameters"
+  } else {
+    return "Undefined"
+  }
+}
+
+export function typeRouteToString(type: TypeRoute) {
+  if (type === TypeRoute.GET) {
+    return "GET"
+  } else if (type === TypeRoute.POST) {
+    return "POST"
+  } else if (type === TypeRoute.PUT) {
+    return "PUT"
+  } else if (type === TypeRoute.DELETE) {
+    return "DELETE"
+  } else {
+    return "Undefined"
+  }
+}
+export function createAutoBack(infoAutoBack: any): AutoBack {
+  return new AutoBack(infoAutoBack.connnectionStr, infoAutoBack.db, infoAutoBack.activeHealthRoute, infoAutoBack.fileInfo, infoAutoBack.serverPath, infoAutoBack.activeLog, infoAutoBack.resetDb, infoAutoBack.debug)
 }

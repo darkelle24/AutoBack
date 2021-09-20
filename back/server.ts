@@ -3,9 +3,18 @@ import { DB } from "../_helpers/models/modelsDb"
 import { AutoBack } from "./autoBack"
 import { TypeRoute, InfoPlace } from "../_helpers/models/routeModels"
 import { DeleteAction } from "../_helpers/models/modelsTable"
+import { createAutoBack } from "../_helpers/fn"
 
-const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, true)
+//const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, true)
 //let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
+
+const autoback = createAutoBack({
+  connnectionStr: "postgres://postgres:password@localhost:5432/test",
+  db: DB.POSTGRES,
+  activeHealthRoute: true,
+  debug: true
+})
+
 autoback.activeAuth({
   config: {
     basicUser: {

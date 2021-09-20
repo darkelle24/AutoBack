@@ -1,4 +1,5 @@
 import { TableClass } from 'back/table';
+import { DB } from 'index';
 import multer from "multer"
 
 export interface routeTableInfo {
@@ -133,4 +134,15 @@ export interface ModelValidator {
   isDate?: {
     msg?: string
   } | boolean,
+}
+
+export interface AutoBackConstructorParameters {
+  connnectionStr: string,
+  db?: DB,
+  activeHealthRoute?: boolean,
+  fileInfo?: filePathInfo,
+  serverPath?: string,
+  activeLog?: boolean,
+  resetDb?: boolean,
+  debug?: boolean
 }

@@ -33,8 +33,9 @@ export class AutoBack {
   }
   readonly fileInfo: filePathInfo
   readonly serverPath: string
+  readonly debug: boolean
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false) {
     this.server.use(compression());
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
@@ -114,6 +115,10 @@ export class AutoBack {
     }
     if (activeHealthRoute)
       this.health()
+    this.debug = debug
+    if (debug) {
+      this.debugRoute()
+    }
   }
 
   public addTypes(newTypes: realDataType): void {
@@ -202,6 +207,15 @@ export class AutoBack {
           d: Math.floor(time / 86400000)
         }
       })
+    })
+  }
+
+  private debugRoute() {
+    this.server.get(addPath('/', addPath(this.serverPath, '/debug')), (req, res) => {
+      console.log(this.tables)
+      /* for (let oneTable of this.tables) {
+
+      } */
     })
   }
 

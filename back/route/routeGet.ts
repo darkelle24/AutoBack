@@ -5,7 +5,7 @@ import { routeTableInfo } from "../../_helpers/models/models";
 import { InfoPlace, RouteGet } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
 import { UserTableClass } from 'back/special-table/userTable';
-import { errorHandling } from "../../_helpers/fn";
+import { errorHandling, infoPlaceToString, typeRouteToString } from "../../_helpers/fn";
 import express from 'express';
 
 export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
@@ -60,7 +60,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       filter['limit'] = this.getValueFromRequest(req, (route.limit as RealFilterInfo))
     if (route.offset)
       filter['offset'] = this.getValueFromRequest(req, (route.offset as RealFilterInfo))
-
+    this.getInfoRoute()
     return this.sequelizeData.findAll(filter).then(async datas => {
       const toSend: any[] = []
 
@@ -96,5 +96,49 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
         return await this.tableClass.getLinkDataRecursive(oneInfo, -1)
       }));
     }
+  }
+
+  getInfoRoute(): any {
+    let toReturn: any = {
+      type: typeRouteToString(this.routeInfo.type),
+      route: this.path,
+      auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route.",
+      filter: {}
+    }
+
+    for (let [keyFilter, valueFilter] of Object.entries(this.filterlist)) {
+      let newFilter: any = undefined
+      for (let [keyValueFilter, valueValueFilter] of Object.entries(valueFilter)) {
+        newFilter = {
+          filter: valueValueFilter.info.name,
+          name: valueValueFilter.name,
+          where: ""
+        }
+
+        newFilter.where = infoPlaceToString(valueValueFilter.where)
+
+        if (newFilter) {
+          if (!toReturn.filter[keyFilter])
+            toReturn.filter[keyFilter] = {}
+          toReturn.filter[keyFilter][newFilter.filter] = newFilter
+        }
+      }
+    }
+
+    if (this.routeInfo.limit) {
+      toReturn.limit = {
+        filter: 'Limit',
+        name: 'limit',
+        where: infoPlaceToString(this.routeInfo.limit.where)
+      }
+    }
+    if (this.routeInfo.offset) {
+      toReturn.offset = {
+        filter: 'Offset',
+        name: 'offset',
+        where: infoPlaceToString(this.routeInfo.offset.where)
+      }
+    }
+    return toReturn
   }
 }

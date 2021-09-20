@@ -421,4 +421,29 @@ export class TableClass<M extends Model> {
       }
     }))
   }
+
+  public getInfoRoute(): any {
+    let toReturn: any = {}
+
+    toReturn.get = []
+    for (let route of this.routes.get) {
+      toReturn.get.push(route.getInfoRoute())
+    }
+
+    toReturn.put = []
+    for (let route of this.routes.put) {
+      toReturn.put.push(route.getInfoRoute())
+    }
+
+    toReturn.post = []
+    for (let route of this.routes.post) {
+      toReturn.post.push(route.getInfoRoute())
+    }
+
+    toReturn.delete = []
+    for (let route of this.routes.delete) {
+      toReturn.delete.push(route.getInfoRoute())
+    }
+    return toReturn
+  }
 }

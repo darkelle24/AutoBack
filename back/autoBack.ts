@@ -212,10 +212,15 @@ export class AutoBack {
 
   private debugRoute() {
     this.server.get(addPath('/', addPath(this.serverPath, '/debug')), (req, res) => {
-      console.log(this.tables)
-      /* for (let oneTable of this.tables) {
+      let toSend: any = {
+        tables: {}
+      }
+      for (let [key, value] of Object.entries(this.tables)) {
+        toSend.tables[key] = {}
+        toSend.tables[key].routes = value.getInfoRoute()
+      }
 
-      } */
+      res.status(200).json(toSend)
     })
   }
 

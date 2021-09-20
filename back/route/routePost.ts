@@ -1,7 +1,7 @@
 import { UserTableClass } from "back/special-table/userTable";
 import express from "express";
 import { Model, ModelCtor } from "sequelize";
-import { addPath, errorHandling } from "../../_helpers/fn";
+import { addPath, errorHandling, infoPlaceToString, typeRouteToString } from "../../_helpers/fn";
 import { routeTableInfo } from "../../_helpers/models/models";
 import { RoutePost } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
@@ -84,5 +84,14 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     }).catch(err => {
       return errorHandling(err, res)
     })
+  }
+
+  getInfoRoute(): any {
+    let toReturn: any = {
+      type: typeRouteToString(this.routeInfo.type),
+      route: this.path,
+      auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route."
+    }
+    return toReturn
   }
 }

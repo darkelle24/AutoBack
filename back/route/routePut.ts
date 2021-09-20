@@ -1,7 +1,7 @@
 import { UserTableClass } from "back/special-table/userTable";
 import express from "express";
 import { Model, ModelCtor } from "sequelize";
-import { errorHandling } from "../../_helpers/fn";
+import { errorHandling, infoPlaceToString, typeRouteToString } from "../../_helpers/fn";
 import { routeTableInfo } from "../../_helpers/models/models";
 import { RoutePut } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
@@ -96,5 +96,34 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     }).catch(err => {
       return errorHandling(err, res)
     })
+  }
+
+  getInfoRoute(): any {
+    let toReturn: any = {
+      type: typeRouteToString(this.routeInfo.type),
+      route: this.path,
+      auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route.",
+      filter: {}
+    }
+
+    for (let [keyFilter, valueFilter] of Object.entries(this.filterlist)) {
+      let newFilter: any = undefined
+      for (let [keyValueFilter, valueValueFilter] of Object.entries(valueFilter)) {
+        newFilter = {
+          filter: valueValueFilter.info.name,
+          name: valueValueFilter.name,
+          where: ""
+        }
+
+        newFilter.where = infoPlaceToString(valueValueFilter.where)
+
+        if (newFilter) {
+          if (!toReturn.filter[keyFilter])
+            toReturn.filter[keyFilter] = {}
+          toReturn.filter[keyFilter][newFilter.filter] = newFilter
+        }
+      }
+    }
+    return toReturn
   }
 }

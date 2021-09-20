@@ -103,7 +103,8 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       type: typeRouteToString(this.routeInfo.type),
       route: this.path,
       auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route.",
-      filter: {}
+      filter: {},
+      description: this.routeInfo.description
     }
 
     for (let [keyFilter, valueFilter] of Object.entries(this.filterlist)) {

@@ -30,7 +30,8 @@ export interface RouteBasic {
    /**
      * If not undefined then the other function except auth, JsonToDB, DBToJson, checkError, transfromGet, transformSet will be skip
     */
-   doSomething?(req: any, res: any, route: RouteClass): any
+   doSomething?(req: any, res: any, route: RouteClass): any,
+   description?: string
 }
 
 export interface acceptData {

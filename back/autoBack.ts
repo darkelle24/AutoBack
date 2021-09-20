@@ -216,8 +216,7 @@ export class AutoBack {
         tables: {}
       }
       for (let [key, value] of Object.entries(this.tables)) {
-        toSend.tables[key] = {}
-        toSend.tables[key].routes = value.getInfoRoute()
+        toSend.tables[key] = value.getTableInfo()
       }
 
       res.status(200).json(toSend)

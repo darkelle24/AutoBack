@@ -15,6 +15,7 @@ import { DeleteAction, realDataLinkTable, saveTable, TableLinktoThisTable } from
 import { ABDataType } from '../_helpers/models/modelsType';
 import express from 'express';
 import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
+import _ from 'lodash';
 
 export class TableClass<M extends Model> {
   readonly name: string
@@ -420,6 +421,35 @@ export class TableClass<M extends Model> {
         return this.onDeletedActionDelete(data, castTable, oneTableInfo)
       }
     }))
+  }
+
+  public getTableInfo(): any {
+    let toReturn: any = {
+      routes: this.getInfoRoute(),
+      column: this.getInfoColumn()
+      //description: this.
+    }
+    return toReturn
+  }
+
+  private transformColumnsInfo(key: any, value: any) {
+    if (key && typeof key === "string" && (key === 'sequelizeType' || key === 'tableToLink' || key === 'JsonToDB' || key === 'DBToJson' || key === 'sequilize_type')) {
+      return undefined;
+    }
+    return value;
+  }
+
+  public getInfoColumn(): any {
+    let toReturn: any = {}
+
+    for (let [key, value] of Object.entries(this.table)) {
+      toReturn[key] = JSON.parse(JSON.stringify(value, this.transformColumnsInfo))
+      if ((<realDataLinkTable>value).tableToLink) {
+        toReturn[key].tableToLink = (<realDataLinkTable>value).tableToLink.name
+      }
+    }
+
+    return toReturn
   }
 
   public getInfoRoute(): any {

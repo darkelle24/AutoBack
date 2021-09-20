@@ -8,6 +8,7 @@ import { ABDataType, dataType, realDataType, realDataTypeInfo } from "./models/m
 import { saveTable } from "./models/modelsTable"
 import express from "express"
 import { AutoBack } from "../back/autoBack"
+import { AutoBackConstructorParameters } from "./models/models"
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function defaultJsonToDB(data: any): any {
@@ -429,6 +430,6 @@ export function typeRouteToString(type: TypeRoute) {
     return "Undefined"
   }
 }
-export function createAutoBack(infoAutoBack: any): AutoBack {
+export function createAutoBack(infoAutoBack: AutoBackConstructorParameters): AutoBack {
   return new AutoBack(infoAutoBack.connnectionStr, infoAutoBack.db, infoAutoBack.activeHealthRoute, infoAutoBack.fileInfo, infoAutoBack.serverPath, infoAutoBack.activeLog, infoAutoBack.resetDb, infoAutoBack.debug)
 }

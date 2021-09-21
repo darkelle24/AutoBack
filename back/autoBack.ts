@@ -34,6 +34,7 @@ export class AutoBack {
   readonly fileInfo: filePathInfo
   readonly serverPath: string
   readonly debug: boolean
+  private debugInfo: any
 
   constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false) {
     this.server.use(compression());
@@ -147,6 +148,9 @@ export class AutoBack {
         })
       }
     })
+    if (this.debug) {
+      this.getInfoAutoBack()
+    }
     this.server.listen(port, () => {
       console.log('Server listening on port ' + port)
     });
@@ -210,16 +214,21 @@ export class AutoBack {
     })
   }
 
+  public getInfoAutoBack() {
+    let toSend: any = {
+      tables: {}
+    }
+    for (let [key, value] of Object.entries(this.tables)) {
+      toSend.tables[key] = value.getTableInfo()
+    }
+    this.debugInfo = toSend
+    console.log('Debug Mode init')
+    return toSend
+  }
+
   private debugRoute() {
     this.server.get(addPath('/', addPath(this.serverPath, '/debug')), (req, res) => {
-      let toSend: any = {
-        tables: {}
-      }
-      for (let [key, value] of Object.entries(this.tables)) {
-        toSend.tables[key] = value.getTableInfo()
-      }
-
-      res.status(200).json(toSend)
+      res.status(200).json(this.debugInfo)
     })
   }
 

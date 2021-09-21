@@ -403,7 +403,7 @@ export function formatDate(d: Date): string {
   return [year, month, day, hour].join('-');
 }
 
-export function infoPlaceToString(place: InfoPlace) {
+export function infoPlaceToString(place: InfoPlace): string {
   if (place === InfoPlace.BODY) {
     return "Body"
   } else if (place === InfoPlace.HEADER) {
@@ -417,7 +417,7 @@ export function infoPlaceToString(place: InfoPlace) {
   }
 }
 
-export function typeRouteToString(type: TypeRoute) {
+export function typeRouteToString(type: TypeRoute): string {
   if (type === TypeRoute.GET) {
     return "GET"
   } else if (type === TypeRoute.POST) {

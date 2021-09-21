@@ -86,13 +86,27 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     })
   }
 
+  private transformDataAsInfo(key: any, value: any): any {
+    if (key && typeof key === "string") {
+      if (key === 'transformValue')
+        return undefined
+      if (key === 'where')
+        return infoPlaceToString(value)
+    }
+    return value
+  }
+
   getInfoRoute(): any {
-    let toReturn: any = {
+    const toReturn: any = {
       type: typeRouteToString(this.routeInfo.type),
       route: this.path,
       auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route.",
-      description: this.routeInfo.description
+      description: this.routeInfo.description,
+      returnColumns: this.routeInfo.returnColumns,
+      columsAccept: this.routeInfo.columsAccept,
+      dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined
     }
+
     return toReturn
   }
 }

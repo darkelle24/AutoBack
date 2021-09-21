@@ -214,11 +214,11 @@ export class AutoBack {
     })
   }
 
-  public getInfoAutoBack() {
-    let toSend: any = {
+  public getInfoAutoBack(): any {
+    const toSend: any = {
       tables: {}
     }
-    for (let [key, value] of Object.entries(this.tables)) {
+    for (const [key, value] of Object.entries(this.tables)) {
       toSend.tables[key] = value.getTableInfo()
     }
     this.debugInfo = toSend

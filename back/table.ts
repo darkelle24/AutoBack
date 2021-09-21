@@ -15,7 +15,6 @@ import { DeleteAction, realDataLinkTable, saveTable, TableLinktoThisTable } from
 import { ABDataType } from '../_helpers/models/modelsType';
 import express from 'express';
 import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
-import _ from 'lodash';
 
 export class TableClass<M extends Model> {
   readonly name: string
@@ -424,7 +423,7 @@ export class TableClass<M extends Model> {
   }
 
   public getTableInfo(): any {
-    let toReturn: any = {
+    const toReturn: any = {
       routes: this.getInfoRoute(),
       column: this.getInfoColumn()
       //description: this.
@@ -440,9 +439,9 @@ export class TableClass<M extends Model> {
   }
 
   public getInfoColumn(): any {
-    let toReturn: any = {}
+    const toReturn: any = {}
 
-    for (let [key, value] of Object.entries(this.table)) {
+    for (const [key, value] of Object.entries(this.table)) {
       toReturn[key] = JSON.parse(JSON.stringify(value, this.transformColumnsInfo))
       if ((<realDataLinkTable>value).tableToLink) {
         toReturn[key].tableToLink = (<realDataLinkTable>value).tableToLink.name
@@ -453,25 +452,25 @@ export class TableClass<M extends Model> {
   }
 
   public getInfoRoute(): any {
-    let toReturn: any = {}
+    const toReturn: any = {}
 
     toReturn.get = []
-    for (let route of this.routes.get) {
+    for (const route of this.routes.get) {
       toReturn.get.push(route.getInfoRoute())
     }
 
     toReturn.put = []
-    for (let route of this.routes.put) {
+    for (const route of this.routes.put) {
       toReturn.put.push(route.getInfoRoute())
     }
 
     toReturn.post = []
-    for (let route of this.routes.post) {
+    for (const route of this.routes.post) {
       toReturn.post.push(route.getInfoRoute())
     }
 
     toReturn.delete = []
-    for (let route of this.routes.delete) {
+    for (const route of this.routes.delete) {
       toReturn.delete.push(route.getInfoRoute())
     }
     return toReturn

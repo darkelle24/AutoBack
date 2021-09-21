@@ -98,18 +98,29 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     })
   }
 
+  private transformDataAsInfo(key: any, value: any): any {
+    if (key && typeof key === "string") {
+      if (key === 'transformValue')
+        return undefined
+      if (key === 'where')
+        return infoPlaceToString(value)
+    }
+    return value
+  }
+
   getInfoRoute(): any {
-    let toReturn: any = {
+    const toReturn: any = {
       type: typeRouteToString(this.routeInfo.type),
       route: this.path,
       auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route.",
       filter: {},
-      description: this.routeInfo.description
+      description: this.routeInfo.description,
+      dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined
     }
 
-    for (let [keyFilter, valueFilter] of Object.entries(this.filterlist)) {
+    for (const [keyFilter, valueFilter] of Object.entries(this.filterlist)) {
       let newFilter: any = undefined
-      for (let [keyValueFilter, valueValueFilter] of Object.entries(valueFilter)) {
+      for (const [, valueValueFilter] of Object.entries(valueFilter)) {
         newFilter = {
           filter: valueValueFilter.info.name,
           name: valueValueFilter.name,

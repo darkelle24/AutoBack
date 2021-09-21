@@ -1,6 +1,5 @@
 import { ABDataType } from "../_helpers/models/modelsType"
 import { DB } from "../_helpers/models/modelsDb"
-import { AutoBack } from "./autoBack"
 import { TypeRoute, InfoPlace } from "../_helpers/models/routeModels"
 import { DeleteAction } from "../_helpers/models/modelsTable"
 import { createAutoBack } from "../_helpers/fn"

@@ -99,7 +99,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
   }
 
   getInfoRoute(): any {
-    let toReturn: any = {
+    const toReturn: any = {
       type: typeRouteToString(this.routeInfo.type),
       route: this.path,
       auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route.",
@@ -107,9 +107,9 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       description: this.routeInfo.description
     }
 
-    for (let [keyFilter, valueFilter] of Object.entries(this.filterlist)) {
+    for (const [keyFilter, valueFilter] of Object.entries(this.filterlist)) {
       let newFilter: any = undefined
-      for (let [keyValueFilter, valueValueFilter] of Object.entries(valueFilter)) {
+      for (const [, valueValueFilter] of Object.entries(valueFilter)) {
         newFilter = {
           filter: valueValueFilter.info.name,
           name: valueValueFilter.name,

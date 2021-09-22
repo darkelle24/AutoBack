@@ -315,8 +315,8 @@ export class AutoBack {
     const toReturn: any = {
       info: {
         _postman_id: "7fd90311-1814-471c-9e7c-0289c8c064b4",
-		    name: "AutoBack",
-		    schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+        name: "AutoBack",
+        schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
       },
       item: [],
       variable: [{

@@ -90,4 +90,6 @@ if (test) {
     }
   }
 }
-autoback.start(8081)
+autoback.start(8081).then(()=> {
+  autoback.getAPIPostman('Postman.json')
+})

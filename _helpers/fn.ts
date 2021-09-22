@@ -433,3 +433,10 @@ export function typeRouteToString(type: TypeRoute): string {
 export function createAutoBack(infoAutoBack: AutoBackConstructorParameters): AutoBack {
   return new AutoBack(infoAutoBack.connnectionStr, infoAutoBack.db, infoAutoBack.activeHealthRoute, infoAutoBack.fileInfo, infoAutoBack.serverPath, infoAutoBack.activeLog, infoAutoBack.resetDb, infoAutoBack.debug)
 }
+
+export function writeInFile(path: string, text: string) {
+  fs.writeFile(path, text, (err) => {
+    // throws an error, you could also catch it here
+    if (err) throw err;
+  });
+}

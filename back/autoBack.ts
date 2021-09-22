@@ -3,7 +3,7 @@ import { PostgresDb } from './db/postgres/postgres';
 import express from "express";
 import {StatusCodes} from 'http-status-codes';
 import { ModelAttributes, ModelCtor, Sequelize } from 'sequelize';
-import { defaultSaveDataInfo, removeFile, addPath, formatDate } from '../_helpers/fn';
+import { defaultSaveDataInfo, removeFile, addPath, formatDate, writeInFile } from '../_helpers/fn';
 import * as _ from "lodash"
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
@@ -35,6 +35,7 @@ export class AutoBack {
   readonly serverPath: string
   readonly debug: boolean
   private debugInfo: any
+  private port: number
 
   constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false) {
     this.server.use(compression());
@@ -182,6 +183,7 @@ export class AutoBack {
   */
 
   async start(port: number = 8080): Promise<void> {
+    this.port = port
     if (this.waitDestroyDb) {
       this.waitDestroyDb.finally(async () => {
         await this.startFn(port)
@@ -214,7 +216,7 @@ export class AutoBack {
     })
   }
 
-  public getInfoAutoBack(): any {
+  public getInfoAutoBack(path?: string): any {
     const toSend: any = {
       tables: {}
     }
@@ -223,7 +225,145 @@ export class AutoBack {
     }
     this.debugInfo = toSend
     console.log('Debug Mode init')
+    if (path) {
+      writeInFile(path, JSON.stringify(toSend))
+    }
     return toSend
+  }
+
+  private whereToPostman(postman: any, object: any): any {
+    if (object.where === 'Querry parameters') {
+      postman.request.url.query.push({
+        key: object.name,
+        value: null,
+        disabled: true,
+        description: object.filter
+      })
+    } else if (object.where === 'Parameters') {
+      postman.request.url.variable.push({
+        key: object.name,
+        value: null,
+        description: object.filter
+      })
+    } else if (object.where === 'Header') {
+      postman.request.header.push({
+        key: object.name,
+        value: '',
+        disabled: true,
+        description: object.filter
+      })
+    }
+    return postman
+  }
+
+  private routeInfoToPostman(route: any): any {
+    const toReturn: any = {
+      name: route.route,
+			protocolProfileBehavior: {
+				disableBodyPruning: true
+			},
+      request: {
+        method: route.type,
+        url: {
+          protocol: '{{protocole}}',
+          host: '{{domaine}}',
+          path: route.route,
+          query: [],
+          variable: []
+        },
+        header: []
+      }
+    }
+
+    if (route.limit) {
+      this.whereToPostman(toReturn, route.limit)
+    }
+
+    if (route.offset) {
+      this.whereToPostman(toReturn, route.offset)
+    }
+
+    if (route.filter) {
+      for (const value of Object.values(route.filter)) {
+        for (const filter of Object.values(value)) {
+          this.whereToPostman(toReturn, filter)
+        }
+      }
+    }
+
+    if (typeof route.auth !== 'string') {
+      toReturn.request.auth = {
+        type: "bearer",
+        bearer: [{
+          key: "token",
+          value: "{{role_token_" + route.auth[0] +"}}",
+          type: "string"
+        }]
+      }
+    }
+    return toReturn
+  }
+
+  /**
+     * Call after you call start
+  */
+
+  public getAPIPostman(path?: string): any {
+    if (!this.debug) {
+      this.getInfoAutoBack()
+    }
+    const toReturn: any = {
+      info: {
+        _postman_id: "7fd90311-1814-471c-9e7c-0289c8c064b4",
+		    name: "AutoBack",
+		    schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+      },
+      item: [],
+      variable: [{
+        id: 'protocole',
+        key: 'protocole',
+        value: 'http',
+        name: 'protocole',
+        type: 'string'
+      },{
+        id: 'domaine',
+        key: 'domaine',
+        value: 'localhost:' + this.port,
+        name: 'domaine',
+        type: 'string'
+      }]
+    }
+
+    if (this._userTable) {
+      for (const role of this._userTable.userTable.config.roles) {
+        toReturn.variable.push({
+          id: 'role_token_' + role,
+          key: 'role_token_' + role,
+          name: 'role_token_' + role,
+          type: 'string'
+        })
+      }
+    }
+
+    for (const [key, value] of Object.entries(this.debugInfo.tables)) {
+      const valueAny: any = value
+      const table: any = {
+        name: key,
+        item: []
+      }
+      if (valueAny.routes) {
+        for (const [,value] of Object.entries(valueAny.routes)) {
+          (<any>value).forEach((element: any) => {
+            table.item.push(this.routeInfoToPostman(element))
+          });
+        }
+      }
+      toReturn.item.push(table)
+    }
+    if (path) {
+      writeInFile(path, JSON.stringify(toReturn))
+    }
+    return toReturn
   }
 
   private debugRoute() {

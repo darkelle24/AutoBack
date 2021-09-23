@@ -4,7 +4,6 @@ on:
   push:
     branches:
     - main
-  workflow_dispatch:
 
 jobs:
   build:
@@ -36,7 +35,7 @@ jobs:
 
       - name: Install dependencies
         if: steps.check.outputs.changed == 'true'
-        run: npm install --only=prod
+        run: npm install
       
       - name: Build typescript
         if: steps.check.outputs.changed == 'true'

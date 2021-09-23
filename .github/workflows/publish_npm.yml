@@ -15,18 +15,32 @@ jobs:
     steps:
       - name: Retrieving Latest Code
         uses: actions/checkout@v2
+        
+      - name: Check if version has been updated
+        id: check
+        uses: EndBug/version-check@v1
+      
+      - name: Version update detected
+        if: steps.check.outputs.changed == 'true'
+        run: 'echo "Version change found! New version: ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }})"'
 
       - name: Installing NodeJS
+        if: steps.check.outputs.changed == 'true'
         uses: actions/setup-node@v2
         with:
           node-version: 14
           registry-url: 'https://registry.npmjs.org'
 
-      - name: Installing Project Dependencies
-        run: npm install
+      - name: Install dependencies
+        if: steps.check.outputs.changed == 'true'
+        run: npm install --only=prod
+      
       - name: Build typescript
+        if: steps.check.outputs.changed == 'true'
         run: npm run build
+        
       - name: Publish code
+        if: steps.check.outputs.changed == 'true'
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}

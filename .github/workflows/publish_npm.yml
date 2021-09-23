@@ -44,3 +44,11 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+      
+      - name: Discord notification
+        if: steps.check.outputs.changed == 'true'
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        uses: Ilshidur/action-discord@master
+        with:
+          args: 'The npm package Autoback has been release a new version ${{ steps.check.outputs.version }} (${{ steps.check.outputs.type }}).'

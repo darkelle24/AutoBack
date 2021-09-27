@@ -36,12 +36,15 @@ export class AutoBack {
   readonly debug: boolean
   private debugInfo: any
   private port: number
+  readonly name: string
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false) {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false, name: string = "AutoBack") {
     this.server.use(compression());
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
     this.server.use(cors());
+
+    this.name = name
 
     if (!fileInfo) {
       fileInfo = {
@@ -218,6 +221,7 @@ export class AutoBack {
 
   public getInfoAutoBack(path?: string): any {
     const toSend: any = {
+      name: this.name,
       tables: {}
     }
     for (const [key, value] of Object.entries(this.tables)) {
@@ -258,10 +262,11 @@ export class AutoBack {
 
   private routeInfoToPostman(route: any): any {
     const toReturn: any = {
-      name: route.route,
+      name: route.name,
 			protocolProfileBehavior: {
 				disableBodyPruning: true
 			},
+      event: [],
       request: {
         method: route.type,
         url: {
@@ -281,6 +286,27 @@ export class AutoBack {
 
     if (route.offset) {
       this.whereToPostman(toReturn, route.offset)
+    }
+
+    if (route.event) {
+      if (route.event.afterResponse) {
+        toReturn.event.push({
+          listen: "test",
+					script: {
+						exec: route.event.afterResponse,
+						type: "text/javascript"
+					}
+        })
+      }
+      if (route.event.preRequest) {
+        toReturn.event.push({
+          listen: "prerequest",
+					script: {
+						exec: route.event.preRequest,
+						type: "text/javascript"
+					}
+        })
+      }
     }
 
     if (route.filter) {
@@ -314,8 +340,8 @@ export class AutoBack {
     }
     const toReturn: any = {
       info: {
-        _postman_id: "7fd90311-1814-471c-9e7c-0289c8c064b4",
-        name: "AutoBack",
+        _postman_id: this.name,
+        name: this.name,
         schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
       },
       item: [],
@@ -340,6 +366,7 @@ export class AutoBack {
           id: 'role_token_' + role,
           key: 'role_token_' + role,
           name: 'role_token_' + role,
+          value: '',
           type: 'string'
         })
       }

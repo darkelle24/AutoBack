@@ -144,5 +144,6 @@ export interface AutoBackConstructorParameters {
   serverPath?: string,
   activeLog?: boolean,
   resetDb?: boolean,
-  debug?: boolean
+  debug?: boolean,
+  name?: string
 }

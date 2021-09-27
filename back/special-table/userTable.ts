@@ -1,7 +1,7 @@
 import { ListFilter, Route } from './../../_helpers/models/routeModels';
 import { basicRole, userTableConfig, realUserTableConfig, access } from './../../_helpers/models/userTableModel';
 import { Model, ModelCtor } from 'sequelize';
-import { activeAllFiltersForAllCols, errorHandling } from '../../_helpers/fn';
+import { activeAllFiltersForAllCols, errorHandling, loginPostmanAfterRequestEvent } from '../../_helpers/fn';
 import { basicRouteParams, InfoPlace, TypeRoute } from '../../_helpers/models/routeModels';
 import { TableClass } from '../table';
 import jwt from 'jsonwebtoken'
@@ -74,7 +74,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         list: ['password'],
         inverse: true
       },
-      auth: accessRule
+      auth: accessRule,
+      name: 'Get Users'
     })
   }
 
@@ -91,7 +92,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
           }
         }
       },
-      auth: accessRule
+      auth: accessRule,
+      name: 'Delete User'
     })
   }
 
@@ -112,7 +114,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         list: ['password'],
         inverse: true
       },
-      auth: accessRule
+      auth: accessRule,
+      name: 'Put User'
     })
   }
 
@@ -124,7 +127,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         list: ["password"],
         inverse: true
       },
-      auth: accessRule
+      auth: accessRule,
+      name: 'Register'
     })
   }
 
@@ -136,6 +140,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     super.addRoute({
       path: '/login',
       type: TypeRoute.POST,
+      name: 'Login',
+      event: {afterResponse: loginPostmanAfterRequestEvent(this.config.roles)},
       doSomething: async (req, res, route) => {
         if (!req.body['username'] || !req.body['password']) {
           return errorHandling(new Error('Missing a username or / and a password.'), res)

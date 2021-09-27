@@ -11,7 +11,8 @@ const autoback = createAutoBack({
   connnectionStr: "postgres://postgres:password@localhost:5432/test",
   db: DB.POSTGRES,
   activeHealthRoute: true,
-  debug: true
+  debug: true,
+  name: "Test Autoback"
 })
 
 autoback.activeAuth({
@@ -91,5 +92,5 @@ if (test) {
   }
 }
 autoback.start(8081).then(()=> {
-  autoback.getAPIPostman('Postman.json')
+  autoback.getAPIPostman()
 })

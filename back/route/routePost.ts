@@ -104,7 +104,9 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       description: this.routeInfo.description,
       returnColumns: this.routeInfo.returnColumns,
       columsAccept: this.routeInfo.columsAccept,
-      dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined
+      dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined,
+      name: this.routeInfo.name ? this.routeInfo.name : this.path,
+      event: this.routeInfo.event
     }
 
     return toReturn

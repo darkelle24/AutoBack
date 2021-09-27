@@ -132,7 +132,8 @@ export class TableClass<M extends Model> {
       filters: activeAllFiltersForAllCols(this.table),
       limit: {},
       offset: {},
-      auth: accessRule
+      auth: accessRule,
+      name: 'Get ' + this.name + 's'
     })
   }
 
@@ -140,7 +141,8 @@ export class TableClass<M extends Model> {
     this.addRoute({
       path: '/',
       type: TypeRoute.POST,
-      auth: accessRule
+      auth: accessRule,
+      name: 'Post ' + this.name
     })
   }
 
@@ -157,7 +159,8 @@ export class TableClass<M extends Model> {
           }
         }
       },
-      auth: accessRule
+      auth: accessRule,
+      name: 'Delete ' + this.name
     })
   }
 
@@ -174,7 +177,8 @@ export class TableClass<M extends Model> {
           }
         }
       },
-      auth: accessRule
+      auth: accessRule,
+      name: 'Put ' + this.name
     })
   }
 

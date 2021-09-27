@@ -31,7 +31,14 @@ export interface RouteBasic {
      * If not undefined then the other function except auth, JsonToDB, DBToJson, checkError, transfromGet, transformSet will be skip
     */
    doSomething?(req: any, res: any, route: RouteClass): any,
-   description?: string
+   description?: string,
+   name?: string,
+   event?: eventPostman
+}
+
+export interface eventPostman {
+   preRequest?: string[]
+   afterResponse?: string[]
 }
 
 export interface acceptData {

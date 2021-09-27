@@ -67,7 +67,9 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
       route: this.path,
       auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route.",
       filter: {},
-      description: this.routeInfo.description
+      description: this.routeInfo.description,
+      name: this.routeInfo.name ? this.routeInfo.name : this.path,
+      event: this.routeInfo.event
     }
 
     for (const [keyFilter, valueFilter] of Object.entries(this.filterlist)) {

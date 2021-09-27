@@ -431,7 +431,7 @@ export function typeRouteToString(type: TypeRoute): string {
   }
 }
 export function createAutoBack(infoAutoBack: AutoBackConstructorParameters): AutoBack {
-  return new AutoBack(infoAutoBack.connnectionStr, infoAutoBack.db, infoAutoBack.activeHealthRoute, infoAutoBack.fileInfo, infoAutoBack.serverPath, infoAutoBack.activeLog, infoAutoBack.resetDb, infoAutoBack.debug)
+  return new AutoBack(infoAutoBack.connnectionStr, infoAutoBack.db, infoAutoBack.activeHealthRoute, infoAutoBack.fileInfo, infoAutoBack.serverPath, infoAutoBack.activeLog, infoAutoBack.resetDb, infoAutoBack.debug, infoAutoBack.name)
 }
 
 export function writeInFile(path: string, text: string): void {
@@ -439,4 +439,17 @@ export function writeInFile(path: string, text: string): void {
     // throws an error, you could also catch it here
     if (err) throw err;
   });
+}
+
+export function loginPostmanAfterRequestEvent(roles: string[]): string[] {
+  return ['var roles = [\"' + roles.join('\", \"') + '\"]',
+          'if (pm.response.code === 200) {',
+          ' var jsonData = JSON.parse(responseBody);',
+          ' for (let role of roles) {',
+          '   if (jsonData.role === role) {',
+          '     pm.collectionVariables.set("role_token_" + role, jsonData.token);',
+          '   }',
+          ' }',
+          '}'
+        ]
 }

@@ -377,6 +377,7 @@ export class AutoBack {
       const table: any = {
         name: key,
         item: [],
+        //eslint-disable-next-line
         description: (valueAny.description ? valueAny.description + '\n\n' : '') + 'Table columns:\n\`\`\`json\n' + JSON.stringify(valueAny.column, null, 4) + '\n\`\`\`'
       }
       if (valueAny.routes) {
@@ -441,7 +442,7 @@ export class AutoBack {
     const [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
     if (tableSequelize) {
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable)
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable, description)
       saveTableInfo.table = this.tables[nameTable]
     }
     return this.tables[nameTable]

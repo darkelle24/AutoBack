@@ -442,6 +442,7 @@ export function writeInFile(path: string, text: string): void {
 }
 
 export function loginPostmanAfterRequestEvent(roles: string[]): string[] {
+  //eslint-disable-next-line
   return ['var roles = [\"' + roles.join('\", \"') + '\"]',
           'if (pm.response.code === 200) {',
           ' var jsonData = JSON.parse(responseBody);',

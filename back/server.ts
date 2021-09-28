@@ -43,7 +43,7 @@ const test = autoback.defineTable('lol', {
   file: { type: ABDataType.FILE, allowNull: true },
   dab: { type: ABDataType.FILE, allowNull: true },
   lol: {type: ABDataType.FILE, allowNull: true}
-}, 'dab')
+}, 'dab', 'Test')
 
 if (test) {
   test.basicRouting({auth: {role: ["Admin"]}})
@@ -92,5 +92,5 @@ if (test) {
   }
 }
 autoback.start(8081).then(()=> {
-  autoback.getAPIPostman()
+  autoback.getAPIPostman('Postman.json')
 })

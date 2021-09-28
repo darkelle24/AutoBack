@@ -26,6 +26,7 @@ export class TableClass<M extends Model> {
   userTable?: UserTableClass<any> = undefined
   readonly upload?: multer.Multer
   readonly pathFolder?: string
+  description?: string
 
   private _listLinkColumns?: string[] = undefined
   get listLinkColumns(): string[] | undefined  {
@@ -37,12 +38,13 @@ export class TableClass<M extends Model> {
     return this._tableLinktoThisTable
   }
 
-  constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>) {
+  constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>, description: string = '') {
     this.sequelizeData = sequelizeData
     this.table = table
     this.name = name
     this.server = server
     this.userTable = userTable
+    this.description = description
     if (originRoutePath)
       this.routes.originRoutePath = addPath('/', addPath(originServerPath, originRoutePath))
     else
@@ -429,8 +431,8 @@ export class TableClass<M extends Model> {
   public getTableInfo(): any {
     const toReturn: any = {
       routes: this.getInfoRoute(),
-      column: this.getInfoColumn()
-      //description: this.
+      column: this.getInfoColumn(),
+      description: this.description
     }
     return toReturn
   }

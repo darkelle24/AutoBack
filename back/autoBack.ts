@@ -376,7 +376,8 @@ export class AutoBack {
       const valueAny: any = value
       const table: any = {
         name: key,
-        item: []
+        item: [],
+        description: (valueAny.description ? valueAny.description + '\n\n' : '') + 'Table columns:\n\`\`\`json\n' + JSON.stringify(valueAny.column, null, 4) + '\n\`\`\`'
       }
       if (valueAny.routes) {
         for (const [,value] of Object.entries(valueAny.routes)) {
@@ -436,7 +437,7 @@ export class AutoBack {
     return [tableSequelize, saveTableInfo]
   }
 
-  defineTable(nameTable: string, table: Table, originRoutePath?: string): TableClass<any> | undefined {
+  defineTable(nameTable: string, table: Table, originRoutePath?: string, description?: string): TableClass<any> | undefined {
     const [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
     if (tableSequelize) {

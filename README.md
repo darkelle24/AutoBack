@@ -1094,26 +1094,3 @@ interface ListValueInfo {
 ```
 
 C'est un dictionnaire js qui va contenir des string en key qui corresponde au nom des colonne de la [Table](#Interface-Table) et en value des [ValueInfo](#Interface-ValueInfo)
-
-### Interface ValueInfo <a name="Interface-ValueInfo"></a>
-
-#### Définition de ValueInfo <a name="Définition-de-ValueInfo"></a>
-
-```ts
-interface ValueInfo {
-  name?: string
-  where?: InfoPlace,
-  transformValue?(value: any): any,
-  force?: boolean
-}
-```
-
-#### Paramétres de ValueInfo <a name="Paramétres-de-ValueInfo"></a>
-
-##### *name*
-
-##### *where*
-
-##### *transformValue*
-
-##### *force*

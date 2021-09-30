@@ -28,13 +28,10 @@ test.basicRouting({auth: {role: ["Admin"]}})
 autoback.start(8081)
 ```
 
-## Ordre
-
-[Création de la classe Autoback](#Classe-Autoback) -> [Définition des tables](#Méthode-defineTable) et/ou [Activer l'authentification](#Méthode-activeAuth) -> [Appelle de setUpTables](#Méthode-setUpTables) -> [Définition des customs route](#Méthode-addRoute) et/ou [Définition des basics route](#Méthode-basicRouting) -> [Allumage du serveur](#Méthode-start)
-
 ## Index
 
 1. [Installation](#Installation)
+2. [Ordre](#Ordre)
 2. [Documentation des Classes](#Documentation-des-Classes)
 3. [Documentation des Interfaces](#Documentation-des-Interfaces)
 
@@ -49,6 +46,10 @@ L'installation se fait à l'aide de la commande ```npm install``` :
 ```
 npm install autoback
 ```
+
+## Ordre <a name="Ordre"></a>
+
+[Création de la classe Autoback](#Classe-Autoback) -> [Définition des tables](#Méthode-defineTable) et/ou [Activer l'authentification](#Méthode-activeAuth) -> [Appelle de setUpTables](#Méthode-setUpTables) -> [Définition des customs route](#Méthode-addRoute) et/ou [Définition des basics route](#Méthode-basicRouting) -> [Allumage du serveur](#Méthode-start)
 
 ## Documentation des Classes <a name="Documentation-des-Classes"></a>
 

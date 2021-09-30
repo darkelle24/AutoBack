@@ -37,6 +37,8 @@ export class AutoBack {
   private debugInfo: any
   private port: number
   readonly name: string
+  private linkTableToProcess: {tableSequelizeInfo: any, tempSaveTable: tempSaveTable, fileInfo: filePathInfo, nameTable: string, linkToProcess: {data: dataLinkTable, nameColumns: string}[]}[] = []
+  private saveAuthConfig: authConfigAutoBack
 
   constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false, name: string = "AutoBack") {
     this.server.use(compression());
@@ -177,7 +179,7 @@ export class AutoBack {
         this.userTable.userTable = this.userTable
       }
       if (this.userTable)
-        this.userTable.basicRouting(auth.getRoute, auth.postRoute, auth.putRoute, auth.deleteRoute)
+        this.saveAuthConfig = auth
     }
   }
 
@@ -414,10 +416,11 @@ export class AutoBack {
         userDefine = _.merge(userTableDefine, userDefine)
       const [tableSequelize, saveTableInfo] = this.defineStartTable("User", userDefine)
 
-      if (tableSequelize) {
-        this.tables["User"] = new userTableClass(auth, "User", saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, '/auth')
-        saveTableInfo.table = this.tables["User"]
-      }
+      this.tables["User"] = new userTableClass(auth, "User", saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, '/auth')
+      saveTableInfo.table = this.tables["User"]
+
+      if (tableSequelize)
+        saveTableInfo.table.setUpSequilize(tableSequelize)
 
       if (this.tables["User"]) {
         this._userTable = (this.tables["User"] as UserTableClass<any>)
@@ -431,19 +434,30 @@ export class AutoBack {
 
   private defineStartTable(nameTable: string, table: Table): [ModelCtor<any> | undefined, tempSaveTable] {
     let tableSequelize = undefined
-    const [tableSequelizeInfo, saveTableInfo] = this.createTableSequelizeInfo(table, nameTable, this.fileInfo)
+    const [tableSequelizeInfo, tempSaveTable, linkToProcess] = this.createTableSequelizeInfo(table, nameTable, this.fileInfo)
 
-    if (this.sequelize)
+    if (this.sequelize && linkToProcess.length === 0)
       tableSequelize = this.sequelize.define(nameTable, tableSequelizeInfo)
-    return [tableSequelize, saveTableInfo]
+    else if (linkToProcess.length !== 0) {
+      this.linkTableToProcess.push({
+        linkToProcess: linkToProcess,
+        tableSequelizeInfo: tableSequelizeInfo,
+        tempSaveTable: tempSaveTable,
+        fileInfo: this.fileInfo,
+        nameTable: nameTable
+      })
+    }
+    return [tableSequelize, tempSaveTable]
   }
 
   defineTable(nameTable: string, table: Table, originRoutePath?: string, description?: string): TableClass<any> | undefined {
     const [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
+    this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable, description)
+    saveTableInfo.table = this.tables[nameTable]
+
     if (tableSequelize) {
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, tableSequelize, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable, description)
-      saveTableInfo.table = this.tables[nameTable]
+      this.tables[nameTable].setUpSequilize(tableSequelize)
     }
     return this.tables[nameTable]
   }
@@ -533,41 +547,65 @@ export class AutoBack {
     }
   }
 
-  private createTableSequelizeInfo(table: Table, nameTable: string, fileInfo: filePathInfo): [ModelAttributes<any>, tempSaveTable] {
+  /**
+     * Call after you define all your tables.
+     * After you call this fonction you can add basic routes and customs route.
+  */
+
+  public setUpTables() {
+    for(const tableToProcess of this.linkTableToProcess) {
+      for (const columnsToProcess of tableToProcess.linkToProcess) {
+        this.tableLink(columnsToProcess.data, tableToProcess.nameTable, columnsToProcess.nameColumns, tableToProcess.tableSequelizeInfo, tableToProcess.tempSaveTable.saveTable, tableToProcess.tempSaveTable, tableToProcess.fileInfo)
+      }
+      const tableSequelize = this.sequelize.define(tableToProcess.nameTable, tableToProcess.tableSequelizeInfo)
+
+      this.tables[tableToProcess.nameTable].setUpSequilize(tableSequelize)
+    }
+    this.linkTableToProcess = []
+    if (this.userTable)
+        this.userTable.basicRouting(this.saveAuthConfig.getRoute, this.saveAuthConfig.postRoute, this.saveAuthConfig.putRoute, this.saveAuthConfig.deleteRoute)
+  }
+
+  private tableLink(data: dataLinkTable, nameTable: string, key: string, tableSequelizeInfo: any, saveTableInfo: saveTable, tempSaveTable: tempSaveTable, fileInfo: filePathInfo) {
+    const subType: any = data.type
+    let type = this.getTableLinkDataType(data)
+    const tabsInfo = (this.saveDataInfo(data, type) as realDataLinkTable)
+
+    tabsInfo.subType = subType
+    if (!data.onDelete) {
+      tabsInfo.onDelete = DeleteAction.DELETE
+    } else if (data.onDelete === DeleteAction.SET_DEFAULT && data.defaultValue === undefined) {
+      throw TypeError('Can t set DeleteAction.SET_DEFAULT on table ' + nameTable + ' columns ' + key + ' because defaultValue === undefined')
+    } else if (tabsInfo.subType !== ABDataType.MULTIPLE_LINK_TABLE && data.onDelete === DeleteAction.SET_NULL && (data.allowNull === undefined || data.allowNull === false)) {
+      throw TypeError('Can t set DeleteAction.SET_NULL on table ' + nameTable + ' columns ' + key + ' because allowNull === undefined or allowNull === false')
+    }
+
+    if (!data.multipleResult) {
+      tabsInfo.multipleResult = false
+    }
+    tabsInfo.tableToLink = this.tables[data.tableToLink]
+    saveTableInfo[key] = tabsInfo
+
+    if (type.autobackDataType === ABDataType.FILE) {
+      this.sequelizeFileType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key], nameTable, fileInfo)
+    } else {
+      this.sequelizeClassicType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key])
+    }
+  }
+
+  private createTableSequelizeInfo(table: Table, nameTable: string, fileInfo: filePathInfo): [ModelAttributes<any>, tempSaveTable, any] {
     const tableSequelizeInfo: any = {}
     const saveTableInfo: saveTable = {}
     const tempSaveTable: tempSaveTable = {
       saveTable: {}
     }
+    const linkToProcess: any[] = []
 
     Object.keys(table).forEach((key) => {
       let type = this.getDataType(table[key].type)
 
       if (table[key].type === ABDataType.TABLE_LINK || table[key].type === ABDataType.MULTIPLE_LINK_TABLE) {
-        const subType: any = table[key].type
-        type = this.getTableLinkDataType((table[key] as dataLinkTable))
-        const tabsInfo = (this.saveDataInfo(table[key], type) as realDataLinkTable)
-
-        tabsInfo.subType = subType
-        if (!(table[key] as dataLinkTable).onDelete) {
-          tabsInfo.onDelete = DeleteAction.DELETE
-        } else if ((table[key] as dataLinkTable).onDelete === DeleteAction.SET_DEFAULT && table[key].defaultValue === undefined) {
-          throw TypeError('Can t set DeleteAction.SET_DEFAULT on table ' + nameTable + ' columns ' + key + ' because defaultValue === undefined')
-        } else if (tabsInfo.subType !== ABDataType.MULTIPLE_LINK_TABLE && (table[key] as dataLinkTable).onDelete === DeleteAction.SET_NULL && (table[key].allowNull === undefined || table[key].allowNull === false)) {
-          throw TypeError('Can t set DeleteAction.SET_NULL on table ' + nameTable + ' columns ' + key + ' because allowNull === undefined or allowNull === false')
-        }
-
-        if (!(table[key] as dataLinkTable).multipleResult) {
-          tabsInfo.multipleResult = false
-        }
-        tabsInfo.tableToLink = this.tables[(table[key] as dataLinkTable).tableToLink.name]
-        saveTableInfo[key] = tabsInfo
-
-        if (type.autobackDataType === ABDataType.FILE) {
-          this.sequelizeFileType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key], nameTable, fileInfo)
-        } else {
-          this.sequelizeClassicType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key])
-        }
+        linkToProcess.push({data: (table[key] as dataLinkTable), nameColumns: key})
       } else if (type) {
         saveTableInfo[key] = this.saveDataInfo(table[key], type)
 
@@ -580,7 +618,7 @@ export class AutoBack {
 
     });
     tempSaveTable.saveTable = saveTableInfo
-    return [tableSequelizeInfo, tempSaveTable]
+    return [tableSequelizeInfo, tempSaveTable, linkToProcess]
   }
 
   private saveDataInfo(dataInfo: dataTableInfo | dataLinkTable, type: realDataTypeInfo): saveDataTableInfo {
@@ -600,10 +638,10 @@ export class AutoBack {
       throw Error('Wrong Table Link')
     }
 
-    const tableToLink = this.tables[link.tableToLink.name]
+    const tableToLink = this.tables[link.tableToLink]
 
     if (tableToLink) {
-      const columns = link.tableToLink.table[link.columnsLink]
+      const columns = tableToLink.table[link.columnsLink]
       let toReturn: any
       if (columns) {
         if (link.type === ABDataType.MULTIPLE_LINK_TABLE) {
@@ -614,10 +652,10 @@ export class AutoBack {
         toReturn.isTableLink = true
         return toReturn
       } else {
-        throw Error('The table' + link.tableToLink.name + ' does not have a columns with the name ' + link.columnsLink + '.')
+        throw Error('The table' + link.tableToLink + ' does not have a columns with the name ' + link.columnsLink + '.')
       }
     } else {
-      throw Error(link.tableToLink.name + ' is not avaible in this autoback class.')
+      throw Error(link.tableToLink + ' is not avaible in this autoback class.')
     }
   }
 

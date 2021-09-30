@@ -23,7 +23,7 @@ autoback.activeAuth({
       email: 'zoulou@gmail.com',
       role: 'Admin'
     }
-},
+  },
   getRoute: {
     active: true,
     auth: {role: ['Admin']}
@@ -33,6 +33,23 @@ autoback.activeAuth({
     test: {type: ABDataType.STRING, allowNull: true}
   }
 )
+
+const dab = autoback.defineTable('lel', {
+  id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+  userId: { type: ABDataType.TABLE_LINK, tableToLink: "User", columnsLink: 'id', rename: 'user' },
+  testArray: {type: ABDataType.ARRAY, allowNull: true}
+}, 'test')
+
+const gitan = autoback.defineTable('gitan', {
+  id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+  lelId: { type: ABDataType.TABLE_LINK, tableToLink: "lel", columnsLink: 'id', rename: 'lel', multipleResult: false },
+}, 'test2')
+
+const multiple = autoback.defineTable('multiple', {
+  id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+  gitanId: { type: ABDataType.MULTIPLE_LINK_TABLE, allowNull: true, tableToLink: "gitan", columnsLink: 'id', rename: 'gitan', onDelete: DeleteAction.SET_NULL, multipleResult: false },
+})
+
 const test = autoback.defineTable('lol', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   bonjour: { type: ABDataType.BOOLEAN, defaultValue: true, allowNull: true },
@@ -45,52 +62,33 @@ const test = autoback.defineTable('lol', {
   lol: {type: ABDataType.FILE, allowNull: true}
 }, 'dab', 'Test')
 
-if (test) {
-  test.basicRouting({auth: {role: ["Admin"]}})
-  test.addRoute({
-    type: TypeRoute.POST,
-    path: '/lol',
-    columsAccept: {
-      inverse: true,
-      list: ["id"]
-    },
-    dataAs: {
-      comment: {
-        where: InfoPlace.QUERYPARAMS,
-        force: false
-      }
-    },
-    auth: {
-      role: ['User', 'Admin']
+autoback.setUpTables()
+
+test.basicRouting({auth: {role: ["Admin"]}})
+test.addRoute({
+  type: TypeRoute.POST,
+  path: '/lol',
+  columsAccept: {
+    inverse: true,
+    list: ["id"]
+  },
+  dataAs: {
+    comment: {
+      where: InfoPlace.QUERYPARAMS,
+      force: false
     }
-  })
-
-  const dab = autoback.defineTable('lel', {
-    id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
-    userId: { type: ABDataType.TABLE_LINK, tableToLink: autoback.userTable, columnsLink: 'id', rename: 'user' },
-    testArray: {type: ABDataType.ARRAY, allowNull: true}
-  }, 'test')
-  if (dab) {
-    dab.basicRouting()
-
-    const gitan = autoback.defineTable('gitan', {
-      id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
-      lelId: { type: ABDataType.TABLE_LINK, tableToLink: dab, columnsLink: 'id', rename: 'lel', multipleResult: false },
-    }, 'test2')
-
-    if (gitan) {
-      gitan.basicRouting()
-
-      const multiple = autoback.defineTable('multiple', {
-        id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
-        gitanId: { type: ABDataType.MULTIPLE_LINK_TABLE, allowNull: true, tableToLink: gitan, columnsLink: 'id', rename: 'gitan', onDelete: DeleteAction.SET_NULL, multipleResult: false },
-      })
-      if (multiple) {
-        multiple.basicRouting()
-      }
-    }
+  },
+  auth: {
+    role: ['User', 'Admin']
   }
-}
+})
+
+dab.basicRouting()
+
+gitan.basicRouting()
+
+multiple.basicRouting()
+
 autoback.start(8081).then(()=> {
   autoback.getAPIPostman('Postman.json')
 })

@@ -7,7 +7,7 @@ export interface Table {
 }
 
 export type dataLinkTable = {
-  tableToLink: TableClass<any>,
+  tableToLink: string,
   columnsLink: string,
   type: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE ,
   onDelete?: DeleteAction,

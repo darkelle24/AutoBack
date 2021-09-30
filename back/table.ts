@@ -38,8 +38,7 @@ export class TableClass<M extends Model> {
     return this._tableLinktoThisTable
   }
 
-  constructor(name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>, description: string = '') {
-    this.sequelizeData = sequelizeData
+  constructor(name: string, table: saveTable, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>, description: string = '') {
     this.table = table
     this.name = name
     this.server = server
@@ -78,6 +77,10 @@ export class TableClass<M extends Model> {
       });
       this.pathFolder = pathFolder
     }
+  }
+
+  public setUpSequilize(sequelizeData: ModelCtor<M>) {
+    this.sequelizeData = sequelizeData
     this.getLinkColumns()
     this.addHook()
   }

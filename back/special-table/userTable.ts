@@ -16,7 +16,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
   readonly config: realUserTableConfig
   readonly passwordEncode: (value: any, table: TableClass<any>) => any
 
-  constructor(auth: userTableConfig, name: string, table: saveTable, sequelizeData: ModelCtor<M>, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string) {
+  constructor(auth: userTableConfig, name: string, table: saveTable, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string) {
     if (table.role.validate) {
       table.role.validate.equals = { comparaison: auth.roles ? auth.roles : basicRole, msg: "Role don't exist" }
     }
@@ -28,7 +28,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       // @ts-ignore
       table.password.validate.isStrongPassword.msg = "Wrong password need to have: min length: " + table.password.validate.isStrongPassword.minLength.toString() + ", max length: " + table.password.validate.isStrongPassword.maxLength.toString() + ", min lowercase: " + table.password.validate.isStrongPassword.minLowercase.toString() + ", min uppercase: " + table.password.validate.isStrongPassword.minUppercase.toString() + ", min numbers: " + table.password.validate.isStrongPassword.minNumbers.toString() + ", min symbols: " + table.password.validate.isStrongPassword.minSymbols.toString()
     }
-    super(name, table, sequelizeData, server, filePath, originServerPath, originRoutePath, undefined, 'Table who contains all informations about user.')
+    super(name, table, server, filePath, originServerPath, originRoutePath, undefined, 'Table who contains all informations about user.')
     this.config = {
       tokenSecret: auth.tokenSecret ? auth.tokenSecret : "wVmNfh6YPJMHtwtbj0Wa43wSh3cvJpoKqoQzZK8QbwjTGEVBNYO8xllNQC2G0U7lfKcVMK5lsn1Tshwl",
       passwordSecret: auth.passwordSecret ? auth.passwordSecret : "pBvhLoQrwTKyk9amfwSabc0zwh5EuV7DDTYpbGG4K52vV9WGftSDhmlz90hMvASJlHk1azg24Uvdturqomx819kz10NS9S",

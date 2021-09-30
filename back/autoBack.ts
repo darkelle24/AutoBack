@@ -552,7 +552,7 @@ export class AutoBack {
      * After you call this fonction you can add basic routes and customs route.
   */
 
-  public setUpTables() {
+  public setUpTables(): void {
     for(const tableToProcess of this.linkTableToProcess) {
       for (const columnsToProcess of tableToProcess.linkToProcess) {
         this.tableLink(columnsToProcess.data, tableToProcess.nameTable, columnsToProcess.nameColumns, tableToProcess.tableSequelizeInfo, tableToProcess.tempSaveTable.saveTable, tableToProcess.tempSaveTable, tableToProcess.fileInfo)
@@ -568,7 +568,7 @@ export class AutoBack {
 
   private tableLink(data: dataLinkTable, nameTable: string, key: string, tableSequelizeInfo: any, saveTableInfo: saveTable, tempSaveTable: tempSaveTable, fileInfo: filePathInfo) {
     const subType: any = data.type
-    let type = this.getTableLinkDataType(data)
+    const type = this.getTableLinkDataType(data)
     const tabsInfo = (this.saveDataInfo(data, type) as realDataLinkTable)
 
     tabsInfo.subType = subType
@@ -602,7 +602,7 @@ export class AutoBack {
     const linkToProcess: any[] = []
 
     Object.keys(table).forEach((key) => {
-      let type = this.getDataType(table[key].type)
+      const type = this.getDataType(table[key].type)
 
       if (table[key].type === ABDataType.TABLE_LINK || table[key].type === ABDataType.MULTIPLE_LINK_TABLE) {
         linkToProcess.push({data: (table[key] as dataLinkTable), nameColumns: key})

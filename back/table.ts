@@ -79,7 +79,7 @@ export class TableClass<M extends Model> {
     }
   }
 
-  public setUpSequilize(sequelizeData: ModelCtor<M>) {
+  public setUpSequilize(sequelizeData: ModelCtor<M>): void {
     this.sequelizeData = sequelizeData
     this.getLinkColumns()
     this.addHook()

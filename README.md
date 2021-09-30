@@ -21,11 +21,16 @@ const test = autoback.defineTable('testTable', {
   status: { type: ABDataType.BOOLEAN, defaultValue: true, allowNull: true }
 })
 
+autoback.setUpTables()
 
 test.basicRouting({auth: {role: ["Admin"]}})
 
 autoback.start(8081)
 ```
+
+## Ordre
+
+[Création de la classe Autoback](#Classe-Autoback) -> [Définition des tables](#Méthode-defineTable) et/ou [Activer l'authentification](#Méthode-activeAuth) -> [Appelle de setUpTables](#Méthode-setUpTables) -> [Définition des customs route](#Méthode-addRoute) et/ou [Définition des basics route](#Méthode-basicRouting) -> [Allumage du serveur](#Méthode-start)
 
 ## Index
 
@@ -54,6 +59,7 @@ npm install autoback
    * [Paramétres de Autoback](#Paramétres-de-Autoback)
    * [Méthode start](#Méthode-start)
    * [Méthode defineTable](#Méthode-defineTable)
+   * [Méthode setUpTables](#Méthode-setUpTables)
    * [Méthode activeAuth](#Méthode-activeAuth)
 2. [Classe TableClass](#Classe-TableClass)
    * [Méthode basicRouting](#Méthode-basicRouting)
@@ -188,6 +194,15 @@ originRoutePath doit contenir une string ou undefined.
 
 Cette string permet de definir la suite de la route. Toutes les routes qui appartiennent a cette table auront avant leur path originRoutePath. Exemple `${serverPath}/${originRoutePath}/${path_des_routes_de_cette_table}`.
 Par defaut cette valeur est le nom de la table.
+
+#### Méthode setUpTables <a name="Méthode-setUpTables"></a>
+
+La methode setUpTables permet de finaliser la création des tables dans Autoback.
+Aprés l'appelle de cette fonction vous pourrez definir des routes mais plus définir des tables
+
+```js
+autoback.setUpTables()
+```
 
 #### Méthode activeAuth <a name="Méthode-activeAuth"></a>
 
@@ -789,7 +804,7 @@ Par defaut validate est égale à .
 
 ```ts
 type dataLinkTable = {
-  tableToLink: TableClass<any>,
+  tableToLink: string,
   columnsLink: string,
   type: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE ,
   onDelete?: DeleteAction,
@@ -804,7 +819,7 @@ dataLinkTable herite de [dataTableInfo](#Interface-dataTableInfo)
 
 ##### *tableToLink*
 
-tableToLink doit contenir un TableClass. Celui ca peut etre obtenu grace a la [méthode defineTable](#Méthode-defineTable).
+tableToLink doit contenir un string. tableToLink doit etre le nom d'une table.
 
 Permet de définir la table qui sera lier a cette colonne.
 

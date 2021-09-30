@@ -754,7 +754,7 @@ Si undefined alors allowNull est égale a false.
 
 initValue doit contenir une valeur ou undefined.
 
-Permet de définir si l'utilisateur créer une nouvelle entrer de mettre des valeur initial.
+Permet de définir si l'utilisateur créer une nouvelle entrer de mettre des valeur initial si l'utilisateur n'as pas défini encore une valeur.
 Par defaut initValue est égale à undefined.
 
 ##### *defaultValue*

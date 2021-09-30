@@ -36,6 +36,7 @@ autoback.activeAuth({
 
 const dab = autoback.defineTable('lel', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+  testInitValue: {type: ABDataType.BIGINT, initValue: 0},
   userId: { type: ABDataType.TABLE_LINK, tableToLink: "User", columnsLink: 'id', rename: 'user' },
   testArray: {type: ABDataType.ARRAY, allowNull: true}
 }, 'test')

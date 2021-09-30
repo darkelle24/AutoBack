@@ -482,6 +482,9 @@ export class AutoBack {
         return value
       },
       set(value: any) {
+        if (this._options.isNewRecord && (value === undefined || value === null)) {
+          value = saveTableInfo.initValue
+        }
         if (value !== undefined && value !== null) {
           if (saveTableInfo.validate !== undefined) {
             applyValidator(key, value, saveTableInfo.validate)

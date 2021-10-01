@@ -264,11 +264,11 @@ export class TableClass<M extends Model> {
     return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[index], tableLink.multipleResult)
       .then(result => {
         if (!tableLink.multipleResult) {
-          data[index] = result.get()
+          data[index] = this.removeNeverShow(tableLink, result.get())
         } else {
           data[index] = []
           result.forEach((element: any) => {
-            data[index].push(element.get())
+            data[index].push(this.removeNeverShow(tableLink, element.get()))
           });
         }
       }).catch(() => {

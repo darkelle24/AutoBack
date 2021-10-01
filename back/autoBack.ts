@@ -324,7 +324,7 @@ export class AutoBack {
         type: "bearer",
         bearer: [{
           key: "token",
-          value: "{{role_token_" + route.auth[0] +"}}",
+          value: route.auth ? "{{role_token_" + route.auth[0] +"}}" : "",
           type: "string"
         }]
       }

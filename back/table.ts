@@ -281,7 +281,7 @@ export class TableClass<M extends Model> {
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   public async getLinkData(data: any): Promise<unknown> {
-    if (this._listLinkColumns && this._listLinkColumns.length !== 0) {
+    if (this._listLinkColumns && this._listLinkColumns.length !== 0 && data) {
       return Promise.all(this._listLinkColumns.map(async (element) => {
         if (data[element] !== undefined && data[element] !== null) {
           const tableLink = (this.table[element] as realDataLinkTable)
@@ -303,7 +303,7 @@ export class TableClass<M extends Model> {
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected async linkDataRecursiveMultiple(data: any, depth: number): Promise<unknown> {
-    if (this._listLinkColumns && this._listLinkColumns.length !== 0) {
+    if (this._listLinkColumns && this._listLinkColumns.length !== 0 && data) {
       return Promise.all(this._listLinkColumns.map(async (element) => {
         const tableLink = (this.table[element] as realDataLinkTable)
         return tableLink.tableToLink.getLinkDataRecursive(data[tableLink.rename || tableLink.columnsLink], depth - 1, tableLink.subType === ABDataType.MULTIPLE_LINK_TABLE).then(res => res)

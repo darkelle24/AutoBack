@@ -203,7 +203,8 @@ export enum InfoPlace {
   BODY = 0,
   PARAMS = 1,
   QUERYPARAMS = 2,
-  HEADER = 3
+  HEADER = 3,
+  USERINFO = 4,
 }
 
 export interface ListValueInfo {

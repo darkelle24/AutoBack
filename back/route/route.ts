@@ -157,6 +157,8 @@ export class RouteBasicClass<M extends Model> {
       return req.query[name]
     } else if (place === InfoPlace.PARAMS) {
       return req.params[name]
+    } else if (place === InfoPlace.USERINFO) {
+      return (<any>req).user[name]
     } else {
       return undefined
     }

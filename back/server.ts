@@ -86,6 +86,13 @@ test.addRoute({
 
 dab.basicRouting()
 
+dab.addRoute({
+  type: TypeRoute.GET,
+  path: '/test',
+  filters: {userId: {equal: {where: InfoPlace.USERINFO, name: 'id'}}},
+  auth: {}
+})
+
 gitan.basicRouting()
 
 multiple.basicRouting()

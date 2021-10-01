@@ -713,6 +713,7 @@ interface dataTableInfo {
   allowNull?: boolean,
   initValue?: any,
   defaultValue?: any,
+  neverShow?: boolean,
   unique?: boolean,
   keepOldValue?: boolean,
   transformSet?(value: any, table: TableClass<any>): any
@@ -763,6 +764,13 @@ defaultValue doit contenir une valeur ou undefined.
 
 Permet de définir si l'utilisateur envoie null ou undefined pour cette colonne de mettre une valeur.
 Par defaut defaultValue est égale à undefined.
+
+##### *neverShow*
+
+neverShow doit contenir un boolean ou undefined.
+
+Permet de définir si la valeur ne sera jamais dans les reponses en recursives et normal.
+Par defaut neverShow est égale à false.
 
 ##### *unique*
 

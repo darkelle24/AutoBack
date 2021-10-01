@@ -28,7 +28,8 @@ export function defaultSaveDataInfo(): any {
     allowNull: false,
     keepOldValue: true,
     initValue: null,
-    unique: false
+    unique: false,
+    neverShow: false
   })
 }
 

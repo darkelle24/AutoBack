@@ -70,10 +70,10 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       filters: this.filterAllWithoutPassword(),
       limit: {},
       offset: {},
-      returnColumns: {
+      /* returnColumns: {
         list: ['password'],
         inverse: true
-      },
+      }, */
       auth: accessRule,
       name: 'Get Users'
     })

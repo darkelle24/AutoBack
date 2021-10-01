@@ -227,20 +227,29 @@ export class TableClass<M extends Model> {
     });
   }
 
+  protected removeNeverShow(tableLink: realDataLinkTable, data: any): any {
+    for (const [key, value] of Object.entries(tableLink.tableToLink.table)) {
+      if (value.neverShow) {
+        delete data[key]
+      }
+    }
+    return data
+  }
+
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected getLinkDataSingle(tableLink: realDataLinkTable, data: any, element: string): Promise<any> {
     return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[element], tableLink.multipleResult)
       .then(result => {
         if (!tableLink.multipleResult) {
           if (tableLink.rename) {
-            data[tableLink.rename] = result.get()
+            data[tableLink.rename] = this.removeNeverShow(tableLink, result.get())
             delete data[element]
           } else
-            data[element] = result.get()
+            data[element] = this.removeNeverShow(tableLink, result.get())
         } else {
           data[tableLink.rename || element] = []
           result.forEach((element: any) => {
-            data[tableLink.rename || element].push(element.get())
+            data[tableLink.rename || element].push(this.removeNeverShow(tableLink, element.get()))
           });
           if (tableLink.rename)
             delete data[element]

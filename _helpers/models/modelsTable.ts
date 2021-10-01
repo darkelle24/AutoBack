@@ -24,6 +24,7 @@ export interface dataTableInfo {
   initValue?: any,
   defaultValue?: any,
   unique?: boolean,
+  neverShow?: boolean,
   keepOldValue?: boolean,
   /**
      * Execute before execute dataTypeInfo.JsonToDB and after validate
@@ -69,6 +70,7 @@ export interface saveDataTableInfo {
   initValue: any | null,
   defaultValue?: any,
   unique: boolean,
+  neverShow: boolean,
   keepOldValue: boolean,
   /**
      * Execute before execute dataTypeInfo.JsonToDB and after validate

@@ -6,7 +6,7 @@ import { basicRouteParams } from './routeModels';
 export const userTableDefine: Table = {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   username: { type: ABDataType.STRING, unique: true },
-  password: { type: ABDataType.STRING, validate: { isStrongPassword: { minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 }}, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
+  password: { type: ABDataType.STRING, neverShow: true, validate: { isStrongPassword: { minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 }}, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
   email: { type: ABDataType.STRING, validate: {isEmail: true} },
   phone: { type: ABDataType.STRING, allowNull: true },
   role: {type: ABDataType.STRING, validate: { equals: {comparaison: ["Admin", "SuperAdmin"]}}}

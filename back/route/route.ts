@@ -63,7 +63,11 @@ export class RouteBasicClass<M extends Model> {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected getAllValue(data: any) {
     Object.entries(this.table).forEach(([key]) => {
-      data[key] = this.getValue(data[key])
+      if (!this.table[key].neverShow)
+        data[key] = this.getValue(data[key])
+      else {
+        delete data[key]
+      }
     })
   }
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

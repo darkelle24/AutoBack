@@ -227,6 +227,7 @@ export class TableClass<M extends Model> {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected removeNeverShow(tableLink: realDataLinkTable, data: any): any {
     for (const [key, value] of Object.entries(tableLink.tableToLink.table)) {
       if (value.neverShow) {

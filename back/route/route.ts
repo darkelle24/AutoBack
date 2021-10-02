@@ -226,17 +226,16 @@ export class RouteBasicClass<M extends Model> {
     if (dataAs === undefined || Object.keys(dataAs).length === 0)
       return undefined
 
-    Object.entries(dataAs).forEach(([, valueCol]) => {
-      if ((!valueCol.force && (req.body[valueCol.name] === undefined || req.body[valueCol.name] === null)) || valueCol.force) {
-        let valueFind = this.getValueFrom(req, valueCol.where, valueCol.name)
-
-        if (valueFind !== undefined) {
-          if (valueCol.transformValue)
-            valueFind = valueCol.transformValue(valueFind)
-          req.body[valueCol.name] = valueFind
-        }
+    Object.entries(dataAs).forEach(([key, valueCol]) => {
+      if ((!valueCol.force && (req.body[key] === undefined || req.body[key] === null)) || valueCol.force) {
+          let valueFind = this.getValueFrom(req, valueCol.where, valueCol.name);
+          if (valueFind !== undefined) {
+              if (valueCol.transformValue)
+                  valueFind = valueCol.transformValue(valueFind);
+              req.body[key] = valueFind;
+          }
       }
-    })
+    });
   }
 
   public changeAccess(access?: access): boolean | void {

@@ -109,21 +109,23 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       event: this.routeInfo.event
     }
 
-    for (const [keyFilter, valueFilter] of Object.entries(this.filterlist)) {
-      let newFilter: any = undefined
-      for (const [, valueValueFilter] of Object.entries(valueFilter)) {
-        newFilter = {
-          filter: valueValueFilter.info.name,
-          name: valueValueFilter.name,
-          where: ""
-        }
+    if (this.filterlist) {
+      for (const [keyFilter, valueFilter] of Object.entries(this.filterlist)) {
+        let newFilter: any = undefined
+        for (const [, valueValueFilter] of Object.entries(valueFilter)) {
+          newFilter = {
+            filter: valueValueFilter.info.name,
+            name: valueValueFilter.name,
+            where: ""
+          }
 
-        newFilter.where = infoPlaceToString(valueValueFilter.where)
+          newFilter.where = infoPlaceToString(valueValueFilter.where)
 
-        if (newFilter) {
-          if (!toReturn.filter[keyFilter])
-            toReturn.filter[keyFilter] = {}
-          toReturn.filter[keyFilter][newFilter.filter] = newFilter
+          if (newFilter) {
+            if (!toReturn.filter[keyFilter])
+              toReturn.filter[keyFilter] = {}
+            toReturn.filter[keyFilter][newFilter.filter] = newFilter
+          }
         }
       }
     }

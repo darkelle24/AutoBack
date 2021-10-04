@@ -600,7 +600,7 @@ type RoutePut = {
    dataAs?: ListValueInfo,
    filters?: ListFilter,
    fileReturnWithHost?: boolean,
-   beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>): void,
+   beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>, row: Model<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
 } & RouteBasic
 ```

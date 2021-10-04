@@ -62,7 +62,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
         req.body = this.list(req.body, route.columsAccept)
       this.getDataAs(req, this.dataAsList)
       if (route.beforeSetValue)
-        route.beforeSetValue(req, res, this)
+        route.beforeSetValue(req, res, this, data)
       Object.entries(this.table).forEach(([key, value]) => {
         if (value.autoIncrement === false) {
           toReturn[key] = this.setValue(req.body[key], value, false)

@@ -3,6 +3,7 @@ import { RouteGetClass } from './../../back/route/routeGet';
 import { RouteDeleteClass } from '../../back/route/routeDelete';
 import { RoutePutClass } from '../../back/route/routePut';
 import { access } from './userTableModel';
+import { Model } from 'sequelize';
 
 export enum TypeRoute {
   GET,
@@ -96,7 +97,7 @@ export type RoutePut = {
      * Default true
     */
    fileReturnWithHost?: boolean,
-   beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>): void,
+   beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>, row: Model<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
 } & RouteBasic
 

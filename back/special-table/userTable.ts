@@ -169,69 +169,76 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  protected checkJWT(token: string, req: any, res: express.Response): boolean  {
-    let good: boolean = false
+  protected checkJWT(token: string): any | undefined  {
+    let user: any = undefined
 
-    jwt.verify(token, this.config.tokenSecret, (err: any, user: any) => {
+    jwt.verify(token, this.config.tokenSecret, (err: any, userJwt: any) => {
       if (err) {
-        good = false
-        res.status(403).json({ message: err.toString() });
-        res.statusMessage = err.toString()
-        return res
+        user = undefined
+        throw Error(err.toString())
       }
-      req.user = user;
-      good = true
+      user = userJwt;
     });
 
-    return good
+    return user
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  protected async checkUserExist(req: any, res: express.Response, sequilize: ModelCtor<any>): Promise<boolean> {
-    const user = await sequilize.findOne({ where: { id: req.user.id, createdAt: req.user.createdAt } })
+  protected async checkUserExist(userToCheck: any, sequilize: ModelCtor<any>): Promise<any> {
+    const user = await sequilize.findOne({ where: { id: userToCheck.id, createdAt: userToCheck.createdAt } })
 
     if (user) {
-      req.user = user.get()
-      return true
+      return user.get()
     }
-    res.status(403).json({ message: "The user does not exist" });
-    res.statusMessage = "The user does not exist"
-    return false
+    throw Error ("The user does not exist")
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  protected checkRole(req: any, res: express.Response, route: Route): boolean {
-    if (route.auth && route.auth.role) {
-      const find = route.auth.role.find(e => e === req.user.role)
+  protected checkRole(roleUser: string, role?: string[], inverse?: boolean): boolean {
+    if (role) {
+      if (inverse === undefined)
+        inverse = false
+
+      const find = role.find(e => e === roleUser)
       let toReturn: boolean = false
 
       if (find)
         toReturn = true
 
-      if (route.auth.inverse)
+      if (inverse)
         toReturn = !toReturn
       if (!toReturn) {
-        res.status(403).json({ message: "You don't have right to access this route" });
-        res.statusMessage = "You don't have right to access this route"
+        throw Error("You don't have right to access this route")
       }
       return toReturn
     }
     return true
   }
 
-  public async checkToken(req: express.Request, res: express.Response, route: Route): Promise<boolean>{
+  public async checkToken(token: string, role?: string[], inverse?: boolean): Promise<any> {
+    let user = this.checkJWT(token)
+    user = await this.checkUserExist(user, this.sequelizeData)
+    this.checkRole(user.role, role, inverse)
+    return user
+  }
+
+  public async checkTokenExpress(req: express.Request, res: express.Response, route: Route): Promise<boolean>{
     if (route.auth) {
       const authHeader = req.headers.authorization;
 
       if (authHeader) {
         const token = authHeader.split(' ')[1];
-        if (!this.checkJWT(token, req, res))
-          return false
-        const result = await this.checkUserExist(req, res, this.sequelizeData)
-        if (!result)
-          return false
-        if (!this.checkRole(req, res, route))
-          return false
+        let good: boolean = true;
+
+        (<any>req).user = await this.checkToken(token,
+            route.auth && route.auth.role ? route.auth.role : undefined,
+            route.auth && route.auth.inverse ? route.auth.inverse : undefined
+          ).catch((err: any) =>{
+            res.status(403).json({ message: err.toString() });
+            res.statusMessage = err.toString()
+            good = false
+          })
+        return good
       } else {
         res.status(401).json({ message: 'Need to be auth to access this route' })
         res.statusMessage = 'Need to be auth to access this route'

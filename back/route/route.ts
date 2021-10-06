@@ -254,7 +254,7 @@ export class RouteBasicClass<M extends Model> {
   public checkToken(route: Route): RequestHandler  {
     return async (req: any, res: any, next: any) => {
       if (this.userTable) {
-        const result = await this.userTable.checkToken(req, res, route)
+        const result = await this.userTable.checkTokenExpress(req, res, route)
         if (result) {
           next()
         }

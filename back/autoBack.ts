@@ -17,10 +17,12 @@ import { DBInterface, DB } from '../_helpers/models/modelsDb';
 import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable, DeleteAction } from '../_helpers/models/modelsTable';
 import morgan from 'morgan'
 import compression from 'compression'
+import http from 'http'
 
 export class AutoBack {
 
-  private server = express();
+  readonly server = express();
+  public httpServer?: http.Server
   private DB: DBInterface
   private startTime = Date.now()
   private sequelize: Sequelize
@@ -137,7 +139,7 @@ export class AutoBack {
     await this.sequelize.sync().then(() => console.log('All tables dropped'))
   }
 
-  private async startFn(port: number = 8080) {
+  private async startFn(port: number = 8080, httpServer?: http.Server) {
     await this.sequelize.sync().then(() => {
       console.log('Created all Tables')
       if (this.userTable && this.userTable.config.basicUser) {
@@ -157,9 +159,16 @@ export class AutoBack {
     if (this.debug) {
       this.getInfoAutoBack()
     }
-    this.server.listen(port, () => {
-      console.log('Server listening on port ' + port)
-    });
+    if (!httpServer) {
+      this.server.listen(port, () => {
+        console.log('The Express server listening on port ' + port)
+      });
+    } else if (httpServer) {
+      this.httpServer = httpServer
+      httpServer.listen(port, () => {
+        console.log('The http server listening on port ' + port)
+      })
+    }
     this.error404()
   }
 
@@ -187,14 +196,14 @@ export class AutoBack {
      * Call after you init all your routes and tables
   */
 
-  async start(port: number = 8080): Promise<void> {
+  async start(port: number = 8080, httpServer?: http.Server): Promise<void> {
     this.port = port
     if (this.waitDestroyDb) {
       this.waitDestroyDb.finally(async () => {
-        await this.startFn(port)
+        await this.startFn(port, httpServer)
       })
     } else {
-      await this.startFn(port)
+      await this.startFn(port, httpServer)
     }
   }
 

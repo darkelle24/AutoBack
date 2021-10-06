@@ -141,7 +141,8 @@ autoback.start(8081)
 
 ```js
 async start(
-  port: number = 8080
+  port: number = 8080,
+  httpServer?: http.Server
 ): Promise<void>
 ```
 
@@ -153,6 +154,12 @@ port doit contenir un nombre.
 
 Ce nombre permet de definir le port de connexion du serveur AutoBack.
 Par defaut cette valeur est 8080
+
+###### *httpServer*
+
+port doit contenir soit undefined ou un http.Server
+
+Cela permet de demarrer avec un serveur node.js plutot que seulement express.
 
 #### Méthode defineTable <a name="Méthode-defineTable"></a>
 

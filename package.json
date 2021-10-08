@@ -1,6 +1,6 @@
 {
     "name": "autoback",
-    "version": "1.0.3375",
+    "version": "1.0.3376",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [

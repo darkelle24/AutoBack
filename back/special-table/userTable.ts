@@ -188,7 +188,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     const user = await sequilize.findOne({ where: { id: userToCheck.id, createdAt: userToCheck.createdAt } })
 
     if (user) {
-      return user.get()
+      return user
     }
     throw Error ("The user does not exist")
   }

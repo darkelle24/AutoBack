@@ -53,8 +53,13 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     if (route.columsAccept && req.body)
       req.body = this.list(req.body, route.columsAccept)
     this.getDataAs(req, this.dataAsList)
-    if (route.beforeSetValue)
-      await Promise.resolve(route.beforeSetValue(req, res, this))
+    if (route.beforeSetValue) {
+      try {
+        await Promise.resolve(route.beforeSetValue(req, res, this))
+      } catch (err) {
+        return errorHandling(err, res)
+      }
+    }
     Object.entries(this.table).forEach(([key, value]) => {
       if (value.autoIncrement === false) {
         toReturn[key] = this.setValue(req.body[key], value)

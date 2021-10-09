@@ -84,7 +84,11 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
         })
       }
       this.tableClass.getLinkDataRecursive(toSend, -1)
-        .then(() => res.status(201).json(toSend))
+        .then(async () => {
+          if (route.beforeSendAfterRecursive)
+            await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
+          res.status(201).json(toSend)
+        })
         .catch(err => errorHandling(err, res))
     }).catch(err => {
       return errorHandling(err, res)

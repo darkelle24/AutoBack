@@ -1,5 +1,6 @@
 import { UserTableClass } from "back/special-table/userTable";
 import express from "express";
+import { StatusCodes } from "http-status-codes";
 import { Model, ModelCtor } from "sequelize";
 import { errorHandling, infoPlaceToString, typeRouteToString } from "../../_helpers/fn";
 import { routeTableInfo } from "../../_helpers/models/models";
@@ -87,7 +88,11 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
         }
 
         this.tableClass.getLinkData(toSend)
-        .then(() => res.status(200).json(toSend))
+        .then(async () => {
+          if (route.beforeSendAfterRecursive)
+            await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
+          res.status(StatusCodes.OK).json(toSend)
+        })
         .catch(err => errorHandling(err, res))
 
       }).catch(err => {

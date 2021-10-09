@@ -486,6 +486,7 @@ type RouteGet = {
    filters?: ListFilter,
    fileReturnWithHost?: boolean,
    beforeSend?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void,
+   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void
 } & RouteBasic
 ```
 
@@ -537,6 +538,12 @@ beforeSend doit contenir une fonction ou undefined.
 
 Permet de pouvoir executée une fonction juste avant d'envoyer les données.
 
+##### *beforeSendAfterRecursive*
+
+beforeSendAfterRecursive doit contenir une fonction ou undefined.
+
+Permet de pouvoir executée une fonction juste avant d'envoyer les données mais aprés la recupération de table ne récursive.
+
 #### Définition de Route de type POST <a name="Définition-de-Route-Post"></a>
 
 ```js
@@ -548,6 +555,7 @@ type RoutePost = {
    fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePostClass<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
+   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void
 } & RouteBasic
 ```
 
@@ -597,6 +605,12 @@ beforeSend doit contenir une fonction ou undefined.
 
 Permet de pouvoir executée une fonction juste avant d'envoyer les données.
 
+##### *beforeSendAfterRecursive*
+
+beforeSendAfterRecursive doit contenir une fonction ou undefined.
+
+Permet de pouvoir executée une fonction juste avant d'envoyer les données mais aprés la recupération de table ne récursive.
+
 #### Définition de Route de type PUT <a name="Définition-de-Route-Put"></a>
 
 ```js
@@ -609,6 +623,7 @@ type RoutePut = {
    fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>, row: Model<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
+   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void
 } & RouteBasic
 ```
 
@@ -664,6 +679,12 @@ Permet de pouvoir executée une fonction juste avant d'enregistrer les données.
 beforeSend doit contenir une fonction ou undefined.
 
 Permet de pouvoir executée une fonction juste avant d'envoyer les données.
+
+##### *beforeSendAfterRecursive*
+
+beforeSendAfterRecursive doit contenir une fonction ou undefined.
+
+Permet de pouvoir executée une fonction juste avant d'envoyer les données mais aprés la recupération de table ne récursive.
 
 #### Définition de Route de type DELETE <a name="Définition-de-Route-Delete"></a>
 

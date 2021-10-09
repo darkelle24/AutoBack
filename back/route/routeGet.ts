@@ -38,12 +38,12 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     if (routeInfo.fileReturnWithHost === undefined)
       routeInfo.fileReturnWithHost = true
 
-    server.get(path, this.checkToken(routeInfo), (req: express.Request, res: express.Response) => {
+    server.get(path, this.checkToken(routeInfo), async (req: express.Request, res: express.Response) => {
       try {
-      if (!routeInfo.doSomething)
-        return this.gestGetRoute(req, res, routeInfo)
-      else {
-        return routeInfo.doSomething(req, res, this)
+        if (!routeInfo.doSomething)
+          return await Promise.resolve(this.gestGetRoute(req, res, routeInfo))
+        else {
+          return await Promise.resolve(routeInfo.doSomething(req, res, this))
         }
       } catch (err) {
         console.error(err)
@@ -72,7 +72,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
         return true
       })
       if (route.beforeSend)
-        route.beforeSend(req, res, this, toSend)
+        await Promise.resolve(route.beforeSend(req, res, this, toSend))
       if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
         toSend.forEach((oneInfo: any) => {
           this.files.forEach((element) => {

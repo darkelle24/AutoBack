@@ -21,22 +21,22 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       routeInfo.fileReturnWithHost = true
 
     if (this.uploads) {
-      server.put(path, this.checkToken(routeInfo), this.uploads.fields(this.files), this.dataToBody(), (req: any, res: any) => {
-        this.toDo(req, res)
+      server.put(path, this.checkToken(routeInfo), this.uploads.fields(this.files), this.dataToBody(), async (req: any, res: any) => {
+        await Promise.resolve(this.toDo(req, res))
       })
     } else {
-      server.put(path, this.checkToken(routeInfo), (req: any, res: any) => {
-        this.toDo(req, res)
+      server.put(path, this.checkToken(routeInfo), async (req: any, res: any) => {
+        await Promise.resolve(this.toDo(req, res))
       })
     }
   }
 
-  protected toDo(req: express.Request, res: express.Response): any {
+  protected async toDo(req: express.Request, res: express.Response): Promise<any> {
     try {
       if (!this.routeInfo.doSomething)
-        this.gestPutRoute(req, res, this.routeInfo)
+        await Promise.resolve(this.gestPutRoute(req, res, this.routeInfo))
       else {
-        this.routeInfo.doSomething(req, res, this)
+        await Promise.resolve(this.routeInfo.doSomething(req, res, this))
       }
     } catch (err) {
       console.error(err)
@@ -49,7 +49,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
   }
 
   private gestPutRoute(req: any, res: any, route: RoutePut): any {
-    return this.sequelizeData.findOne(this.getFilter(req, this.filterlist)).then(data => {
+    return this.sequelizeData.findOne(this.getFilter(req, this.filterlist)).then(async data => {
       if (!data) {
         res.status(404).json({ message: "Not found" })
         res.statusMessage = "Not found"
@@ -62,14 +62,14 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
         req.body = this.list(req.body, route.columsAccept)
       this.getDataAs(req, this.dataAsList)
       if (route.beforeSetValue)
-        route.beforeSetValue(req, res, this, data)
+        await Promise.resolve(route.beforeSetValue(req, res, this, data))
       Object.entries(this.table).forEach(([key, value]) => {
         if (value.autoIncrement === false) {
           toReturn[key] = this.setValue(req.body[key], value, false)
         }
       })
 
-      return data.update(toReturn).then(updatedObject => {
+      return data.update(toReturn).then(async updatedObject => {
 
         let toSend = updatedObject.get()
 
@@ -77,7 +77,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
           toSend = this.list(toSend, route.returnColumns)
         this.getAllValue(toSend)
         if (route.beforeSend)
-          route.beforeSend(req, res, this, toSend)
+          await Promise.resolve(route.beforeSend(req, res, this, toSend))
         if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
           this.files.forEach((element) => {
             if (Object.prototype.hasOwnProperty.call(toSend, element.name) && toSend[element.name]) {

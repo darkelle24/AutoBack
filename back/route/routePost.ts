@@ -20,22 +20,22 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       routeInfo.fileReturnWithHost = true
 
     if (this.uploads) {
-      server.post(path, this.checkToken(routeInfo), this.uploads.fields(this.files), this.dataToBody(), (req: express.Request, res: express.Response) => {
-        this.toDo(req, res)
+      server.post(path, this.checkToken(routeInfo), this.uploads.fields(this.files), this.dataToBody(), async (req: express.Request, res: express.Response) => {
+        await this.toDo(req, res)
       })
     } else {
-      server.post(path, this.checkToken(routeInfo), (req: express.Request, res: express.Response) => {
-        this.toDo(req, res)
+      server.post(path, this.checkToken(routeInfo), async (req: express.Request, res: express.Response) => {
+        await this.toDo(req, res)
       })
     }
   }
 
-  protected toDo(req: express.Request, res: express.Response): any {
+  protected async toDo(req: express.Request, res: express.Response): Promise<any> {
     try {
       if (!this.routeInfo.doSomething)
-        this.gestPostRoute(req, res, this.routeInfo)
+        await Promise.resolve(this.gestPostRoute(req, res, this.routeInfo))
       else {
-        this.routeInfo.doSomething(req, res, this)
+        await Promise.resolve(this.routeInfo.doSomething(req, res, this))
       }
     } catch (err) {
       console.error(err)
@@ -47,14 +47,14 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     }
   }
 
-  private gestPostRoute(req: express.Request, res: express.Response, route: RoutePost): any {
+  private async gestPostRoute(req: express.Request, res: express.Response, route: RoutePost): Promise<any> {
     const toReturn: any = {}
 
     if (route.columsAccept && req.body)
       req.body = this.list(req.body, route.columsAccept)
     this.getDataAs(req, this.dataAsList)
     if (route.beforeSetValue)
-        route.beforeSetValue(req, res, this)
+      await Promise.resolve(route.beforeSetValue(req, res, this))
     Object.entries(this.table).forEach(([key, value]) => {
       if (value.autoIncrement === false) {
         toReturn[key] = this.setValue(req.body[key], value)
@@ -63,14 +63,14 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
 
     return this.sequelizeData.create(
       toReturn
-    ).then(data => {
+    ).then(async data => {
       let toSend = data.get()
 
       if (route.returnColumns && toSend)
         toSend = this.list(toSend, route.returnColumns)
       this.getAllValue(toSend)
       if (route.beforeSend)
-        route.beforeSend(req, res, this, toSend)
+        await Promise.resolve(route.beforeSend(req, res, this, toSend))
       if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
         this.files.forEach((element) => {
           if (Object.prototype.hasOwnProperty.call(toSend, element.name) && toSend[element.name]) {

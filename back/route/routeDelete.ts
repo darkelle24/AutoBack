@@ -16,12 +16,12 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
     this.changeAccess(routeInfo.auth)
-    server.delete(path, this.checkToken(routeInfo), (req: any, res: any) => {
+    server.delete(path, this.checkToken(routeInfo), async (req: any, res: any) => {
       try {
         if (!routeInfo.doSomething)
-          return this.gestDeleteRoute(req, res, routeInfo)
+          return await Promise.resolve(this.gestDeleteRoute(req, res, routeInfo))
         else {
-          return routeInfo.doSomething(req, res, this)
+          return await Promise.resolve(routeInfo.doSomething(req, res, this))
         }
       } catch (err) {
         console.error(err)
@@ -31,7 +31,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
   }
 
   private gestDeleteRoute(req: express.Request, res: express.Response, route: RouteDelete): any {
-    return this.sequelizeData.findOne(this.getFilter(req, this.filterlist)).then(data => {
+    return this.sequelizeData.findOne(this.getFilter(req, this.filterlist)).then(async data => {
       if (!data) {
         return res.status(404).json({ message: "Not found" })
       }
@@ -44,7 +44,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
           fileToDestroy.push( path.join(pathFolder, element.name, value))
       })
       if (route.beforeDelete)
-        route.beforeDelete(req, res, this)
+        await Promise.resolve(route.beforeDelete(req, res, this))
 
       return (data.destroy().then(() => {
         fileToDestroy.forEach((element) => {

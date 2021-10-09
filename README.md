@@ -692,7 +692,7 @@ Permet de pouvoir executée une fonction juste avant d'envoyer les données mais
 type RouteDelete = {
    readonly type: TypeRoute.DELETE,
    filters?: ListFilter,
-   beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>): void
+   beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void
 } & RouteBasic
 ```
 

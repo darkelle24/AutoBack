@@ -44,7 +44,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
           fileToDestroy.push( path.join(pathFolder, element.name, value))
       })
       if (route.beforeDelete)
-        await Promise.resolve(route.beforeDelete(req, res, this))
+        await Promise.resolve(route.beforeDelete(req, res, this, data))
 
       return (data.destroy().then(() => {
         fileToDestroy.forEach((element) => {

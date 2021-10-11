@@ -65,6 +65,7 @@ export type RouteGet = {
      * Default true
     */
    fileReturnWithHost?: boolean,
+   beforeGet?(request: any, respond: any, routeClass: RouteGetClass<any>, filters: any): void,
    beforeSend?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void,
    beforeSendAfterRecursive?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void
 } & RouteBasic

@@ -853,7 +853,8 @@ type dataLinkTable = {
   type: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE ,
   onDelete?: DeleteAction,
   rename?: string,
-  multipleResult?: boolean
+  multipleResult?: boolean,
+  transformGetLinkedData?(value: any): void
 } & dataTableInfo
 ```
 
@@ -904,6 +905,13 @@ multipleResult doit contenir une boolean ou undefined.
 
 Permet de de definir si quand la ligne est renvoyer a l'utilisateur d'afficher plusieur resultat sous la forme d'une array.
 Par defaut rename est égale à true.
+
+##### *transformGetLinkedData*
+
+transformGetLinkedData doit contenir une fonction ou undefined.
+
+Permet de définir d'executer une fonction aprés la récupération de donnée dans une recursive.
+Par defaut transformGetLinkedData est égale à undefined.
 
 ### Interface basicRouteParams <a name="Interface-basicRouteParams"></a>
 

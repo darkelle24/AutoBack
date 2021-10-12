@@ -108,7 +108,8 @@ export type RoutePut = {
 export type RouteDelete = {
    readonly type: TypeRoute.DELETE,
    filters?: ListFilter,
-   beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void
+   beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void,
+   beforeSend?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void
 } & RouteBasic
 
 export type Route = RouteGet | RoutePost | RoutePut | RouteDelete

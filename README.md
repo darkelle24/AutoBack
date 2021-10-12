@@ -699,7 +699,8 @@ Permet de pouvoir executée une fonction juste avant d'envoyer les données mais
 type RouteDelete = {
    readonly type: TypeRoute.DELETE,
    filters?: ListFilter,
-   beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void
+   beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void,
+   beforeSend?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void
 } & RouteBasic
 ```
 
@@ -723,6 +724,12 @@ Si filters est undefined alors juste les filtres de base des types sont activés
 beforeSetValue doit contenir une fonction ou undefined.
 
 Permet de pouvoir executée une fonction juste avant de supprimé les données.
+
+##### *beforeSend*
+
+beforeSend doit contenir une fonction ou undefined.
+
+Permet de pouvoir executée une fonction juste avant d'envoyer les données.
 
 ### Interface Table <a name="Interface-Table"></a>
 

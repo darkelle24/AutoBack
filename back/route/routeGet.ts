@@ -53,7 +53,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     })
   }
 
-  private gestGetRoute(req: express.Request, res: express.Response, route: RouteGet): any {
+  private async gestGetRoute(req: express.Request, res: express.Response, route: RouteGet): Promise<any> {
     const filter = this.getFilter(req, this.filterlist)
 
     if (route.limit)
@@ -61,6 +61,13 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     if (route.offset)
       filter['offset'] = this.getValueFromRequest(req, (route.offset as RealFilterInfo))
     this.getInfoRoute()
+    if (route.beforeGet) {
+      try {
+        await Promise.resolve(route.beforeGet(req, res, this, filter))
+      } catch (err) {
+        return errorHandling(err, res)
+      }
+    }
     return this.sequelizeData.findAll(filter).then(async datas => {
       const toSend: any[] = []
 

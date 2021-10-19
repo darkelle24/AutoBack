@@ -37,7 +37,12 @@ autoback.activeAuth({
 const dab = autoback.defineTable('lel', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   testInitValue: {type: ABDataType.BIGINT, initValue: 0},
-  userId: { type: ABDataType.TABLE_LINK, tableToLink: "User", columnsLink: 'id', rename: 'user' },
+  userId: {
+    type: ABDataType.TABLE_LINK, tableToLink: "User", columnsLink: 'id', rename: 'user', transformGetLinkedData: (value: any) => {
+      delete value.email
+      delete value.phone
+      delete value.test
+  } },
   testArray: {type: ABDataType.ARRAY, allowNull: true}
 }, 'test')
 

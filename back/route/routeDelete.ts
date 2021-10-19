@@ -46,13 +46,16 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
       if (route.beforeDelete)
         await Promise.resolve(route.beforeDelete(req, res, this, data))
 
-      return (data.destroy().then(() => {
+      return (data.destroy().then(async () => {
         fileToDestroy.forEach((element) => {
           removeFile(element)
         })
-        return res.status(200).json({
-            message: "Deleted"
-        })
+        let data = { message: "Deleted" }
+
+        if (route.beforeSend)
+          await Promise.resolve(route.beforeSend(req, res, this, data))
+
+        return res.status(200).json(data)
       }).catch(err => {
         return errorHandling(err, res)
       }))

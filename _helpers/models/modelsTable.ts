@@ -12,7 +12,8 @@ export type dataLinkTable = {
   type: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE ,
   onDelete?: DeleteAction,
   rename?: string,
-  multipleResult?: boolean
+  multipleResult?: boolean,
+  transformGetLinkedData?(value: any): void
 } & dataTableInfo
 
 export interface dataTableInfo {
@@ -58,7 +59,8 @@ export type realDataLinkTable = {
   onDelete: DeleteAction,
   rename?: string,
   multipleResult: boolean,
-  subType: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE
+  subType: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE,
+  transformGetLinkedData?(value: any): void
 } & saveDataTableInfo
 
 export interface saveDataTableInfo {

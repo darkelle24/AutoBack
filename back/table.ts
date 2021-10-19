@@ -240,18 +240,25 @@ export class TableClass<M extends Model> {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected getLinkDataSingle(tableLink: realDataLinkTable, data: any, element: string): Promise<any> {
     return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[element], tableLink.multipleResult)
-      .then(result => {
+      .then(async result => {
         if (!tableLink.multipleResult) {
           if (tableLink.rename) {
             data[tableLink.rename] = this.removeNeverShow(tableLink, result.get())
+            if (tableLink.transformGetLinkedData)
+              await Promise.resolve(tableLink.transformGetLinkedData(data[tableLink.rename]))
             delete data[element]
-          } else
+          } else {
             data[element] = this.removeNeverShow(tableLink, result.get())
+            if (tableLink.transformGetLinkedData)
+              await Promise.resolve(tableLink.transformGetLinkedData(data[element]))
+          }
         } else {
           data[tableLink.rename || element] = []
-          result.forEach((element: any) => {
+          await Promise.all(result.map(async (element: any) => {
             data[tableLink.rename || element].push(this.removeNeverShow(tableLink, element.get()))
-          });
+            if (tableLink.transformGetLinkedData)
+              await Promise.resolve(tableLink.transformGetLinkedData(data[tableLink.rename || element]))
+          }));
           if (tableLink.rename)
             delete data[element]
         }
@@ -263,14 +270,18 @@ export class TableClass<M extends Model> {
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
   protected getLinkDataArray(tableLink: realDataLinkTable, data: any[], index: number): Promise<any> {
     return getRowInTableLink(tableLink.columnsLink, tableLink.tableToLink.sequelizeData, data[index], tableLink.multipleResult)
-      .then(result => {
+      .then(async result => {
         if (!tableLink.multipleResult) {
           data[index] = this.removeNeverShow(tableLink, result.get())
+          if (tableLink.transformGetLinkedData)
+            await Promise.resolve(tableLink.transformGetLinkedData(data[index]))
         } else {
           data[index] = []
-          result.forEach((element: any) => {
+          await Promise.all(result.map(async (element: any) => {
             data[index].push(this.removeNeverShow(tableLink, element.get()))
-          });
+            if (tableLink.transformGetLinkedData)
+              await Promise.resolve(tableLink.transformGetLinkedData(data[index]))
+          }));
         }
       }).catch(() => {
         throw new Error('Not found row with value ' + data[index] + ' in the table ' + tableLink.tableToLink.name + ' in the column ' + tableLink.columnsLink)

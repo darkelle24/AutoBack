@@ -485,6 +485,7 @@ type RouteGet = {
    returnColumns?: acceptData,
    filters?: ListFilter,
    fileReturnWithHost?: boolean,
+   beforeGet?(request: any, respond: any, routeClass: RouteGetClass<any>, filters: any): void,
    beforeSend?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void,
    beforeSendAfterRecursive?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void
 } & RouteBasic
@@ -531,6 +532,12 @@ Si filters est undefined alors juste les filtres de base des types sont activés
 fileReturnWithHost doit contenir un boolean ou undefined.
 
 Si true ou undefined alors le path des fichier sera renvoyer avec l'hostname du serveur.
+
+##### *beforeGet*
+
+beforeGet doit contenir une fonction ou undefined.
+
+Permet de pouvoir executée une fonction juste avant de get les données.
 
 ##### *beforeSend*
 
@@ -692,7 +699,8 @@ Permet de pouvoir executée une fonction juste avant d'envoyer les données mais
 type RouteDelete = {
    readonly type: TypeRoute.DELETE,
    filters?: ListFilter,
-   beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void
+   beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void,
+   beforeSend?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void
 } & RouteBasic
 ```
 
@@ -716,6 +724,12 @@ Si filters est undefined alors juste les filtres de base des types sont activés
 beforeSetValue doit contenir une fonction ou undefined.
 
 Permet de pouvoir executée une fonction juste avant de supprimé les données.
+
+##### *beforeSend*
+
+beforeSend doit contenir une fonction ou undefined.
+
+Permet de pouvoir executée une fonction juste avant d'envoyer les données.
 
 ### Interface Table <a name="Interface-Table"></a>
 
@@ -846,7 +860,8 @@ type dataLinkTable = {
   type: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE ,
   onDelete?: DeleteAction,
   rename?: string,
-  multipleResult?: boolean
+  multipleResult?: boolean,
+  transformGetLinkedData?(value: any): void
 } & dataTableInfo
 ```
 
@@ -897,6 +912,13 @@ multipleResult doit contenir une boolean ou undefined.
 
 Permet de de definir si quand la ligne est renvoyer a l'utilisateur d'afficher plusieur resultat sous la forme d'une array.
 Par defaut rename est égale à true.
+
+##### *transformGetLinkedData*
+
+transformGetLinkedData doit contenir une fonction ou undefined.
+
+Permet de définir d'executer une fonction aprés la récupération de donnée dans une recursive.
+Par defaut transformGetLinkedData est égale à undefined.
 
 ### Interface basicRouteParams <a name="Interface-basicRouteParams"></a>
 

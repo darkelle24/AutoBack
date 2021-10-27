@@ -11,7 +11,7 @@ import { access } from '../_helpers/models/userTableModel';
 import multer from 'multer'
 import fs from 'fs'
 import path from 'path';
-import { DeleteAction, realDataLinkTable, saveTable, TableLinktoThisTable } from '../_helpers/models/modelsTable';
+import { DeleteAction, realDataFileTable, realDataLinkTable, saveTable, TableLinktoThisTable } from '../_helpers/models/modelsTable';
 import { ABDataType } from '../_helpers/models/modelsType';
 import express from 'express';
 import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
@@ -73,7 +73,22 @@ export class TableClass<M extends Model> {
       })
 
       this.upload = multer({
-        storage: storage
+        storage: storage,
+        fileFilter: (req, file, callback) => {
+          if (table[file.fieldname] && table[file.fieldname].type.autobackDataType === ABDataType.FILE) {
+            const field = (table[file.fieldname] as realDataFileTable)
+            const ext = getFileExtansion(file.originalname)
+            if (field.extAuthorize && field.extAuthorize.find(element => ext === element) === undefined) {
+              callback(Error('Wrong extansion type'))
+            }
+            if (field.maxFileSize && file.size > field.maxFileSize) {
+              callback(Error('File too big'))
+            }
+          } else {
+            callback(null, false)
+          }
+          callback(null, true)
+        }
       });
       this.pathFolder = pathFolder
     }

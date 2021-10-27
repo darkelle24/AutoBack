@@ -22,7 +22,8 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       routeInfo.fileReturnWithHost = true
 
     if (this.uploads) {
-      server.put(path, this.checkToken(routeInfo), this.uploads.fields(this.files), this.dataToBody(), async (req: any, res: any) => {
+      let upload = this.uploads.fields(this.files)
+      server.put(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
       })
     } else {

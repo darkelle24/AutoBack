@@ -23,7 +23,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
 
     if (this.uploads) {
       let upload = this.uploads.fields(this.files)
-      server.put(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: any, res: any) => {
+      server.put(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
       })
     } else {

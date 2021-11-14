@@ -21,7 +21,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
 
     if (this.uploads) {
       let upload = this.uploads.fields(this.files)
-      server.post(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: express.Request, res: express.Response) => {
+      server.post(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: express.Request, res: express.Response) => {
         await this.toDo(req, res)
       })
     } else {

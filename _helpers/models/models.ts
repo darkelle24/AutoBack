@@ -145,5 +145,6 @@ export interface AutoBackConstructorParameters {
   activeLog?: boolean,
   resetDb?: boolean,
   debug?: boolean,
-  name?: string
+  name?: string,
+  socketActive?: boolean
 }

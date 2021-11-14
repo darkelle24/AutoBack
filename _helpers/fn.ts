@@ -432,7 +432,7 @@ export function typeRouteToString(type: TypeRoute): string {
   }
 }
 export function createAutoBack(infoAutoBack: AutoBackConstructorParameters): AutoBack {
-  return new AutoBack(infoAutoBack.connnectionStr, infoAutoBack.db, infoAutoBack.activeHealthRoute, infoAutoBack.fileInfo, infoAutoBack.serverPath, infoAutoBack.activeLog, infoAutoBack.resetDb, infoAutoBack.debug, infoAutoBack.name)
+  return new AutoBack(infoAutoBack.connnectionStr, infoAutoBack.db, infoAutoBack.activeHealthRoute, infoAutoBack.fileInfo, infoAutoBack.serverPath, infoAutoBack.activeLog, infoAutoBack.resetDb, infoAutoBack.debug, infoAutoBack.name, infoAutoBack.socketActive)
 }
 
 export function writeInFile(path: string, text: string): void {

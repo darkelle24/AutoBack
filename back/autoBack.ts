@@ -18,11 +18,12 @@ import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTabl
 import morgan from 'morgan'
 import compression from 'compression'
 import http from 'http'
+import { Server } from 'socket.io';
 
 export class AutoBack {
 
   readonly server = express();
-  public httpServer?: http.Server
+  readonly httpServer: http.Server
   private DB: DBInterface
   private startTime = Date.now()
   private sequelize: Sequelize
@@ -41,8 +42,9 @@ export class AutoBack {
   readonly name: string
   private linkTableToProcess: {tableSequelizeInfo: any, tempSaveTable: tempSaveTable, fileInfo: filePathInfo, nameTable: string, linkToProcess: {data: dataLinkTable, nameColumns: string}[]}[] = []
   private saveAuthConfig: authConfigAutoBack
+  readonly socketIO?: Server
 
-  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false, name: string = "AutoBack") {
+  constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false, name: string = "AutoBack", socketActive: boolean = false) {
     this.server.use(compression());
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
@@ -128,6 +130,9 @@ export class AutoBack {
     if (debug) {
       this.debugRoute()
     }
+    this.httpServer = require('http').Server(this.server)
+    if (socketActive === true)
+      this.socketIO = this.setUpIo()
   }
 
   public addTypes(newTypes: realDataType): void {
@@ -139,7 +144,7 @@ export class AutoBack {
     await this.sequelize.sync().then(() => console.log('All tables dropped'))
   }
 
-  private async startFn(port: number = 8080, httpServer?: http.Server) {
+  private async startFn(port: number = 8080) {
     await this.sequelize.sync().then(() => {
       console.log('Created all Tables')
       if (this.userTable && this.userTable.config.basicUser) {
@@ -159,13 +164,12 @@ export class AutoBack {
     if (this.debug) {
       this.getInfoAutoBack()
     }
-    if (!httpServer) {
+    if (!this.httpServer) {
       this.server.listen(port, () => {
         console.log('The Express server listening on port ' + port)
       });
-    } else if (httpServer) {
-      this.httpServer = httpServer
-      httpServer.listen(port, () => {
+    } else if (this.httpServer) {
+      this.httpServer.listen(port, () => {
         console.log('The http server listening on port ' + port)
       })
     }
@@ -196,14 +200,14 @@ export class AutoBack {
      * Call after you init all your routes and tables
   */
 
-  async start(port: number = 8080, httpServer?: http.Server): Promise<void> {
+  async start(port: number = 8080): Promise<void> {
     this.port = port
     if (this.waitDestroyDb) {
       this.waitDestroyDb.finally(async () => {
-        await this.startFn(port, httpServer)
+        await this.startFn(port)
       })
     } else {
-      await this.startFn(port, httpServer)
+      await this.startFn(port)
     }
   }
 
@@ -680,5 +684,14 @@ export class AutoBack {
       console.error(data + " type in " + this.DB.dbName + " is not supported")
     }
     return type
+  }
+
+  private setUpIo(): Server {
+    const io = new Server(this.httpServer);
+
+    io.use(async (_socket, next) => {
+        next(new Error('Cannot be connected outside namespace'));
+    })
+    return io
   }
 }

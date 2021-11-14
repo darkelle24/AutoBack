@@ -485,6 +485,7 @@ type RouteGet = {
    returnColumns?: acceptData,
    filters?: ListFilter,
    fileReturnWithHost?: boolean,
+   solo?: boolean,
    beforeGet?(request: any, respond: any, routeClass: RouteGetClass<any>, filters: any): void,
    beforeSend?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void,
    beforeSendAfterRecursive?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void
@@ -532,6 +533,12 @@ Si filters est undefined alors juste les filtres de base des types sont activés
 fileReturnWithHost doit contenir un boolean ou undefined.
 
 Si true ou undefined alors le path des fichier sera renvoyer avec l'hostname du serveur.
+
+##### *solo*
+
+solo doit contenir un boolean ou undefined.
+
+Si true alors le get renvoie qu une seul valeur.
 
 ##### *beforeGet*
 

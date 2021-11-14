@@ -68,6 +68,49 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
         return errorHandling(err, res)
       }
     }
+
+    if (route.solo === true)
+      this.getAllData(req, res, route, filter)
+    else
+      this.getOneData(req, res, route, filter)
+  }
+
+  protected getOneData(req: express.Request, res: express.Response, route: RouteGet, filter: any) {
+    return this.sequelizeData.findOne(filter).then(async data => {
+      const toSend: any[] = []
+      let datas = [data]
+
+      datas.every((value, index) => {
+        toSend.push(value.get())
+        if (route.returnColumns)
+          toSend[index]= this.list(toSend[index], route.returnColumns)
+        this.getAllValue(toSend[index])
+        return true
+      })
+      if (route.beforeSend)
+        await Promise.resolve(route.beforeSend(req, res, this, toSend))
+      if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
+        toSend.forEach((oneInfo: any) => {
+          this.files.forEach((element) => {
+            if (Object.prototype.hasOwnProperty.call(oneInfo, element.name) && oneInfo[element.name]) {
+              oneInfo[element.name] = req.protocol + '://' + req.headers.host + oneInfo[element.name]
+            }
+          })
+        })
+      }
+      return this.getAllLinkData(toSend)
+        .then(async () => {
+          if (route.beforeSendAfterRecursive)
+            await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
+          res.status(StatusCodes.OK).json(toSend[0])
+        })
+        .catch(err => errorHandling(err, res))
+    }).catch(err => {
+      return errorHandling(err, res)
+    })
+  }
+
+  protected getAllData(req: express.Request, res: express.Response, route: RouteGet, filter: any) {
     return this.sequelizeData.findAll(filter).then(async datas => {
       const toSend: any[] = []
 

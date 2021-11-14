@@ -14,7 +14,7 @@ import fs from 'fs'
 import { filePathInfo } from '../_helpers/models/models';
 import { ABDataType, realDataType, realDataTypeInfo } from '../_helpers/models/modelsType';
 import { DBInterface, DB } from '../_helpers/models/modelsDb';
-import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable, DeleteAction } from '../_helpers/models/modelsTable';
+import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable, DeleteAction, dataFileTable } from '../_helpers/models/modelsTable';
 import morgan from 'morgan'
 import compression from 'compression'
 import http from 'http'
@@ -633,7 +633,7 @@ export class AutoBack {
     return [tableSequelizeInfo, tempSaveTable, linkToProcess]
   }
 
-  private saveDataInfo(dataInfo: dataTableInfo | dataLinkTable, type: realDataTypeInfo): saveDataTableInfo {
+  private saveDataInfo(dataInfo: dataTableInfo | dataLinkTable | dataFileTable, type: realDataTypeInfo): saveDataTableInfo {
     const temp = _.merge({}, this.defaultSaveDataInfo, dataInfo)
     temp.type = type
 

@@ -3,7 +3,7 @@ import { ModelValidator } from "./models"
 import { ABDataType, realDataTypeInfo } from "./modelsType"
 
 export interface Table {
-  [key: string]: dataTableInfo | dataLinkTable
+  [key: string]: dataTableInfo | dataLinkTable | dataFileTable
 }
 
 export type dataLinkTable = {
@@ -14,6 +14,12 @@ export type dataLinkTable = {
   rename?: string,
   multipleResult?: boolean,
   transformGetLinkedData?(value: any): void
+} & dataTableInfo
+
+export type dataFileTable = {
+  type: ABDataType.FILE,
+  maxFileSize?: number,
+  extAuthorize?: string[]
 } & dataTableInfo
 
 export interface dataTableInfo {
@@ -39,7 +45,7 @@ export interface dataTableInfo {
 }
 
 export interface saveTable {
-  [key: string]: saveDataTableInfo | realDataLinkTable
+  [key: string]: saveDataTableInfo | realDataLinkTable | realDataFileTable
 }
 
 export interface tempSaveTable {
@@ -61,6 +67,12 @@ export type realDataLinkTable = {
   multipleResult: boolean,
   subType: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE,
   transformGetLinkedData?(value: any): void
+} & saveDataTableInfo
+
+export type realDataFileTable = {
+  type: ABDataType.FILE,
+  maxFileSize?: number,
+  extAuthorize?: string[]
 } & saveDataTableInfo
 
 export interface saveDataTableInfo {

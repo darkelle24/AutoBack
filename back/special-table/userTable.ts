@@ -216,10 +216,14 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
   }
 
   public async checkToken(token: string, role?: string[], inverse?: boolean): Promise<any> {
-    let user = this.checkJWT(token)
-    user = await this.checkUserExist(user, this.sequelizeData)
-    this.checkRole(user.role, role, inverse)
-    return user
+    try {
+        let user = this.checkJWT(token);
+        user = await this.checkUserExist(user, this.sequelizeData);
+        this.checkRole(user.role, role, inverse);
+        return user;
+    } catch (error) {
+        throw error
+    }
   }
 
   public async checkTokenExpress(req: express.Request, res: express.Response, route: Route): Promise<boolean>{

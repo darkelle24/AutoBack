@@ -84,9 +84,9 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
             name: valueValueFilter.name,
             where: ""
           }
-        
+
           newFilter.where = infoPlaceToString(valueValueFilter.where)
-        
+
           if (newFilter) {
             if (!toReturn.filter[keyFilter])
               toReturn.filter[keyFilter] = {}

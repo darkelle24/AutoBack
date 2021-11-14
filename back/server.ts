@@ -63,9 +63,9 @@ const test = autoback.defineTable('lol', {
   date: { type: ABDataType.DATE, allowNull: true },
   array: { type: ABDataType.ARRAY, allowNull: true },
   number: { type: ABDataType.BIGINT, allowNull: true },
-  file: { type: ABDataType.FILE, allowNull: true },
-  dab: { type: ABDataType.FILE, allowNull: true },
-  lol: {type: ABDataType.FILE, allowNull: true}
+  file: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf'] },
+  dab: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf'] },
+  lol: {type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf']}
 }, 'dab', 'Test')
 
 autoback.setUpTables()

@@ -69,7 +69,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       }
     }
 
-    if (route.solo === true)
+    if (route.solo !== true)
       this.getAllData(req, res, route, filter)
     else
       this.getOneData(req, res, route, filter)

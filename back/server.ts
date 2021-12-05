@@ -12,7 +12,8 @@ const autoback = createAutoBack({
   db: DB.POSTGRES,
   activeHealthRoute: true,
   debug: true,
-  name: "Test Autoback"
+  name: "Test Autoback",
+  socketActive: true
 })
 
 autoback.activeAuth({
@@ -66,9 +67,42 @@ const test = autoback.defineTable('lol', {
   file: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf'] },
   dab: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf'] },
   lol: {type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf']}
-}, 'dab', 'Test')
+}, 'dab', 'Test', { auth: { role: ["Admin"] }, path: '/lol'})
+
+const patient = autoback.defineTable('patient', {
+  id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+  nom: {type: ABDataType.STRING, allowNull: true},
+  prenom: {type: ABDataType.STRING, allowNull: true},
+  age: {type: ABDataType.STRING, allowNull: true},
+  mail: {type: ABDataType.STRING, allowNull: true, validate: {isEmail: true}},
+  telephone: {type: ABDataType.STRING, allowNull: true},
+}
+)
+
+const adresse = autoback.defineTable('adresse', {
+  id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
+  adresse: {type: ABDataType.STRING, allowNull: true},
+  patient_id: { type: ABDataType.TABLE_LINK, allowNull: false, tableToLink: 'patient', columnsLink: 'id' }
+}
+);
 
 autoback.setUpTables()
+
+patient.basicRouting()
+adresse.basicRouting()
+
+
+patient.addRoute({
+  type: TypeRoute.GET,
+  path: '/lol',
+  beforeSendAfterRecursive: async (req, res, routeClass, datas) => {
+    return Promise.all(datas.map(async (element: any) => {
+      return autoback.tables['adresse'].sequelizeData.findAll({ where: { patient_id: element.id } }).then((result: any[]) => {
+        element.addresses = result.map((oneResult: any) => { return oneResult.get() })
+      })
+    }))
+  }
+})
 
 test.basicRouting({auth: {role: ["Admin"]}})
 test.addRoute({
@@ -78,6 +112,9 @@ test.addRoute({
     inverse: true,
     list: ["id"]
   },
+  beforeSetValue: (req, res) => {
+    console.log(req.user)
+  },
   dataAs: {
     comment: {
       where: InfoPlace.QUERYPARAMS,
@@ -85,7 +122,7 @@ test.addRoute({
     }
   },
   auth: {
-    role: ['User', 'Admin']
+    role: ['User']
   }
 })
 

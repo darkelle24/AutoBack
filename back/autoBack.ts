@@ -3,7 +3,7 @@ import { PostgresDb } from './db/postgres/postgres';
 import express from "express";
 import {StatusCodes} from 'http-status-codes';
 import { ModelAttributes, ModelCtor, Sequelize } from 'sequelize';
-import { defaultSaveDataInfo, removeFile, addPath, formatDate, writeInFile } from '../_helpers/fn';
+import { defaultSaveDataInfo, removeFile, addPath, formatDate, writeInFile, getPathTable } from '../_helpers/fn';
 import * as _ from "lodash"
 import { authConfigAutoBack, userTableConfig, userTableDefine } from '../_helpers/models/userTableModel';
 import { UserTableClass } from './special-table/userTable';
@@ -19,6 +19,7 @@ import morgan from 'morgan'
 import compression from 'compression'
 import http from 'http'
 import { Server } from 'socket.io';
+import { SocketConstructor, SocketInfo } from '_helpers/models/socketModels';
 
 export class AutoBack {
 
@@ -463,10 +464,28 @@ export class AutoBack {
     return [tableSequelize, tempSaveTable]
   }
 
-  defineTable(nameTable: string, table: Table, originRoutePath?: string, description?: string): TableClass<any> | undefined {
+  defineTable(nameTable: string, table: Table, originRoutePath?: string, description?: string, socketInfo?: SocketInfo): TableClass<any> | undefined {
     const [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
-    this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable, description)
+    if (this.socketIO) {
+      let socket: any | undefined = undefined
+
+      if (socketInfo) {
+        socket = {}
+        if (!socketInfo.path) {
+          socketInfo.path = getPathTable(nameTable, this.serverPath, originRoutePath)
+        }
+        socket.path = socketInfo.path
+        socket.auth = socketInfo.auth
+        socket.io = this.socketIO
+        socket.userTable = this.userTable
+        socket.notif = socketInfo.notif
+        socket.toDoOnSocketConnection = socketInfo.toDoOnSocketConnection
+      }
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable, description, socket)
+    } else {
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable, description)
+    }
     saveTableInfo.table = this.tables[nameTable]
 
     if (tableSequelize) {

@@ -455,3 +455,9 @@ export function loginPostmanAfterRequestEvent(roles: string[]): string[] {
           '}'
         ]
 }
+
+export function getPathTable(name: string, originServerPath: string, originRoutePath?: string): string {
+  if (originRoutePath)
+    return addPath('/', addPath(originServerPath, originRoutePath))
+  return addPath('/', addPath(addPath(originServerPath, '/'), name))
+}

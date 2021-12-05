@@ -16,6 +16,11 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
     this.changeAccess(routeInfo.auth)
+
+    if (this.routeInfo.socketNotif === undefined) {
+      this.routeInfo.socketNotif = {activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined}
+    }
+
     server.delete(path, this.checkToken(routeInfo), async (req: any, res: any) => {
       try {
         if (!routeInfo.doSomething)
@@ -54,6 +59,10 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
 
         if (route.beforeSend)
           await Promise.resolve(route.beforeSend(req, res, this, data))
+
+        if (this.tableClass.socket) {
+          this.tableClass.socket.sendNotif(req, data, 'DELETE', this.routeInfo.socketNotif)
+        }
 
         return res.status(200).json(data)
       }).catch(err => {

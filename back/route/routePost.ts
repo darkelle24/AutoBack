@@ -16,6 +16,10 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     this.changeDataAsList(routeInfo.dataAs)
     this.changeAccess(routeInfo.auth)
 
+    if (this.routeInfo.socketNotif === undefined) {
+      this.routeInfo.socketNotif = {activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined}
+    }
+
     if (routeInfo.fileReturnWithHost === undefined)
       routeInfo.fileReturnWithHost = true
 
@@ -88,6 +92,11 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
         .then(async () => {
           if (route.beforeSendAfterRecursive)
             await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
+
+          if (this.tableClass.socket) {
+            this.tableClass.socket.sendNotif(req, data, 'POST', this.routeInfo.socketNotif)
+          }
+
           res.status(201).json(toSend)
         })
         .catch(err => errorHandling(err, res))

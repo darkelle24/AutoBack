@@ -1,3 +1,4 @@
+import { SocketNotifInfo } from '_helpers/models/socketModels';
 import { RoutePostClass } from './../../back/route/routePost';
 import { RouteGetClass } from './../../back/route/routeGet';
 import { RouteDeleteClass } from '../../back/route/routeDelete';
@@ -85,7 +86,8 @@ export type RoutePost = {
    fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePostClass<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
-   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void
+   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
+   socketNotif?: SocketNotifInfo
 } & RouteBasic
 
 export type RoutePut = {
@@ -103,14 +105,16 @@ export type RoutePut = {
    fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>, row: Model<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
-   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void
+   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
+   socketNotif?: SocketNotifInfo
 } & RouteBasic
 
 export type RouteDelete = {
    readonly type: TypeRoute.DELETE,
    filters?: ListFilter,
    beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void,
-   beforeSend?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void
+   beforeSend?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void,
+   socketNotif?: SocketNotifInfo
 } & RouteBasic
 
 export type Route = RouteGet | RoutePost | RoutePut | RouteDelete

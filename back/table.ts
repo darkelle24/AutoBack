@@ -3,7 +3,7 @@ import { RoutePostClass } from './route/routePost';
 import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass, InfoPlace, basicRouteParams } from './../_helpers/models/routeModels';
 import { Model, ModelCtor, Op } from "sequelize";
 import { Route, TypeRoute } from "../_helpers/models/routeModels";
-import { activeAllFiltersForAllCols, addPath, getFileExtansion, getRowInTableLink, getRowInTableMultipleLink } from '../_helpers/fn';
+import { activeAllFiltersForAllCols, addPath, getFileExtansion, getPathTable, getRowInTableLink, getRowInTableMultipleLink } from '../_helpers/fn';
 import { RouteGetClass } from './route/routeGet';
 import { RoutePutClass } from './route/routePut';
 import { RouteDeleteClass } from './route/routeDelete';
@@ -15,6 +15,8 @@ import { DeleteAction, realDataFileTable, realDataLinkTable, saveTable, TableLin
 import { ABDataType } from '../_helpers/models/modelsType';
 import express from 'express';
 import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
+import { SocketAutobackClass } from './socket';
+import { SocketConstructor, SocketInfo } from '_helpers/models/socketModels';
 
 export class TableClass<M extends Model> {
   readonly name: string
@@ -27,6 +29,7 @@ export class TableClass<M extends Model> {
   readonly upload?: multer.Multer
   readonly pathFolder?: string
   description?: string
+  readonly socket?: SocketAutobackClass
 
   private _listLinkColumns?: string[] = undefined
   get listLinkColumns(): string[] | undefined  {
@@ -38,16 +41,17 @@ export class TableClass<M extends Model> {
     return this._tableLinktoThisTable
   }
 
-  constructor(name: string, table: saveTable, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>, description: string = '') {
+  constructor(name: string, table: saveTable, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>, description: string = '', socketInfo?: SocketConstructor) {
     this.table = table
     this.name = name
     this.server = server
     this.userTable = userTable
     this.description = description
-    if (originRoutePath)
-      this.routes.originRoutePath = addPath('/', addPath(originServerPath, originRoutePath))
-    else
-      this.routes.originRoutePath = addPath('/', addPath(addPath(originServerPath, '/'), name))
+
+    this.routes.originRoutePath = getPathTable(name, originServerPath, originRoutePath)
+
+    if (socketInfo)
+      this.socket = new SocketAutobackClass(socketInfo)
 
     const haveFile = Object.values(this.table).some((value: any) => { return value.type.autobackDataType === ABDataType.FILE })
 

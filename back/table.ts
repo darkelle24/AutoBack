@@ -386,13 +386,15 @@ export class TableClass<M extends Model> {
     const filter: any = {}
     filter.where = {}
     if (table.subType !== ABDataType.MULTIPLE_LINK_TABLE) {
-    filter.where[oneTableInfo.columns] = data[table.columnsLink]
+      filter.where[oneTableInfo.columns] = data[table.columnsLink]
 
-    return oneTableInfo.table.sequelizeData.findAll(filter)
-      .then((data: any) => {
-        data[oneTableInfo.columns] = value
-        return data.save({ fields: [oneTableInfo.columns] }).then((data: any) => data)
-      })
+      return oneTableInfo.table.sequelizeData.findAll(filter)
+        .then((datas: any[]) => {
+          return datas.map((onedata: any) => {
+            onedata[oneTableInfo.columns] = value
+            return onedata.save({ fields: [oneTableInfo.columns] }).then((info: any) => info)
+          })
+        })
     } else {
       filter.where[oneTableInfo.columns] = {
         [Op.not]: null,

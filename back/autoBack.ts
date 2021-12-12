@@ -86,7 +86,7 @@ export class AutoBack {
       })
 
       const accessLogStream = rfs.createStream(generator, {
-        path: path.join(__dirname, 'logs'),
+        path: 'logs',
         maxFiles: 31,
         intervalBoundary: true,
         interval: "1d",

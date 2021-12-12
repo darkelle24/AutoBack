@@ -10,7 +10,6 @@ import _ from 'lodash';
 import { saveTable } from '../../_helpers/models/modelsTable';
 import express from 'express';
 
-
 export class UserTableClass<M extends Model> extends TableClass<M> {
 
   readonly config: realUserTableConfig
@@ -52,6 +51,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       if (deleteRoute && (deleteRoute.active || deleteRoute.active === undefined))
         this.basicDelete(deleteRoute.auth)
       this.login()
+      this.routeCheckJWT()
     } else {
       console.error('Already activate basic routing on table ' + this.name)
     }
@@ -136,6 +136,33 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     return crypto.createHmac('sha512', this.config.passwordSecret)
   }
 
+  protected routeCheckJWT(): void {
+    super.addRoute({
+      path: '/jwt',
+      type: TypeRoute.POST,
+      name: 'JWT check',
+      doSomething: async (req, res, route) => {
+        const authHeader = req.headers.authorization;
+
+        if (authHeader) {
+          const token = authHeader.split(' ')[1];
+          try {
+            this.checkJWT(token)
+          } catch (err: any) {
+            if (err.name === 'TokenExpiredError') {
+              res.status(408).json({ message: err.toString() });
+            } else {
+              res.status(406).json({ message: err.toString() });
+            }
+            res.statusMessage = err.toString()
+            return
+          }
+          res.status(200).json({"message": "JWT ok"})
+        }
+      }
+    })
+  }
+
   protected login(): void {
     super.addRoute({
       path: '/login',
@@ -175,7 +202,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     jwt.verify(token, this.config.tokenSecret, (err: any, userJwt: any) => {
       if (err) {
         user = undefined
-        throw Error(err.toString())
+        throw err
       }
       user = userJwt;
     });
@@ -237,8 +264,12 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         (<any>req).user = await this.checkToken(token,
             route.auth && route.auth.role ? route.auth.role : undefined,
             route.auth && route.auth.inverse ? route.auth.inverse : undefined
-          ).catch((err: any) =>{
-            res.status(403).json({ message: err.toString() });
+        ).catch((err: Error) => {
+            if (err.name === 'TokenExpiredError') {
+              res.status(408).json({ message: err.toString() });
+            } else {
+              res.status(403).json({ message: err.toString() });
+            }
             res.statusMessage = err.toString()
             good = false
           })

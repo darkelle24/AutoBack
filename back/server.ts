@@ -7,6 +7,8 @@ import { createAutoBack } from "../_helpers/fn"
 //const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, true)
 //let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
 
+require('dotenv').config()
+
 const autoback = createAutoBack({
   connnectionStr: "postgres://postgres:password@localhost:5432/test",
   db: DB.POSTGRES,
@@ -34,6 +36,25 @@ autoback.activeAuth({
     test: {type: ABDataType.STRING, allowNull: true}
   }
 )
+
+autoback.addMailAccount("test", {
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_FROM_EMAIL,
+    pass: process.env.SMTP_FROM_PASSWORD,
+  },
+})
+
+autoback.sendMail("test", {
+  from: process.env.SMTP_FROM_EMAIL,
+  to: process.env.SMTP_TO_EMAIL,
+  subject: 'New Contact Form Submission',
+  text: `test`,
+}).then(() => {
+  console.log("ok")
+})
 
 const dab = autoback.defineTable('lel', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },

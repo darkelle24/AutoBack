@@ -2,6 +2,7 @@ import { UserTableClass } from 'back/special-table/userTable';
 import { ABDataType } from './modelsType';
 import { Table } from './modelsTable';
 import { basicRouteParams } from './routeModels';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 export const userTableDefine: Table = {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
@@ -34,6 +35,7 @@ export interface userTableConfig {
   basicUser?: {
     [key: string]: any
   }
+  accountMailRecupMDP?: string | SMTPTransport | SMTPTransport.Options
 }
 
 export interface realUserTableConfig {

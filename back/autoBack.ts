@@ -20,6 +20,9 @@ import compression from 'compression'
 import http from 'http'
 import { Server } from 'socket.io';
 import { SocketConstructor, SocketInfo } from '_helpers/models/socketModels';
+import nodemailer from "nodemailer"
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import Mail from 'nodemailer/lib/mailer';
 
 export class AutoBack {
 
@@ -32,7 +35,7 @@ export class AutoBack {
   private defaultSaveDataInfo: any = defaultSaveDataInfo()
   private waitDestroyDb?: Promise<void>
   private _userTable?: UserTableClass<any> = undefined
-  get userTable(): UserTableClass<any> | undefined  {
+  get userTable(): UserTableClass<any> | undefined {
     return this._userTable
   }
   readonly fileInfo: filePathInfo
@@ -41,16 +44,16 @@ export class AutoBack {
   private debugInfo: any
   private port: number
   readonly name: string
-  private linkTableToProcess: {tableSequelizeInfo: any, tempSaveTable: tempSaveTable, fileInfo: filePathInfo, nameTable: string, linkToProcess: {data: dataLinkTable, nameColumns: string}[]}[] = []
+  private linkTableToProcess: { tableSequelizeInfo: any, tempSaveTable: tempSaveTable, fileInfo: filePathInfo, nameTable: string, linkToProcess: { data: dataLinkTable, nameColumns: string }[] }[] = []
   private saveAuthConfig: authConfigAutoBack
   readonly socketIO?: Server
+  accountToSendMail: { name: string, account: nodemailer.Transporter<SMTPTransport.SentMessageInfo>} [] = []
 
   constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false, name: string = "AutoBack", socketActive: boolean = false) {
     this.server.use(compression());
     this.server.use(express.urlencoded({ extended: false }))
     this.server.use(express.json())
     this.server.use(cors());
-
     this.name = name
 
     if (!fileInfo) {
@@ -134,6 +137,10 @@ export class AutoBack {
     this.httpServer = require('http').Server(this.server)
     if (socketActive === true)
       this.socketIO = this.setUpIo()
+  }
+
+  public addMailAccount(name: string, transport?: string | SMTPTransport | SMTPTransport.Options): number {
+    return this.accountToSendMail.push({ name: name, account: nodemailer.createTransport(transport) })
   }
 
   public addTypes(newTypes: realDataType): void {
@@ -274,6 +281,13 @@ export class AutoBack {
       })
     }
     return postman
+  }
+
+  public sendMail(accountName: string, mailOptions: Mail.Options): Promise<any> | undefined {
+    let account = this.accountToSendMail.find(x => x.name === accountName)
+    if (account)
+      return this.accountToSendMail[0].account.sendMail(mailOptions)
+    return undefined
   }
 
   private routeInfoToPostman(route: any): any {
@@ -429,6 +443,10 @@ export class AutoBack {
       if (mergeUserDefine)
         userDefine = _.merge(userTableDefine, userDefine)
       const [tableSequelize, saveTableInfo] = this.defineStartTable("User", userDefine)
+
+      if (auth.accountMailRecupMDP) {
+        this.addMailAccount("mdp", auth.accountMailRecupMDP)
+      }
 
       this.tables["User"] = new userTableClass(auth, "User", saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, '/auth')
       saveTableInfo.table = this.tables["User"]

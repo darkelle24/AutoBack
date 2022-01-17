@@ -32,8 +32,9 @@ autoback.start(8081)
 
 1. [Installation](#Installation)
 2. [Ordre](#Ordre)
-2. [Documentation des Classes](#Documentation-des-Classes)
-3. [Documentation des Interfaces](#Documentation-des-Interfaces)
+3. [Mail](#Mail)
+4. [Documentation des Classes](#Documentation-des-Classes)
+5. [Documentation des Interfaces](#Documentation-des-Interfaces)
 
 ## Installation <a name="Installation"></a>
 
@@ -50,6 +51,87 @@ npm install autoback
 ## Ordre <a name="Ordre"></a>
 
 [Création de la classe Autoback](#Classe-Autoback) -> [Définition des tables](#Méthode-defineTable) et/ou [Activer l'authentification](#Méthode-activeAuth) -> [Appelle de setUpTables](#Méthode-setUpTables) -> [Définition des customs route](#Méthode-addRoute) et/ou [Définition des basics route](#Méthode-basicRouting) -> [Allumage du serveur](#Méthode-start)
+
+## Mail <a name="Mail"></a>
+
+#### Méthode addMailAccount <a name="Méthode-addMailAccount"></a>
+
+La methode addMailAccount permet d'ajouter un compte mail au serveur Autoback. Et retourne l index dans l'array.
+
+```js
+autoback.addMailAccount("test", {
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: "test@gmail.com",
+    pass: "test",
+  },
+})
+```
+
+##### Définition de addMailAccount
+
+```js
+addMailAccount(
+    name: string,
+    transport?: string | SMTPTransport | SMTPTransport.Options
+): number
+```
+
+##### Paramétres de addMailAccount
+
+###### *name*
+
+name doit contenir un string.
+
+Cette string permet de definir le nom du compte.
+
+###### *transport*
+
+port doit contenir soit un string, un SMTPTransport ou un SMTPTransport.Options.
+
+Cela permet de configurer sa boite mail.
+
+Pour un savoir plus allez voir [nodemailer](https://nodemailer.com/about/).
+
+#### Méthode sendMail <a name="Méthode-sendMail"></a>
+
+La methode sendMail permet d'envoyer un mail.
+
+```js
+autoback.addMailAccount("test", {
+  from: "test@gmail.com",
+  to: "receiver@gmail.com",
+  subject: 'New Contact Form Submission',
+  text: `test`,
+})
+```
+
+##### Définition de sendMail
+
+```js
+sendMail(
+    accountName: string,
+    mailOptions: Mail.Options
+): Promise<any> | undefined
+```
+
+##### Paramétres de sendMail
+
+###### *accountName*
+
+accountName doit contenir un string.
+
+Cette string permet de trouver le nom du compte.
+
+###### *mailOptions*
+
+port doit contenir Mail.Options.
+
+Cela permet de configurer le mail.
+
+Pour un savoir plus allez voir [nodemailer](https://nodemailer.com/about/).
 
 ## Documentation des Classes <a name="Documentation-des-Classes"></a>
 
@@ -79,7 +161,8 @@ AutoBack(
   activeHealthRoute: boolean = true,
   fileInfo?: filePathInfo,
   serverPath: string = "api/",
-  activeLog: boolean = true
+  activeLog: boolean = true,
+  socketActive: boolean = false
 )
 ```
 
@@ -128,6 +211,13 @@ serverPath doit contenir un boolean.
 
 Ce boolean permet de definir si oui ou non l'autoback devra etre logger. Les logs se trouveront dans le dossier logs.
 Par defaut cette valeur est true
+
+##### *socketActive*
+
+socketActive doit contenir un boolean.
+
+Ce boolean permet de definir si oui ou non les socket sont activer.
+Par defaut cette valeur est false
 
 #### Méthode start <a name="Méthode-start"></a>
 
@@ -178,7 +268,9 @@ autoback.defineTable('testTable', {
 defineTable(
   nameTable: string,
   table: Table,
-  originRoutePath?: string
+  originRoutePath?: string,
+  description?: string,
+  socketInfo?: SocketInfo
 ): TableClass<any> | undefined
 ```
 
@@ -202,6 +294,18 @@ originRoutePath doit contenir une string ou undefined.
 
 Cette string permet de definir la suite de la route. Toutes les routes qui appartiennent a cette table auront avant leur path originRoutePath. Exemple `${serverPath}/${originRoutePath}/${path_des_routes_de_cette_table}`.
 Par defaut cette valeur est le nom de la table.
+
+###### *description*
+
+description doit contenir un string.
+
+Cela permet de definir une description pour le postman ou le mode de debug.
+
+###### *socketInfo*
+
+socketInfo doit contenir un [SocketInfo](#Interface-SocketInfo)
+
+Ce [SocketInfo](#Interface-SocketInfo) permet de definir l'etat des socket sur une modification de la table.
 
 #### Méthode setUpTables <a name="Méthode-setUpTables"></a>
 
@@ -410,6 +514,9 @@ Cette objet permet de definir le comportement de la route créer.
 13. [Interface ValueInfo](#Interface-ValueInfo)
     * [Définition de ValueInfo](#Définition-de-ValueInfo)
     * [Paramétres de ValueInfo](#Paramétres-de-ValueInfo)
+14. [SocketInfo](#Interface-SocketInfo)
+    * [Définition de SocketInfo](#Définition-de-SocketInfo)
+    * [Paramétres de SocketInfo](#Paramétres-de-SocketInfo)
 
 ### Interface Route <a name="Interface-Route"></a>
 
@@ -569,7 +676,8 @@ type RoutePost = {
    fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePostClass<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
-   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void
+   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
+   socketNotif?: SocketNotifInfo
 } & RouteBasic
 ```
 
@@ -625,6 +733,12 @@ beforeSendAfterRecursive doit contenir une fonction ou undefined.
 
 Permet de pouvoir executée une fonction juste avant d'envoyer les données mais aprés la recupération de table ne récursive.
 
+##### *socketNotif*
+
+socketNotif doit contenir un [SocketNotifInfo](#Interface-SocketNotifInfo) ou undefined.
+
+Permet de configurer l envoie de socket au user connecter au socket correspondant a la table.
+
 #### Définition de Route de type PUT <a name="Définition-de-Route-Put"></a>
 
 ```js
@@ -637,7 +751,8 @@ type RoutePut = {
    fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>, row: Model<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
-   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void
+   beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
+   socketNotif?: SocketNotifInfo
 } & RouteBasic
 ```
 
@@ -700,6 +815,12 @@ beforeSendAfterRecursive doit contenir une fonction ou undefined.
 
 Permet de pouvoir executée une fonction juste avant d'envoyer les données mais aprés la recupération de table ne récursive.
 
+##### *socketNotif*
+
+socketNotif doit contenir un [SocketNotifInfo](#Interface-SocketNotifInfo) ou undefined.
+
+Permet de configurer l envoie de socket au user connecter au socket correspondant a la table.
+
 #### Définition de Route de type DELETE <a name="Définition-de-Route-Delete"></a>
 
 ```js
@@ -707,7 +828,8 @@ type RouteDelete = {
    readonly type: TypeRoute.DELETE,
    filters?: ListFilter,
    beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void,
-   beforeSend?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void
+   beforeSend?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void,
+   socketNotif?: SocketNotifInfo
 } & RouteBasic
 ```
 
@@ -737,6 +859,12 @@ Permet de pouvoir executée une fonction juste avant de supprimé les données.
 beforeSend doit contenir une fonction ou undefined.
 
 Permet de pouvoir executée une fonction juste avant d'envoyer les données.
+
+##### *socketNotif*
+
+socketNotif doit contenir un [SocketNotifInfo](#Interface-SocketNotifInfo) ou undefined.
+
+Permet de configurer l envoie de socket au user connecter au socket correspondant a la table.
 
 ### Interface Table <a name="Interface-Table"></a>
 
@@ -1175,3 +1303,76 @@ interface ListValueInfo {
 ```
 
 C'est un dictionnaire js qui va contenir des string en key qui corresponde au nom des colonne de la [Table](#Interface-Table) et en value des [ValueInfo](#Interface-ValueInfo)
+
+### Interface SocketInfo <a name="Interface-SocketInfo"></a>
+
+#### Définition de SocketInfo <a name="Définition-de-SocketInfo"></a>
+
+```ts
+interface SocketInfo {
+  path?: string,
+  auth?: access,
+  notif?: SocketNotifInfo,
+  toDoOnSocketConnection?: (socket: Socket) => void
+}
+```
+
+#### Paramétres de SocketInfo <a name="Paramétres-de-SocketInfo"></a>
+
+##### *path*
+
+path doit contenir un string ou undefined.
+
+Permet de définir le path de la socket sur la table.
+Si undefined alors prend le path de la table comme path de socket.
+
+##### *auth*
+
+active doit contenir un [access](#Interface-access) ou undefined.
+
+Permet de pouvoir définir le processus d'authenfication sur cette socket.
+
+##### *notif*
+
+notif doit contenir un [SocketNotifInfo](#Interface-SocketNotifInfo).
+
+Permet de definir comment se comporterra les notification.
+
+##### *toDoOnSocketConnection*
+
+notif doit contenir une fonction ou undefined.
+
+Permet d'executer une fonction quand un nouvelle utilisateur se connecte a la socket.
+
+### Interface SocketNotifInfo <a name="Interface-SocketNotifInfo"></a>
+
+#### Définition de SocketNotifInfo <a name="Définition-de-SocketNotifInfo"></a>
+
+```ts
+interface SocketNotifInfo {
+  activate?: boolean,
+  selectUserSendNotifs?: (userToSendNotif: (RemoteSocket<any>)[], req: any, dataChange: any, type: 'POST' | 'PUT' | 'DELETE' ) => (RemoteSocket<any>)[],
+  toSendForNotif?: (packageToSend: {eventName: string, toSend: {data: any, type: 'POST' | 'PUT' | 'DELETE' }}, req: any) => {eventName: string, toSend: any}
+}
+```
+
+#### Paramétres de SocketInfo <a name="Paramétres-de-SocketNotifInfo"></a>
+
+##### *activate*
+
+activate doit contenir un boolean ou undefined.
+
+Permet de définir si les notifications sont activer.
+Si undefined alors activate est agale a true.
+
+##### *selectUserSendNotifs*
+
+selectUserSendNotifs doit contenir une fonction ou undefined.
+
+Permet de selectionner la liste des user qui vont recevoir la notif.
+
+##### *toSendForNotif*
+
+toSendForNotif doit contenir une fonction ou undefined.
+
+Permet de selectionner quoi envoyer au user qui vont recevoir la notif.

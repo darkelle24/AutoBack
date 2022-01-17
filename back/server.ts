@@ -37,7 +37,9 @@ autoback.activeAuth({
   }
 )
 
-autoback.addMailAccount("test", {
+// Need to have .env with correct info about mail to use this exemple
+
+/* autoback.addMailAccount("test", {
   host: 'smtp.gmail.com',
   port: 465,
   secure: true,
@@ -54,7 +56,7 @@ autoback.sendMail("test", {
   text: `test`,
 }).then(() => {
   console.log("ok")
-})
+}) */
 
 const dab = autoback.defineTable('lel', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },

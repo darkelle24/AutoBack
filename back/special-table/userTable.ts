@@ -71,9 +71,12 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     super.addRoute({
       path: '/sendRecoverMail',
       type: TypeRoute.POST,
-      columsAccept: {list: ["email"]},
       name: 'Send an email to recover password',
       doSomething: async (req: any, res: any, route: RouteClass) => {
+        if (!req.body['email']) {
+          return errorHandling(new Error('Missing an email.'), res)
+        }
+
         const user = await this.sequelizeData.findOne({ where: { email: req.body.email } })
 
         if (!user) {
@@ -98,18 +101,25 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     super.addRoute({
       path: '/resetForgotPassword',
       type: TypeRoute.POST,
-      columsAccept: {list: ["token", "password"]},
       name: 'Reset forgot password',
       doSomething: async (req, res, route) => {
         let user: any = undefined
 
-        jwt.verify(req.body['token'], this.config.tokenSecret, (err: any, userJwt: any) => {
-          if (err) {
-            user = undefined
-            throw err
-          }
-          user = userJwt;
-        });
+        if (!req.body['token'] || !req.body['password']) {
+          return errorHandling(new Error('Missing a token or / and a password.'), res)
+        }
+
+        try {
+          jwt.verify(req.body['token'], this.config.tokenSecret, (err: any, userJwt: any) => {
+            if (err) {
+              user = undefined
+              throw err
+            }
+            user = userJwt;
+          });
+        } catch (e: any) {
+          return errorHandling(e.message, res)
+        }
 
         if (!user) {
           return errorHandling('Wrong token', res)

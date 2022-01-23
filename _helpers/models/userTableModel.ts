@@ -3,6 +3,7 @@ import { ABDataType } from './modelsType';
 import { Table } from './modelsTable';
 import { basicRouteParams } from './routeModels';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import nodemailer from "nodemailer"
 
 export const userTableDefine: Table = {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
@@ -35,7 +36,13 @@ export interface userTableConfig {
   basicUser?: {
     [key: string]: any
   }
-  accountMailRecupMDP?: string | SMTPTransport | SMTPTransport.Options
+  /**
+     * Non undefined will activate route to recup mdp
+  */
+  nameAccountMailRecupMDP?: string,
+  accountMailRecupBodyText?(token: string, user: any): string,
+  accountMailRecupBodyHTML?(token: string, user: any): string,
+  accountMailRecupObject?(user: any): string,
 }
 
 export interface realUserTableConfig {
@@ -45,7 +52,11 @@ export interface realUserTableConfig {
   readonly roles: string[],
   readonly basicUser?: {
     [key: string]: any
-  }
+  },
+  readonly accountMailRecupMDP?: nodemailer.Transporter<SMTPTransport.SentMessageInfo>,
+  accountMailRecupBodyText(token: string, user: any): string,
+  accountMailRecupBodyHTML?(token: string, user: any): string,
+  accountMailRecupObject(user: any): string,
 }
 
 export interface authConfigAutoBack {

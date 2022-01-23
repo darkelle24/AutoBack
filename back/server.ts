@@ -18,6 +18,18 @@ const autoback = createAutoBack({
   socketActive: true
 })
 
+// Need to have .env with correct info about mail to use this exemple
+
+/* autoback.addMailAccount("mdp", {
+  host: 'smtp.gmail.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: process.env.SMTP_FROM_EMAIL,
+    pass: process.env.SMTP_FROM_PASSWORD,
+  },
+}) */
+
 autoback.activeAuth({
   config: {
     basicUser: {
@@ -25,7 +37,9 @@ autoback.activeAuth({
       password: 'adminTest24',
       email: 'zoulou@gmail.com',
       role: 'Admin'
-    }
+    },
+    // Need to have mail account
+    //nameAccountMailRecupMDP: "mdp"
   },
   getRoute: {
     active: true,
@@ -36,6 +50,7 @@ autoback.activeAuth({
     test: {type: ABDataType.STRING, allowNull: true}
   }
 )
+
 
 // Need to have .env with correct info about mail to use this exemple
 

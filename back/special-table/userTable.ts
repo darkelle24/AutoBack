@@ -1,4 +1,4 @@
-import { ListFilter, Route } from './../../_helpers/models/routeModels';
+import { ListFilter, Route, RouteClass, acceptData } from './../../_helpers/models/routeModels';
 import { basicRole, userTableConfig, realUserTableConfig, access } from './../../_helpers/models/userTableModel';
 import { Model, ModelCtor } from 'sequelize';
 import { activeAllFiltersForAllCols, errorHandling, loginPostmanAfterRequestEvent } from '../../_helpers/fn';
@@ -9,13 +9,15 @@ import crypto from 'crypto'
 import _ from 'lodash';
 import { saveTable } from '../../_helpers/models/modelsTable';
 import express from 'express';
+import nodemailer from "nodemailer"
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 export class UserTableClass<M extends Model> extends TableClass<M> {
 
   readonly config: realUserTableConfig
   readonly passwordEncode: (value: any, table: TableClass<any>) => any
 
-  constructor(auth: userTableConfig, name: string, table: saveTable, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string) {
+  constructor(auth: userTableConfig, name: string, table: saveTable, server: express.Application, filePath: string, originServerPath: string, mailAccount?: nodemailer.Transporter<SMTPTransport.SentMessageInfo>, originRoutePath?: string) {
     if (table.role.validate) {
       table.role.validate.equals = { comparaison: auth.roles ? auth.roles : basicRole, msg: "Role don't exist" }
     }
@@ -33,7 +35,11 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       passwordSecret: auth.passwordSecret ? auth.passwordSecret : "pBvhLoQrwTKyk9amfwSabc0zwh5EuV7DDTYpbGG4K52vV9WGftSDhmlz90hMvASJlHk1azg24Uvdturqomx819kz10NS9S",
       expiresIn: auth.expiresIn && auth.expiresIn !== "" ? auth.expiresIn : "7 days",
       roles: auth.roles ? auth.roles : basicRole,
-      basicUser: auth.basicUser
+      basicUser: auth.basicUser,
+      accountMailRecupMDP: mailAccount ? mailAccount : undefined,
+      accountMailRecupBodyHTML: auth.accountMailRecupBodyHTML ? auth.accountMailRecupBodyHTML : undefined,
+      accountMailRecupBodyText: auth.accountMailRecupBodyText ? auth.accountMailRecupBodyText : (token: string, user: any) => 'Token ' + token,
+      accountMailRecupObject: auth.accountMailRecupObject ? auth.accountMailRecupObject : (user: any) => 'Recup Mail'
     }
     if (table.password && table.password.transformSet)
       this.passwordEncode = table.password.transformSet
@@ -52,9 +58,79 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         this.basicDelete(deleteRoute.auth)
       this.login()
       this.routeCheckJWT()
+      if (this.config.accountMailRecupMDP) {
+        this.sendRecupMail()
+        this.resetForgotPassword()
+      }
     } else {
       console.error('Already activate basic routing on table ' + this.name)
     }
+  }
+
+  protected sendRecupMail():void {
+    super.addRoute({
+      path: '/sendRecoverMail',
+      type: TypeRoute.POST,
+      columsAccept: {list: ["email"]},
+      name: 'Send an email to recover password',
+      doSomething: async (req: any, res: any, route: RouteClass) => {
+        const user = await this.sequelizeData.findOne({ where: { email: req.body.email } })
+
+        if (!user) {
+          return errorHandling(Error("User not found"), res)
+        }
+
+        const token = jwt.sign({ email: req.body.email }, this.config.tokenSecret, {expiresIn: this.config.expiresIn})
+
+        this.config.accountMailRecupMDP.sendMail({
+          from: (<any>this.config.accountMailRecupMDP.transporter).auth.user,
+          to: (<any>req).user.email,
+          subject: this.config.accountMailRecupObject(user),
+          text: !this.config.accountMailRecupBodyHTML ? this.config.accountMailRecupBodyText(token, user) : undefined,
+          html: this.config.accountMailRecupBodyHTML ? this.config.accountMailRecupBodyHTML(token, user) : undefined,
+        })
+        res.status(200).json({message: 'Mail send'});
+      }
+    })
+  }
+
+  protected resetForgotPassword(): void {
+    super.addRoute({
+      path: '/resetForgotPassword',
+      type: TypeRoute.POST,
+      columsAccept: {list: ["token", "password"]},
+      name: 'Reset forgot password',
+      doSomething: async (req, res, route) => {
+        let user: any = undefined
+
+        jwt.verify(req.body['token'], this.config.tokenSecret, (err: any, userJwt: any) => {
+          if (err) {
+            user = undefined
+            throw err
+          }
+          user = userJwt;
+        });
+
+        if (!user) {
+          return errorHandling('Wrong token', res)
+        }
+
+        user = await route.sequelizeData.findOne({ where: { email: user.email } })
+
+        if (!user) {
+          return errorHandling('Wrong token', res)
+        }
+
+        try {
+          user.password = req.body.password
+          await user.save()
+        } catch (e: any) {
+          return errorHandling(e.message, res)
+        }
+
+        return res.status(200).json(user.get())
+      }
+    })
   }
 
   protected filterAllWithoutPassword(): ListFilter {

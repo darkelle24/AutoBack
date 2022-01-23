@@ -444,11 +444,14 @@ export class AutoBack {
         userDefine = _.merge(userTableDefine, userDefine)
       const [tableSequelize, saveTableInfo] = this.defineStartTable("User", userDefine)
 
-      if (auth.accountMailRecupMDP) {
-        this.addMailAccount("mdp", auth.accountMailRecupMDP)
+      let mail: any = undefined
+      if (auth.nameAccountMailRecupMDP) {
+        mail = this.accountToSendMail.find((ele: any) => ele.name === auth.nameAccountMailRecupMDP)
+        if (mail)
+          mail = mail.account
       }
 
-      this.tables["User"] = new userTableClass(auth, "User", saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, '/auth')
+      this.tables["User"] = new userTableClass(auth, "User", saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, mail, '/auth')
       saveTableInfo.table = this.tables["User"]
 
       if (tableSequelize)

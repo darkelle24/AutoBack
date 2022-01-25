@@ -256,12 +256,18 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       name: 'Login',
       event: {afterResponse: loginPostmanAfterRequestEvent(this.config.roles)},
       doSomething: async (req, res, route) => {
-        if (!req.body['username'] || !req.body['password']) {
-          return errorHandling(new Error('Missing a username or / and a password.'), res)
+        if ((!req.body['username'] && !req.body['email']) || !req.body['password']) {
+          return errorHandling(new Error('Missing a (username or email) or / and a password.'), res)
         }
         const { username, password } = req.body;
 
-        const user = await route.sequelizeData.findOne({ where: { username: username, password: this.passwordEncode(password, this) } })
+        let user
+
+        if (!username) {
+          user = await route.sequelizeData.findOne({ where: { email: req.body.email, password: this.passwordEncode(password, this) } })
+        } else {
+          user = await route.sequelizeData.findOne({ where: { username: username, password: this.passwordEncode(password, this) } })
+        }
 
         if (user) {
           const temp = user.get()
@@ -273,8 +279,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
             ...{ token: accessToken }
           });
         } else {
-          res.status(401).json({ message: 'Username or password incorrect' });
-          res.statusMessage = 'Username or password incorrect'
+          res.status(401).json({ message: 'Username / email or password incorrect' });
+          res.statusMessage = 'Username / email or password incorrect'
           return
         }
       }

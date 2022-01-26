@@ -89,7 +89,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       })
       if (route.beforeSend)
         await Promise.resolve(route.beforeSend(req, res, this, toSend))
-      if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
+      /* if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
         toSend.forEach((oneInfo: any) => {
           this.files.forEach((element) => {
             if (Object.prototype.hasOwnProperty.call(oneInfo, element.name) && oneInfo[element.name]) {
@@ -97,7 +97,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
             }
           })
         })
-      }
+      } */
       return this.getAllLinkData(toSend)
         .then(async () => {
           if (route.beforeSendAfterRecursive)
@@ -123,7 +123,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       })
       if (route.beforeSend)
         await Promise.resolve(route.beforeSend(req, res, this, toSend))
-      if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
+      /* if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
         toSend.forEach((oneInfo: any) => {
           this.files.forEach((element) => {
             if (Object.prototype.hasOwnProperty.call(oneInfo, element.name) && oneInfo[element.name]) {
@@ -131,7 +131,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
             }
           })
         })
-      }
+      } */
       return this.getAllLinkData(toSend)
         .then(async () => {
           if (route.beforeSendAfterRecursive)

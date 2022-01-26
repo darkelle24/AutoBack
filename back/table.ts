@@ -1,3 +1,4 @@
+import { FileTableClass } from './special-table/fileTable';
 import { UserTableClass } from './special-table/userTable';
 import { RoutePostClass } from './route/routePost';
 import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass, InfoPlace, basicRouteParams } from './../_helpers/models/routeModels';
@@ -8,15 +9,13 @@ import { RouteGetClass } from './route/routeGet';
 import { RoutePutClass } from './route/routePut';
 import { RouteDeleteClass } from './route/routeDelete';
 import { access } from '../_helpers/models/userTableModel';
-import multer from 'multer'
-import fs from 'fs'
-import path from 'path';
 import { DeleteAction, realDataFileTable, realDataLinkTable, saveTable, TableLinktoThisTable } from '../_helpers/models/modelsTable';
 import { ABDataType } from '../_helpers/models/modelsType';
 import express from 'express';
 import { ValidationOptions } from 'sequelize/types/lib/instance-validator';
 import { SocketAutobackClass } from './socket';
 import { SocketConstructor, SocketInfo } from '_helpers/models/socketModels';
+import multer from 'multer';
 
 export class TableClass<M extends Model> {
   readonly name: string
@@ -26,8 +25,9 @@ export class TableClass<M extends Model> {
   routes: allRoutes = { originRoutePath: '/', get: [], post: [], put: [], delete: [] }
   activeBasicRouting = false
   userTable?: UserTableClass<any> = undefined
-  readonly upload?: multer.Multer
-  readonly pathFolder?: string
+  fileTable?: FileTableClass<any> = undefined
+  upload?: multer.Multer
+  haveFile: boolean = false
   description?: string
   readonly socket?: SocketAutobackClass
 
@@ -41,67 +41,27 @@ export class TableClass<M extends Model> {
     return this._tableLinktoThisTable
   }
 
-  constructor(name: string, table: saveTable, server: express.Application, filePath: string, originServerPath: string, originRoutePath?: string, userTable?: UserTableClass<any>, description: string = '', socketInfo?: SocketConstructor) {
+  constructor(name: string, table: saveTable, server: express.Application, originServerPath: string, fileTable?: FileTableClass<any>, originRoutePath?: string, userTable?: UserTableClass<any>, description: string = '', socketInfo?: SocketConstructor) {
     this.table = table
     this.name = name
     this.server = server
     this.userTable = userTable
     this.description = description
+    this.fileTable = fileTable
 
     this.routes.originRoutePath = getPathTable(name, originServerPath, originRoutePath)
 
     if (socketInfo)
       this.socket = new SocketAutobackClass(socketInfo)
-
-    const haveFile = Object.values(this.table).some((value: any) => { return value.type.autobackDataType === ABDataType.FILE })
-
-    if (haveFile) {
-      const pathFolder = path.join(filePath, name)
-
-      const storage = multer.diskStorage({
-        destination: function (req, file, cb) {
-          if (!fs.existsSync(path.join(pathFolder, file.fieldname))){
-            fs.mkdirSync(path.join(pathFolder, file.fieldname), { recursive: true });
-          }
-          cb(null, path.join(pathFolder, file.fieldname))
-        },
-        filename: function (req, file, cb) {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9) + '-' + file.fieldname
-          const ext = getFileExtansion(file.originalname)
-
-          if (!ext)
-            cb(null, uniqueSuffix)
-          else
-            cb(null, uniqueSuffix + ext)
-        }
-      })
-
-      this.upload = multer({
-        storage: storage,
-        fileFilter: (req, file, callback) => {
-          if (table[file.fieldname] && table[file.fieldname].type.autobackDataType === ABDataType.FILE) {
-            const field = (table[file.fieldname] as realDataFileTable)
-            const ext = getFileExtansion(file.originalname)
-            if (field.extAuthorize && field.extAuthorize.find(element => ext === element) === undefined) {
-              callback(Error('Wrong extansion type'))
-            }
-            if (field.maxFileSize && file.size > field.maxFileSize) {
-              callback(Error('File too big'))
-            }
-          } else {
-            callback(null, false)
-          }
-          callback(null, true)
-        }
-      });
-      this.pathFolder = pathFolder
-    }
   }
 
   public setUpSequilize(sequelizeData: ModelCtor<M>): void {
     this.sequelizeData = sequelizeData
     this.getLinkColumns()
     this.addHook()
+    if (this.haveFile && this.fileTable) {
+      this.upload = this.fileTable.getMulter(this.table)
+    }
   }
 
   private addHook() {
@@ -209,22 +169,22 @@ export class TableClass<M extends Model> {
   addRoute(route: Route): RouteClass | undefined {
     switch (route.type) {
       case TypeRoute.POST: {
-        const routeClass = new RoutePostClass({ classTable: this, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
+        const routeClass = new RoutePostClass({ classTable: this}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
         this.routes.post.push(routeClass)
         return routeClass
       }
       case TypeRoute.GET: {
-        const routeClass = new RouteGetClass({ classTable: this, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
+        const routeClass = new RouteGetClass({ classTable: this}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
         this.routes.get.push(routeClass)
         return routeClass
       }
       case TypeRoute.PUT: {
-        const routeClass = new RoutePutClass({ classTable: this, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
+        const routeClass = new RoutePutClass({ classTable: this}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
         this.routes.put.push(routeClass)
         return routeClass
       }
       case TypeRoute.DELETE: {
-        const routeClass = new RouteDeleteClass({ classTable: this, uploads: this.upload, pathFolder: this.pathFolder}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
+        const routeClass = new RouteDeleteClass({ classTable: this}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
         this.routes.delete.push(routeClass)
         return routeClass
       }
@@ -242,6 +202,10 @@ export class TableClass<M extends Model> {
         const tableToLink = (this.table[key] as realDataLinkTable)
         this._listLinkColumns.push(key)
         tableToLink.tableToLink.addLinkToThisTable(this, key)
+
+        if ((<any>value).type.isFile) {
+          this.haveFile = true
+        }
       }
     });
   }

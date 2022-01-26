@@ -1,3 +1,4 @@
+import { FileTableClass, fileTableDefine } from './special-table/fileTable';
 import { TableClass } from './table';
 import { PostgresDb } from './db/postgres/postgres';
 import express from "express";
@@ -37,6 +38,10 @@ export class AutoBack {
   private _userTable?: UserTableClass<any> = undefined
   get userTable(): UserTableClass<any> | undefined {
     return this._userTable
+  }
+  private _fileTable?: FileTableClass<any> = undefined
+  get fileTable(): FileTableClass<any> | undefined {
+    return this._fileTable
   }
   readonly fileInfo: filePathInfo
   readonly serverPath: string
@@ -137,6 +142,30 @@ export class AutoBack {
     this.httpServer = require('http').Server(this.server)
     if (socketActive === true)
       this.socketIO = this.setUpIo()
+    this.defineFileTable()
+  }
+
+  protected defineFileTable() {
+    if (!this.fileTable) {
+      const [tableSequelize, saveTableInfo] = this.defineStartTable("File", fileTableDefine)
+
+
+      this.tables["File"] = new FileTableClass("File", saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, "/file", this.userTable)
+
+      saveTableInfo.table = this.tables["File"]
+
+      if (tableSequelize) {
+        this.tables["File"].setUpSequilize(tableSequelize)
+      }
+
+      if (this.tables["File"]) {
+        this._fileTable = (this.tables["File"] as FileTableClass<any>)
+        return this.fileTable
+      }
+      return this.fileTable
+    } else {
+      return this.fileTable
+    }
   }
 
   public addMailAccount(name: string, transport?: string | SMTPTransport | SMTPTransport.Options): number {
@@ -155,6 +184,11 @@ export class AutoBack {
   private async startFn(port: number = 8080) {
     await this.sequelize.sync().then(() => {
       console.log('Created all Tables')
+
+      if (this.fileTable) {
+        this.fileTable.basicRouting()
+      }
+
       if (this.userTable && this.userTable.config.basicUser) {
         return this.userTable.sequelizeData.create(
           this.userTable.config.basicUser
@@ -199,6 +233,11 @@ export class AutoBack {
         this._userTable = userTable
         this.userTable.userTable = this.userTable
       }
+
+      if (this.fileTable) {
+        this.fileTable.userTable = userTable
+      }
+
       if (this.userTable)
         this.saveAuthConfig = auth
     }
@@ -451,7 +490,7 @@ export class AutoBack {
           mail = mail.account
       }
 
-      this.tables["User"] = new userTableClass(auth, "User", saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, mail, '/auth')
+      this.tables["User"] = new userTableClass(auth, "User", saveTableInfo.saveTable, this.server, this.serverPath, this.fileTable, mail, '/auth')
       saveTableInfo.table = this.tables["User"]
 
       if (tableSequelize)
@@ -503,9 +542,9 @@ export class AutoBack {
         socket.notif = socketInfo.notif
         socket.toDoOnSocketConnection = socketInfo.toDoOnSocketConnection
       }
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable, description, socket)
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.serverPath, this.fileTable, originRoutePath, this.userTable, description, socket)
     } else {
-      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.fileInfo.folderPath, this.serverPath, originRoutePath, this.userTable, description)
+      this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.serverPath, this.fileTable, originRoutePath, this.userTable, description)
     }
     saveTableInfo.table = this.tables[nameTable]
 
@@ -553,56 +592,6 @@ export class AutoBack {
     }
   }
 
-  private sequelizeFileType(tempSaveTable: tempSaveTable, tableSequelizeInfo: any, key: string, type: realDataTypeInfo, saveTableInfo: saveDataTableInfo, nameTable: string, fileInfo: filePathInfo) {
-    tableSequelizeInfo[key] = {
-      type: type.sequelizeType,
-      primaryKey: saveTableInfo.primaryKey,
-      autoIncrement: saveTableInfo.autoIncrement,
-      allowNull: saveTableInfo.allowNull,
-      unique: saveTableInfo.unique,
-      get() {
-        let value = this.getDataValue(key)
-        if (value !== undefined && value !== null) {
-          if (type && type.DBToJson) {
-            value = type.DBToJson(value)
-          }
-          if (type && fileInfo.virtualPath) {
-            const realPath = path.join(fileInfo.folderPath, nameTable, key, value)
-            value = path.posix.join(fileInfo.virtualPath, nameTable, key, value)
-
-            if (!fs.existsSync(realPath))
-              value = undefined
-          }
-          if (saveTableInfo && saveTableInfo.transformGet && tempSaveTable.table) {
-            value = saveTableInfo.transformGet(value, tempSaveTable.table)
-          }
-        }
-        return value
-      },
-      set(value: any) {
-        if (value !== undefined && value !== null) {
-          if (saveTableInfo.validate !== undefined) {
-            applyValidator(key, value, saveTableInfo.validate)
-          }
-          if (saveTableInfo && saveTableInfo.transformSet && tempSaveTable.table) {
-            value = saveTableInfo.transformSet(value, tempSaveTable.table)
-          }
-          if (type && type.JsonToDB)
-            value = type.JsonToDB(value)
-          if (type && fileInfo.folderPath) {
-            const oldValue = this.getDataValue(key)
-
-            if (oldValue) {
-              const pathOldValue = path.join(fileInfo.folderPath, nameTable, key, oldValue)
-              removeFile(pathOldValue)
-            }
-          }
-        }
-        this.setDataValue(key, value)
-      }
-    }
-  }
-
   /**
      * Call after you define all your tables.
      * After you call this fonction you can add basic routes and customs route.
@@ -623,8 +612,15 @@ export class AutoBack {
   }
 
   private tableLink(data: dataLinkTable, nameTable: string, key: string, tableSequelizeInfo: any, saveTableInfo: saveTable, tempSaveTable: tempSaveTable, fileInfo: filePathInfo) {
-    const subType: any = data.type
-    const type = this.getTableLinkDataType(data)
+    let subType: any = data.type
+    const isFile: boolean = ('file' === (<any>data).type)
+
+    if (isFile) {
+      subType = ABDataType.TABLE_LINK
+    }
+
+    const type = this.getTableLinkDataType(data, isFile)
+
     const tabsInfo = (this.saveDataInfo(data, type) as realDataLinkTable)
 
     tabsInfo.subType = subType
@@ -642,11 +638,7 @@ export class AutoBack {
     tabsInfo.tableToLink = this.tables[data.tableToLink]
     saveTableInfo[key] = tabsInfo
 
-    if (type.autobackDataType === ABDataType.FILE) {
-      this.sequelizeFileType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key], nameTable, fileInfo)
-    } else {
-      this.sequelizeClassicType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key])
-    }
+    this.sequelizeClassicType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key])
   }
 
   private createTableSequelizeInfo(table: Table, nameTable: string, fileInfo: filePathInfo): [ModelAttributes<any>, tempSaveTable, any] {
@@ -661,15 +653,15 @@ export class AutoBack {
       const type = this.getDataType(table[key].type)
 
       if (table[key].type === ABDataType.TABLE_LINK || table[key].type === ABDataType.MULTIPLE_LINK_TABLE) {
-        linkToProcess.push({data: (table[key] as dataLinkTable), nameColumns: key})
+        linkToProcess.push({ data: (table[key] as dataLinkTable), nameColumns: key })
+      } else if (table[key].type === ABDataType.FILE) {
+        let temp = (table[key] as dataLinkTable)
+        temp.columnsLink = 'id'
+        temp.tableToLink = 'File'
+        linkToProcess.push({ data: temp, nameColumns: key })
       } else if (type) {
         saveTableInfo[key] = this.saveDataInfo(table[key], type)
-
-        if (type.autobackDataType === ABDataType.FILE) {
-          this.sequelizeFileType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key], nameTable, fileInfo)
-        } else {
-          this.sequelizeClassicType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key])
-        }
+        this.sequelizeClassicType(tempSaveTable, tableSequelizeInfo, key, type, saveTableInfo[key])
       }
 
     });
@@ -689,7 +681,7 @@ export class AutoBack {
     return temp
   }
 
-  private getTableLinkDataType(link: dataLinkTable): realDataTypeInfo {
+  private getTableLinkDataType(link: dataLinkTable, isFile: boolean): realDataTypeInfo {
     if (!link.tableToLink) {
       throw Error('Wrong Table Link')
     }
@@ -706,6 +698,7 @@ export class AutoBack {
           toReturn = _.clone(columns.type)
         }
         toReturn.isTableLink = true
+        toReturn.isFile = isFile
         return toReturn
       } else {
         throw Error('The table' + link.tableToLink + ' does not have a columns with the name ' + link.columnsLink + '.')

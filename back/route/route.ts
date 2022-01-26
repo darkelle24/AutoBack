@@ -4,7 +4,6 @@ import { access } from './../../_helpers/models/userTableModel';
 import { acceptData, InfoPlace, ListFilter, ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo, Route } from './../../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize/types"
 import { autorizeFilterOperator, filterOperatorToSequelizeOperator, removeFile } from "../../_helpers/fn"
-import multer from 'multer';
 import { routeTableInfo } from '../../_helpers/models/models';
 import { ABDataType } from '../../_helpers/models/modelsType';
 import { saveTable, saveDataTableInfo } from '../../_helpers/models/modelsTable';
@@ -20,9 +19,7 @@ export class RouteBasicClass<M extends Model> {
   protected filterlist?: RealListFilter = undefined
   protected dataAsList?: RealListValueInfo = undefined
   protected userTable?: UserTableClass<any> = undefined
-  protected uploads?: multer.Multer
   protected files: any[] = []
-  readonly pathFolder?: string
   readonly listLinkData: string[]
 
   constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: express.Application, path: string, userTable?: UserTableClass<any>) {
@@ -31,11 +28,9 @@ export class RouteBasicClass<M extends Model> {
     this.server = server
     this.path = path
     this.userTable = userTable
-    this.uploads = table.uploads
-    this.pathFolder = table.pathFolder
     this.listLinkData = table.classTable.listLinkColumns || []
     this.tableClass = table.classTable
-    if (this.uploads)
+    if (this.tableClass.haveFile)
       this.files = this.fileList()
   }
 
@@ -268,7 +263,7 @@ export class RouteBasicClass<M extends Model> {
     const fields: any[] = []
 
     Object.entries(this.table).forEach(([key, value]) => {
-      if (value.type.autobackDataType === ABDataType.FILE) {
+      if (value.type.isFile) {
         fields.push({name: key, maxCount: 1})
       }
     })
@@ -283,15 +278,13 @@ export class RouteBasicClass<M extends Model> {
           this.files.forEach((element) => {
             delete req.body[element.name]
           });
-          Object.entries(req.files).forEach(([key, value]: [string, any]) => {
-            req.body[key] = value[0].filename
-          });
         } else {
           req.body = {}
-          Object.entries(req.files).forEach(([key, value]: [string, any]) => {
-            req.body[key] = value[0].filename
-          });
         }
+
+        (<any>req).tableFilesInfo.forEach((fileInfo: { model: any, file: any }) => {
+          req.body[fileInfo.file.fieldname] = fileInfo.model.id
+        });
         next()
       } else {
         next()
@@ -300,7 +293,7 @@ export class RouteBasicClass<M extends Model> {
   }
 
   protected uploadFile(): express.RequestHandler<any> {
-    if (!this.uploads)
+    if (!this.tableClass.haveFile)
       throw Error("OK")
     const fields: any[] = []
 
@@ -309,7 +302,7 @@ export class RouteBasicClass<M extends Model> {
         fields.push({name: key, maxCount: 1})
       }
     })
-    return this.uploads.fields(fields)
+    return this.tableClass.fileTable.upload.fields(fields)
   }
 
   protected ereaseAllNewFiles(req: express.Request): void {

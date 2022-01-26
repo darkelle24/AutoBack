@@ -66,14 +66,13 @@ export type realDataLinkTable = {
   rename?: string,
   multipleResult: boolean,
   subType: ABDataType.TABLE_LINK | ABDataType.MULTIPLE_LINK_TABLE,
-  transformGetLinkedData?(value: any): void
+  transformGetLinkedData?(value: any): void,
 } & saveDataTableInfo
 
 export type realDataFileTable = {
-  type: ABDataType.FILE,
   maxFileSize?: number,
   extAuthorize?: string[]
-} & saveDataTableInfo
+} & realDataLinkTable
 
 export interface saveDataTableInfo {
   type: realDataTypeInfo,

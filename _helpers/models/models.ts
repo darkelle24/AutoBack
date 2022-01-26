@@ -4,8 +4,6 @@ import multer from "multer"
 
 export interface routeTableInfo {
   classTable: TableClass<any>
-  uploads?: multer.Multer,
-  pathFolder?: string
 }
 
 export interface filePathInfo {

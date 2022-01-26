@@ -23,8 +23,8 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     if (routeInfo.fileReturnWithHost === undefined)
       routeInfo.fileReturnWithHost = true
 
-    if (this.uploads) {
-      let upload = this.uploads.fields(this.files)
+    if (this.tableClass.upload) {
+      let upload = this.tableClass.upload.fields(this.files)
       server.post(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: express.Request, res: express.Response) => {
         await this.toDo(req, res)
       })
@@ -81,13 +81,13 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       this.getAllValue(toSend)
       if (route.beforeSend)
         await Promise.resolve(route.beforeSend(req, res, this, toSend))
-      if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
+      /* if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
         this.files.forEach((element) => {
           if (Object.prototype.hasOwnProperty.call(toSend, element.name) && toSend[element.name]) {
             toSend[element.name] = addPath(req.protocol + '://' + req.headers.host, toSend[element.name])
           }
         })
-      }
+      } */
       this.tableClass.getLinkDataRecursive(toSend, -1)
         .then(async () => {
           if (route.beforeSendAfterRecursive)

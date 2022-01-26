@@ -25,16 +25,16 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     if (routeInfo.fileReturnWithHost === undefined)
       routeInfo.fileReturnWithHost = true
 
-    if (this.uploads) {
+    /* if (this.uploads) {
       let upload = this.uploads.fields(this.files)
       server.put(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
       })
-    } else {
+    } else { */
       server.put(path, this.checkToken(routeInfo), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
       })
-    }
+    // }
   }
 
   protected async toDo(req: express.Request, res: express.Response): Promise<any> {
@@ -84,13 +84,13 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
         this.getAllValue(toSend)
         if (route.beforeSend)
           await Promise.resolve(route.beforeSend(req, res, this, toSend))
-        if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
+        /* if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
           this.files.forEach((element) => {
             if (Object.prototype.hasOwnProperty.call(toSend, element.name) && toSend[element.name]) {
               toSend[element.name] = req.protocol + '://' + req.headers.host + toSend[element.name]
             }
           })
-        }
+        } */
 
         this.tableClass.getLinkData(toSend)
         .then(async () => {

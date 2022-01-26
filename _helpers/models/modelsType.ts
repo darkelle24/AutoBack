@@ -63,7 +63,8 @@ export interface realDataTypeInfo {
     transform?(data: any): any
   },
   validate: ModelValidator,
-  isTableLink: boolean
+  isTableLink: boolean,
+  isFile: boolean
 }
 
 export enum ABDataType {

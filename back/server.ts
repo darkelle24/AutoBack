@@ -73,7 +73,7 @@ autoback.sendMail("test", {
   console.log("ok")
 }) */
 
-const dab = autoback.defineTable('lel', {
+/* const dab = autoback.defineTable('lel', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   testInitValue: {type: ABDataType.BIGINT, initValue: 0},
   userId: {
@@ -93,7 +93,7 @@ const gitan = autoback.defineTable('gitan', {
 const multiple = autoback.defineTable('multiple', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   gitanId: { type: ABDataType.MULTIPLE_LINK_TABLE, allowNull: true, tableToLink: "gitan", columnsLink: 'id', rename: 'gitan', onDelete: DeleteAction.SET_NULL, multipleResult: false },
-})
+}) */
 
 const test = autoback.defineTable('lol', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
@@ -107,7 +107,7 @@ const test = autoback.defineTable('lol', {
   lol: {type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf']}
 }, 'dab', 'Test', { auth: { role: ["Admin"] }, path: '/lol'})
 
-const patient = autoback.defineTable('patient', {
+/* const patient = autoback.defineTable('patient', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   nom: {type: ABDataType.STRING, allowNull: true},
   prenom: {type: ABDataType.STRING, allowNull: true},
@@ -122,11 +122,11 @@ const adresse = autoback.defineTable('adresse', {
   adresse: {type: ABDataType.STRING, allowNull: true},
   patient_id: { type: ABDataType.TABLE_LINK, allowNull: false, tableToLink: 'patient', columnsLink: 'id' }
 }
-);
+); */
 
 autoback.setUpTables()
 
-patient.basicRouting()
+/* patient.basicRouting()
 adresse.basicRouting()
 
 
@@ -140,7 +140,7 @@ patient.addRoute({
       })
     }))
   }
-})
+}) */
 
 test.basicRouting({auth: {role: ["Admin"]}})
 test.addRoute({
@@ -164,7 +164,7 @@ test.addRoute({
   }
 })
 
-dab.basicRouting()
+/* dab.basicRouting()
 
 dab.addRoute({
   type: TypeRoute.GET,
@@ -175,7 +175,7 @@ dab.addRoute({
 
 gitan.basicRouting()
 
-multiple.basicRouting()
+multiple.basicRouting() */
 
 autoback.start(8081).then(()=> {
   autoback.getAPIPostman('Postman.json')

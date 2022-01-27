@@ -56,7 +56,11 @@ class RouteChangeFile<M extends Model> extends RoutePutClass<M> {
       fileFilter: async (req, file, callback) => {
         try {
           (<any>req).fileToChange = await this.tableClass.sequelizeData.findOne({ where: { hash: req.params.hash } })
-          callback(null, true)
+          if (!(<any>req).fileToChange) {
+            callback(Error('Can\'t find file with hash'))
+          } else {
+            callback(null, true)
+          }
         } catch (e: any) {
           callback(e)
         }
@@ -256,7 +260,11 @@ export class FileTableClass<M extends Model> extends TableClass<M> {
         this.sequelizeData.findOne({
           where: { hash: req.params.hash }
         }).then((result: any) => {
-          res.download(path.join(this.pathFolder, this.getFileName(result.hash, result.extansion)), this.getFileName(result.name, result.extansion))
+          if (!result) {
+            errorHandling(Error('Can\'t find file with hash'), res)
+          } else {
+            res.download(path.join(this.pathFolder, this.getFileName(result.hash, result.extansion)), this.getFileName(result.name, result.extansion))
+          }
         }).catch ((e: any) => {
           errorHandling(e, res)
         })
@@ -289,7 +297,11 @@ export class FileTableClass<M extends Model> extends TableClass<M> {
         this.sequelizeData.findOne({
           where: { hash: req.params.hash }
         }).then((result: any) => {
-          res.sendFile(this.getFileName(result.hash, result.extansion), {root: path.resolve('uploads')})
+          if (!result) {
+            errorHandling(Error('Can\'t find file with hash'), res)
+          } else {
+            res.sendFile(this.getFileName(result.hash, result.extansion), {root: path.resolve('uploads')})
+          }
         }).catch ((e: any) => {
           errorHandling(e, res)
         })

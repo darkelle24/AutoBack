@@ -22,14 +22,17 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     if (this.routeInfo.socketNotif === undefined) {
       this.routeInfo.socketNotif = {activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined}
     }
+    this.createRoute()
+  }
 
+  protected createRoute() {
     if (this.tableClass.upload && this.tableClass.haveFile) {
       let upload = this.tableClass.upload.fields(this.files)
-      server.put(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: any, res: any) => {
+      this.server.put(this.path, this.checkToken(this.routeInfo), (req: any, res: any, next: any) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
       })
     } else {
-      server.put(path, this.checkToken(routeInfo), async (req: any, res: any) => {
+      this.server.put(this.path, this.checkToken(this.routeInfo), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
       })
     }

@@ -6,10 +6,13 @@ import multer from 'multer'
 import fs from 'fs'
 import path from 'path';
 import { realDataFileTable, saveTable, Table } from '../../_helpers/models/modelsTable';
-import { errorHandling, getFileExtansion, removeFile } from '../../_helpers/fn';
+import { addPath, errorHandling, getFileExtansion, removeFile } from '../../_helpers/fn';
 import { UserTableClass } from './userTable';
 import { TableClass } from '../table';
-import { basicRouteParams, InfoPlace, TypeRoute } from '../../_helpers/models/routeModels';
+import { basicRouteParams, InfoPlace, RoutePost, RoutePut, TypeRoute } from '../../_helpers/models/routeModels';
+import { access } from '../../_helpers/models/userTableModel';
+import { RoutePutClass } from '../route/routePut';
+import { routeTableInfo } from '../../_helpers/models/models';
 
 export const fileTableDefine: Table = {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
@@ -17,6 +20,61 @@ export const fileTableDefine: Table = {
   name: { type: ABDataType.STRING },
   extansion: { type: ABDataType.STRING },
   mimetype: { type: ABDataType.STRING, allowNull: true },
+}
+
+class RouteChangeFile<M extends Model> extends RoutePutClass<M> {
+  pathfolder: string
+
+  constructor(table: routeTableInfo, sequelizeData: ModelCtor<M>, server: express.Application, path: string, routeInfo: RoutePut, pathFolder: string, userTable?: UserTableClass<any>) {
+    super(table, sequelizeData, server, path, routeInfo, userTable)
+
+    this.pathfolder = pathFolder
+  }
+
+  protected createRoute() {
+    let storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        if (!fs.existsSync(path.join(this.pathfolder))){
+          fs.mkdirSync(path.join(this.pathfolder), { recursive: true });
+        }
+        cb(null, path.join(this.pathfolder))
+      },
+      filename: (req, file, cb) => {
+        if ((<any>req).fileToChange) {
+          (<any>req).fileToChange.update({
+            name: file.originalname,
+            mimetype: file.mimetype
+          }).then((result: any) => {
+            cb(null, this.getFileName(result.hash, result.extansion))
+          })
+        }
+      }
+    })
+
+    let uploadMulter = multer({
+      storage: storage,
+      fileFilter: async (req, file, callback) => {
+        try {
+          (<any>req).fileToChange = await this.tableClass.sequelizeData.findOne({ where: { hash: req.params.hash } })
+          callback(null, true)
+        } catch (e: any) {
+          callback(e)
+        }
+      }
+    })
+
+    let upload = uploadMulter.single("file")
+    this.server.put(this.path, this.checkToken(this.routeInfo), (req: any, res: any, next: any) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, async (req: any, res: any) => {
+      await Promise.resolve(this.toDo(req, res))
+    })
+  }
+
+  protected getFileName(name: string, extansion?: string): string {
+    if (extansion) {
+      return name + '.' + extansion
+    }
+    return name
+  }
 }
 
 export class FileTableClass<M extends Model> extends TableClass<M> {
@@ -121,10 +179,69 @@ export class FileTableClass<M extends Model> extends TableClass<M> {
     return undefined
   }
 
-  basicRouting(getRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}, postRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}, putRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}, deleteRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}): void {
+  basicRouting(getRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
     super.basicRouting(getRoute, postRoute, putRoute, deleteRoute)
+    this.changeFile()
     this.downloadFile()
     this.showFile()
+  }
+
+  protected changeFile() {
+    let route = {
+      path: 'changeFile/:hash',
+      type: TypeRoute.PUT,
+      columsAccept: {
+        list: [""]
+      },
+      filters: {
+        hash: {
+          equal: {
+            name: 'hash',
+            where: InfoPlace.PARAMS,
+          }
+        }
+      },
+      name: 'Change upload File'
+    }
+    let routeClass = new RouteChangeFile({ classTable: this}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.pathFolder, this.userTable)
+    this.routes.post.push((<any>routeClass))
+  }
+
+  protected basicPut(accessRule?: access): void {
+    super.addRoute({
+      path: 'rename/:hash',
+      type: TypeRoute.PUT,
+      columsAccept: {
+        list: ["name"]
+      },
+      filters: {
+        hash: {
+          equal: {
+            name: 'hash',
+            where: InfoPlace.PARAMS,
+          }
+        }
+      },
+      auth: accessRule,
+      name: 'Rename File'
+    })
+  }
+
+  protected basicDelete(accessRule?: access): void {
+    super.addRoute({
+      path: '/:hash',
+      type: TypeRoute.DELETE,
+      filters: {
+        hash: {
+          equal: {
+            name: 'hash',
+            where: InfoPlace.PARAMS,
+          }
+        }
+      },
+      auth: accessRule,
+      name: 'Delete File'
+    })
   }
 
   protected downloadFile(): void {

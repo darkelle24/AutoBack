@@ -21,7 +21,7 @@ export class TableClass<M extends Model> {
   readonly name: string
   sequelizeData: ModelCtor<M>
   table: saveTable
-  private server: express.Application
+  protected server: express.Application
   routes: allRoutes = { originRoutePath: '/', get: [], post: [], put: [], delete: [] }
   activeBasicRouting = false
   userTable?: UserTableClass<any> = undefined

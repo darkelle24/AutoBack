@@ -65,7 +65,6 @@ export type RouteGet = {
    /**
      * Default true
     */
-   fileReturnWithHost?: boolean,
    solo?: boolean,
    beforeGet?(request: any, respond: any, routeClass: RouteGetClass<any>, filters: any): void,
    beforeSend?(request: any, respond: any, routeClass: RouteGetClass<any>, datas: any[]): void,
@@ -83,7 +82,6 @@ export type RoutePost = {
    /**
      * Default true
     */
-   fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePostClass<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
    beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
@@ -102,7 +100,6 @@ export type RoutePut = {
    /**
      * Default true
     */
-   fileReturnWithHost?: boolean,
    beforeSetValue?(request: any, respond: any, routeClass: RoutePutClass<any>, row: Model<any>): void,
    beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
    beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,

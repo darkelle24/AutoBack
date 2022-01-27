@@ -42,19 +42,20 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
       }
       const fileToDestroy: any[] = []
 
-      /* const pathFolder = this.pathFolder || ''
-      this.files.forEach((element: any) => {
-        const value = data.getDataValue(element.name)
-        if (value)
-          fileToDestroy.push( path.join(pathFolder, element.name, value))
-      }) */
+      const toDestroy = this.detectFileDestroy(data)
+
       if (route.beforeDelete)
         await Promise.resolve(route.beforeDelete(req, res, this, data))
 
       return (data.destroy().then(async () => {
-        fileToDestroy.forEach((element) => {
-          removeFile(element)
-        })
+
+        if (toDestroy.length !== 0) {
+          toDestroy.forEach((element) => {
+            if (element.oldId !== null)
+              this.tableClass.fileTable.deleteFile(element.oldId)
+          })
+        }
+
         let data = { message: "Deleted" }
 
         if (route.beforeSend)
@@ -105,5 +106,22 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
       }
     }
     return toReturn
+  }
+
+  protected detectFileDestroy(oldValue: M, takeAll: boolean = false): {fieldName: string, oldId: number | null}[] {
+    let toDestroy: any[] = []
+
+    if (this.tableClass.haveFile && this.files) {
+      this.files.forEach((element: any) => {
+        let value = oldValue.getDataValue(element.name)
+        if (typeof value === "string") {
+          value = parseInt(value)
+        }
+        if (((<any>this.table[element.name]).type.deleteOldFileOnDelete && !takeAll) || takeAll) {
+          toDestroy.push({fieldName: element.name, oldId: value})
+        }
+      })
+    }
+    return toDestroy
   }
 }

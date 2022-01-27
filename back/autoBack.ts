@@ -15,7 +15,7 @@ import fs from 'fs'
 import { filePathInfo } from '../_helpers/models/models';
 import { ABDataType, realDataType, realDataTypeInfo } from '../_helpers/models/modelsType';
 import { DBInterface, DB } from '../_helpers/models/modelsDb';
-import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable, DeleteAction, dataFileTable } from '../_helpers/models/modelsTable';
+import { allTables, Table, tempSaveTable, saveDataTableInfo, saveTable, dataTableInfo, realDataLinkTable, dataLinkTable, DeleteAction, dataFileTable, realDataFileTable } from '../_helpers/models/modelsTable';
 import morgan from 'morgan'
 import compression from 'compression'
 import http from 'http'
@@ -110,7 +110,7 @@ export class AutoBack {
       fs.mkdirSync(this.fileInfo.folderPath);
     }
 
-    if (fileInfo.virtualPath) {
+    /* if (fileInfo.virtualPath) {
       fileInfo.virtualPath = addPath('/', fileInfo.virtualPath)
       this.server.use(fileInfo.virtualPath, (req, res) => {
         const splitedUrl = req.originalUrl.split('/')
@@ -122,7 +122,7 @@ export class AutoBack {
           res.statusMessage = "File not found"
         }
       });
-    }
+    } */
 
     if (db === DB.POSTGRES) {
       this.DB = new PostgresDb();
@@ -699,6 +699,10 @@ export class AutoBack {
         }
         toReturn.isTableLink = true
         toReturn.isFile = isFile
+        if (isFile) {
+          toReturn.deleteOldFileOnPut = (<any>link).deleteOldFileOnPut !== undefined ? (<any>link).deleteOldFileOnPut : true
+          toReturn.deleteOldFileOnDelete = (<any>link).deleteOldFileOnDelete !== undefined ? (<any>link).deleteOldFileOnDelete : true
+        }
         return toReturn
       } else {
         throw Error('The table' + link.tableToLink + ' does not have a columns with the name ' + link.columnsLink + '.')

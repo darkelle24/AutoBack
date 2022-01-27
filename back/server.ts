@@ -102,9 +102,9 @@ const test = autoback.defineTable('lol', {
   date: { type: ABDataType.DATE, allowNull: true },
   array: { type: ABDataType.ARRAY, allowNull: true },
   number: { type: ABDataType.BIGINT, allowNull: true },
-  file: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf'] },
+  file: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf'], deleteOldFileOnPut: false },
   dab: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf'] },
-  lol: {type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf']}
+  lol: {type: ABDataType.FILE, allowNull: true, extAuthorize: ['.png']}
 }, 'dab', 'Test', { auth: { role: ["Admin"] }, path: '/lol'})
 
 /* const patient = autoback.defineTable('patient', {

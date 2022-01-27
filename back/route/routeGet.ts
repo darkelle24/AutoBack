@@ -35,8 +35,6 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
         return value
       }
     }
-    if (routeInfo.fileReturnWithHost === undefined)
-      routeInfo.fileReturnWithHost = true
 
     server.get(path, this.checkToken(routeInfo), async (req: express.Request, res: express.Response) => {
       try {

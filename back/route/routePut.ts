@@ -2,6 +2,7 @@ import { UserTableClass } from "back/special-table/userTable";
 import express from "express";
 import { StatusCodes } from "http-status-codes";
 import { Model, ModelCtor } from "sequelize";
+import { realDataFileTable } from "_helpers/models/modelsTable";
 import { errorHandling, infoPlaceToString, typeRouteToString } from "../../_helpers/fn";
 import { routeTableInfo } from "../../_helpers/models/models";
 import { RoutePut } from "../../_helpers/models/routeModels";
@@ -22,19 +23,16 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       this.routeInfo.socketNotif = {activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined}
     }
 
-    if (routeInfo.fileReturnWithHost === undefined)
-      routeInfo.fileReturnWithHost = true
-
-    /* if (this.uploads) {
-      let upload = this.uploads.fields(this.files)
+    if (this.tableClass.upload && this.tableClass.haveFile) {
+      let upload = this.tableClass.upload.fields(this.files)
       server.put(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
       })
-    } else { */
+    } else {
       server.put(path, this.checkToken(routeInfo), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
       })
-    // }
+    }
   }
 
   protected async toDo(req: express.Request, res: express.Response): Promise<any> {
@@ -75,6 +73,8 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
         }
       })
 
+      const toDestroy = this.detectFileChange(data, toReturn)
+
       return data.update(toReturn).then(async updatedObject => {
 
         let toSend = updatedObject.get()
@@ -84,18 +84,18 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
         this.getAllValue(toSend)
         if (route.beforeSend)
           await Promise.resolve(route.beforeSend(req, res, this, toSend))
-        /* if (this.uploads && this.routeInfo.fileReturnWithHost && this.files) {
-          this.files.forEach((element) => {
-            if (Object.prototype.hasOwnProperty.call(toSend, element.name) && toSend[element.name]) {
-              toSend[element.name] = req.protocol + '://' + req.headers.host + toSend[element.name]
-            }
-          })
-        } */
 
         this.tableClass.getLinkData(toSend)
         .then(async () => {
           if (route.beforeSendAfterRecursive)
             await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
+
+          if (toDestroy.length !== 0) {
+            toDestroy.map((element) => {
+              if (element.oldId !== null)
+                this.tableClass.fileTable.deleteFile(element.oldId)
+            })
+          }
 
           if (this.tableClass.socket) {
             this.tableClass.socket.sendNotif(req, data, 'PUT', this.routeInfo.socketNotif)
@@ -111,6 +111,25 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     }).catch(err => {
       return errorHandling(err, res)
     })
+  }
+
+  protected detectFileChange(oldValue: M, currentBody: any, takeAll: boolean = false): {fieldName: string, oldId: number | null, newId: number | null}[] {
+    let toDestroy: any[] = []
+
+    if (this.tableClass.haveFile && this.files) {
+      this.files.forEach((element: any) => {
+        const changeValue = currentBody[element.name]
+        let value = oldValue.getDataValue(element.name)
+
+        if (typeof value === "string") {
+          value = parseInt(value)
+        }
+        if (changeValue !== undefined && value !== changeValue && (((<any>this.table[element.name]).type.deleteOldFileOnPut && !takeAll) || takeAll)) {
+          toDestroy.push({ fieldName: element.name, oldId: value, newId: changeValue })
+        }
+      })
+    }
+    return toDestroy
   }
 
   private transformDataAsInfo(key: any, value: any): any {

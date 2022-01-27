@@ -19,7 +19,9 @@ export type dataLinkTable = {
 export type dataFileTable = {
   type: ABDataType.FILE,
   maxFileSize?: number,
-  extAuthorize?: string[]
+  extAuthorize?: string[],
+  deleteOldFileOnPut?: boolean,
+  deleteOldFileOnDelete?: boolean,
 } & dataTableInfo
 
 export interface dataTableInfo {
@@ -71,7 +73,9 @@ export type realDataLinkTable = {
 
 export type realDataFileTable = {
   maxFileSize?: number,
-  extAuthorize?: string[]
+  extAuthorize?: string[],
+  deleteOldFileOnPut: boolean,
+  deleteOldFileOnDelete: boolean,
 } & realDataLinkTable
 
 export interface saveDataTableInfo {

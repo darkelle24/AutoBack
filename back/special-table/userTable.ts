@@ -88,7 +88,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
 
         this.config.accountMailRecupMDP.sendMail({
           from: (<any>this.config.accountMailRecupMDP.transporter).auth.user,
-          to: (<any>req).user.email,
+          to: (<any>user).email,
           subject: this.config.accountMailRecupObject(user),
           text: !this.config.accountMailRecupBodyHTML ? this.config.accountMailRecupBodyText(token, user) : undefined,
           html: this.config.accountMailRecupBodyHTML ? this.config.accountMailRecupBodyHTML(token, user) : undefined,

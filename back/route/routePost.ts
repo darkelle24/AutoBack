@@ -91,7 +91,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
             await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
 
           if (this.tableClass.socket) {
-            this.tableClass.socket.sendNotif(req, data, 'POST', this.routeInfo.socketNotif)
+            this.tableClass.socket.sendNotif(req, toSend, 'POST', this.routeInfo.socketNotif)
           }
 
           res.status(201).json(toSend)

@@ -101,7 +101,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
           }
 
           if (this.tableClass.socket) {
-            this.tableClass.socket.sendNotif(req, data, 'PUT', this.routeInfo.socketNotif)
+            this.tableClass.socket.sendNotif(req, toSend, 'PUT', this.routeInfo.socketNotif)
           }
 
           res.status(StatusCodes.OK).json(toSend)

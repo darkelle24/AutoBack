@@ -77,13 +77,16 @@ export class TableClass<M extends Model> {
               const dataLinkTable = (this.table[element] as realDataLinkTable)
               if (instance.dataValues[element] !== null && instance.dataValues[element] !== undefined) {
                 let result
-                if (dataLinkTable.subType !== ABDataType.MULTIPLE_LINK_TABLE)
+                if (dataLinkTable.subType !== ABDataType.MULTIPLE_LINK_TABLE) {
                   result = await getRowInTableLink(dataLinkTable.columnsLink, dataLinkTable.tableToLink.sequelizeData, instance.dataValues[element])
-                else {
+                  if (!result) {
+                    throw new Error('Not found row with value ' + instance.dataValues[element] + ' in the table ' + dataLinkTable.tableToLink.name + ' in the column ' + dataLinkTable.columnsLink)
+                  }
+                } else {
                   result = await getRowInTableMultipleLink(dataLinkTable.columnsLink, dataLinkTable.tableToLink.sequelizeData, JSON.parse(instance.dataValues[element]))
-                }
-                if (!result) {
-                  throw new Error('Not found row with value ' + instance.dataValues[element] + ' in the table ' + dataLinkTable.tableToLink.name + ' in the column ' + dataLinkTable.columnsLink)
+                  if (!result || result.some((result: any) => result === null)) {
+                    throw new Error('Not found row with value ' + instance.dataValues[element] + ' in the table ' + dataLinkTable.tableToLink.name + ' in the column ' + dataLinkTable.columnsLink)
+                  }
                 }
               }
             }

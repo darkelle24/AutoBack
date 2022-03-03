@@ -34,7 +34,7 @@ export function defaultSaveDataInfo(): any {
 }
 
 export function addPath(path1: string, path2: string): string {
-  const lastOne = path1[path1.length -1]
+  const lastOne = path1[path1.length - 1]
 
   if ((path2[0] === '/' && lastOne !== '/') || (path2[0] !== '/' && lastOne === '/'))
     return path1 + path2
@@ -161,7 +161,7 @@ export function applyDefaultValueOnDataType(basic: dataType): realDataType {
       const temp: any = _.merge({}, value)
 
       temp.name = key
-      temp.autobackDataType = <DataType> key
+      temp.autobackDataType = <DataType>key
       if (temp.filterOperator === undefined) {
         temp.filterOperator = {
           inverse: false,
@@ -337,13 +337,13 @@ export function getFileExtansion(filename: string): string | undefined {
   return toReturn
 }
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-export function errorHandling(err: any, res: express.Response): express.Response {
+export function errorHandling(err: any, res: express.Response, code: number = 400): express.Response {
   if (err.errors !== undefined) {
-    res.status(400).json({ message: err.name + ': ' + err.errors[0].message })
+    res.status(code).json({ message: err.name + ': ' + err.errors[0].message })
     res.statusMessage = err.name + ': ' + err.errors[0].message
     return res
   }
-  res.status(400).json({ message: err.toString() })
+  res.status(code).json({ message: err.toString() })
   res.statusMessage = err.toString()
   return res
 }
@@ -445,15 +445,15 @@ export function writeInFile(path: string, text: string): void {
 export function loginPostmanAfterRequestEvent(roles: string[]): string[] {
   //eslint-disable-next-line
   return ['var roles = [\"' + roles.join('\", \"') + '\"]',
-          'if (pm.response.code === 200) {',
-          ' var jsonData = JSON.parse(responseBody);',
-          ' for (let role of roles) {',
-          '   if (jsonData.role === role) {',
-          '     pm.collectionVariables.set("role_token_" + role, jsonData.token);',
-          '   }',
-          ' }',
-          '}'
-        ]
+    'if (pm.response.code === 200) {',
+    ' var jsonData = JSON.parse(responseBody);',
+    ' for (let role of roles) {',
+    '   if (jsonData.role === role) {',
+    '     pm.collectionVariables.set("role_token_" + role, jsonData.token);',
+    '   }',
+    ' }',
+    '}'
+  ]
 }
 
 export function getPathTable(name: string, originServerPath: string, originRoutePath?: string): string {

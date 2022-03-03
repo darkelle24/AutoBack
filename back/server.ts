@@ -3,6 +3,7 @@ import { DB } from "../_helpers/models/modelsDb"
 import { TypeRoute, InfoPlace } from "../_helpers/models/routeModels"
 import { DeleteAction } from "../_helpers/models/modelsTable"
 import { createAutoBack } from "../_helpers/fn"
+import { AutoBackRouteError } from '../_helpers/error'
 
 //const autoback = new AutoBack("postgres://postgres:password@localhost:5432/test", DB.POSTGRES, true)
 //let autoback = new AutoBack("postgres://postgres:password@postgres:5432/test")
@@ -43,11 +44,11 @@ autoback.activeAuth({
   },
   getRoute: {
     active: true,
-    auth: {role: ['Admin']}
+    auth: { role: ['Admin'] }
   }
 },
   {
-    test: {type: ABDataType.STRING, allowNull: true}
+    test: { type: ABDataType.STRING, allowNull: true }
   }
 )
 
@@ -75,14 +76,15 @@ autoback.activeAuth({
 
 const dab = autoback.defineTable('lel', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
-  testInitValue: {type: ABDataType.BIGINT, initValue: 0},
+  testInitValue: { type: ABDataType.BIGINT, initValue: 0 },
   userId: {
     type: ABDataType.TABLE_LINK, tableToLink: "User", columnsLink: 'id', rename: 'user', transformGetLinkedData: (value: any) => {
       delete value.email
       delete value.phone
       delete value.test
-  } },
-  testArray: {type: ABDataType.ARRAY, allowNull: true}
+    }
+  },
+  testArray: { type: ABDataType.ARRAY, allowNull: true }
 }, 'test')
 
 const gitan = autoback.defineTable('gitan', {
@@ -104,22 +106,22 @@ const test = autoback.defineTable('lol', {
   number: { type: ABDataType.BIGINT, allowNull: true },
   file: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf'], deleteOldFileOnPut: false },
   dab: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.pdf'] },
-  lol: {type: ABDataType.FILE, allowNull: true, extAuthorize: ['.png']}
-}, 'dab', 'Test', { auth: { role: ["Admin"] }, path: '/lol'})
+  lol: { type: ABDataType.FILE, allowNull: true, extAuthorize: ['.png'] }
+}, 'dab', 'Test', { auth: { role: ["Admin"] }, path: '/lol' })
 
 const patient = autoback.defineTable('patient', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
-  nom: {type: ABDataType.STRING, allowNull: true},
-  prenom: {type: ABDataType.STRING, allowNull: true},
-  age: {type: ABDataType.STRING, allowNull: true},
-  mail: {type: ABDataType.STRING, allowNull: true, validate: {isEmail: true}},
-  telephone: {type: ABDataType.STRING, allowNull: true},
+  nom: { type: ABDataType.STRING, allowNull: true },
+  prenom: { type: ABDataType.STRING, allowNull: true },
+  age: { type: ABDataType.STRING, allowNull: true },
+  mail: { type: ABDataType.STRING, allowNull: true, validate: { isEmail: true } },
+  telephone: { type: ABDataType.STRING, allowNull: true },
 }
 )
 
 const adresse = autoback.defineTable('adresse', {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
-  adresse: {type: ABDataType.STRING, allowNull: true},
+  adresse: { type: ABDataType.STRING, allowNull: true },
   patient_id: { type: ABDataType.TABLE_LINK, allowNull: false, tableToLink: 'patient', columnsLink: 'id' }
 }
 );
@@ -142,7 +144,7 @@ patient.addRoute({
   }
 })
 
-test.basicRouting({auth: {role: ["Admin"]}})
+test.basicRouting({ auth: { role: ["Admin"] } })
 test.addRoute({
   type: TypeRoute.POST,
   path: '/lol',
@@ -169,14 +171,22 @@ dab.basicRouting()
 dab.addRoute({
   type: TypeRoute.GET,
   path: '/test',
-  filters: {userId: {equal: {where: InfoPlace.USERINFO, name: 'id'}}},
+  filters: { userId: { equal: { where: InfoPlace.USERINFO, name: 'id' } } },
   auth: {}
+})
+
+dab.addRoute({
+  type: TypeRoute.GET,
+  path: '/testError',
+  beforeGet: () => {
+    throw new AutoBackRouteError(450, "lol", "dab")
+  }
 })
 
 gitan.basicRouting()
 
 multiple.basicRouting()
 
-autoback.start(8081).then(()=> {
+autoback.start(8081).then(() => {
   autoback.getAPIPostman('Postman.json')
 })

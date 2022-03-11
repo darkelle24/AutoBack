@@ -165,8 +165,12 @@ test.addRoute({
     }
   },
   auth: {
-    role: ['User']
-  }
+    checkRole: (user: any) => {
+      if (user.id <= 10) {
+        throw new AutoBackRouteError(410, "DAB", "lol")
+      }
+    }
+  },
 })
 
 dab.basicRouting()

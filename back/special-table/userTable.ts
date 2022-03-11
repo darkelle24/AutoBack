@@ -342,11 +342,13 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     return true
   }
 
-  public async checkToken(token: string, role?: string[], inverse?: boolean): Promise<any> {
+  public async checkToken(token: string, role?: string[], inverse?: boolean, checkRoleDefine?: (user: any) => void): Promise<any> {
     try {
       let user = this.checkJWT(token);
       user = await this.checkUserExist(user, this.sequelizeData);
       this.checkRole(user.role, role, inverse);
+      if (checkRoleDefine)
+        checkRoleDefine(user);
       return user;
     } catch (error) {
       throw error
@@ -363,14 +365,18 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
 
         (<any>req).user = await this.checkToken(token,
           route.auth && route.auth.role ? route.auth.role : undefined,
-          route.auth && route.auth.inverse ? route.auth.inverse : undefined
+          route.auth && route.auth.inverse ? route.auth.inverse : undefined,
+          route.auth && route.auth.checkRole ? route.auth.checkRole : undefined
         ).catch((err: Error) => {
-          if (err.name === 'TokenExpiredError') {
+          if (err instanceof AutoBackRouteError) {
+            errorHandling(err, res, err.code)
+          } else if (err.name === 'TokenExpiredError') {
             res.status(408).json({ message: err.toString() });
+            res.statusMessage = err.toString()
           } else {
             res.status(403).json({ message: err.toString() });
+            res.statusMessage = err.toString()
           }
-          res.statusMessage = err.toString()
           good = false
         })
         return good

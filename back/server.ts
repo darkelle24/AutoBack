@@ -148,6 +148,9 @@ test.basicRouting({ auth: { role: ["Admin"] } })
 test.addRoute({
   type: TypeRoute.POST,
   path: '/lol',
+  bodyDoc: (lol: any) => {
+    return { lol: "" }
+  },
   columsAccept: {
     inverse: true,
     list: ["id"]

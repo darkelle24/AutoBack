@@ -166,6 +166,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       name: this.routeInfo.name ? this.routeInfo.name : this.path,
       event: this.routeInfo.event,
       description: this.routeInfo.description,
+      bodyDoc: this.routeInfo.bodyDoc,
       dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined
     }
 

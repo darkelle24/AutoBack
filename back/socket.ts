@@ -8,9 +8,10 @@ export class SocketAutobackClass {
   readonly auth?: access
   readonly userTable?: UserTableClass<any>
   readonly notif: SocketNotifInfo
+  toDoOnSocketDeConnection?: (socket: Socket, reason: any) => void
   toDoOnSocketConnection?: (socket: Socket) => void
-  selectUserSendNotifs: (userToSendNotif: (RemoteSocket<any>)[], req: any, dataChange: any, type: 'POST' | 'PUT' | 'DELETE' ) => (RemoteSocket<any>)[]
-  toSendForNotif: (packageToSend: {eventName: string, toSend: {data: any, type: 'POST' | 'PUT' | 'DELETE' }}, req: any) => {eventName: string, toSend: any}
+  selectUserSendNotifs: (userToSendNotif: (RemoteSocket<any>)[], req: any, dataChange: any, type: 'POST' | 'PUT' | 'DELETE') => (RemoteSocket<any>)[]
+  toSendForNotif: (packageToSend: { eventName: string, toSend: { data: any, type: 'POST' | 'PUT' | 'DELETE' } }, req: any) => { eventName: string, toSend: any }
 
   constructor(params: SocketConstructor) {
     this.namespace = params.io.of(params.path)
@@ -21,14 +22,14 @@ export class SocketAutobackClass {
         this.notif.activate = true
       }
       if (this.notif.selectUserSendNotifs === undefined) {
-        this.notif.selectUserSendNotifs = (user: any[]) => {return user}
+        this.notif.selectUserSendNotifs = (user: any[]) => { return user }
       }
 
       if (this.notif.toSendForNotif === undefined) {
-        this.notif.toSendForNotif = (packageToSend: any) => {return packageToSend}
+        this.notif.toSendForNotif = (packageToSend: any) => { return packageToSend }
       }
     } else {
-      this.notif = { activate: true, selectUserSendNotifs: (user: any[]) => {return user}, toSendForNotif: (packageToSend: any) => {return packageToSend} }
+      this.notif = { activate: true, selectUserSendNotifs: (user: any[]) => { return user }, toSendForNotif: (packageToSend: any) => { return packageToSend } }
     }
 
     this.selectUserSendNotifs = this.notif.selectUserSendNotifs
@@ -46,6 +47,7 @@ export class SocketAutobackClass {
     }
 
     params.toDoOnSocketConnection = this.toDoOnSocketConnection
+    params.toDoOnSocketDeConnection = this.toDoOnSocketDeConnection
 
     this.namespace.on('connection', async (socket: Socket) => {
 
@@ -60,7 +62,13 @@ export class SocketAutobackClass {
       }
 
       if (this.toDoOnSocketConnection) {
-        this.toDoOnSocketConnection(socket)
+        await Promise.resolve(this.toDoOnSocketConnection(socket))
+      }
+
+      if (this.toDoOnSocketDeConnection) {
+        socket.on("disconnect", async (reason) => {
+          await Promise.resolve(this.toDoOnSocketDeConnection(socket, reason))
+        });
       }
 
     })

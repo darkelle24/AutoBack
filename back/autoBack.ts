@@ -573,6 +573,7 @@ export class AutoBack {
       socket.userTable = this.userTable
       socket.notif = socketInfo.notif
       socket.toDoOnSocketConnection = socketInfo.toDoOnSocketConnection
+      socket.toDoOnSocketDeConnection = socketInfo.toDoOnSocketDeConnection
     }
     return socket
   }

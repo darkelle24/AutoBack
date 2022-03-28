@@ -25,6 +25,7 @@ import nodemailer from "nodemailer"
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import Mail from 'nodemailer/lib/mailer';
 import { TypeRoute } from '../_helpers/models/routeModels';
+import { SocketAutobackClass } from './socket';
 
 export class AutoBack {
 
@@ -235,6 +236,10 @@ export class AutoBack {
       if (userTable) {
         this._userTable = userTable
         this.userTable.userTable = this.userTable
+
+        if (auth.config.socketInfo) {
+          userTable.socket = new SocketAutobackClass(this.initSocket("User", '/auth', auth.config.socketInfo))
+        }
       }
 
       if (this.fileTable) {
@@ -554,24 +559,29 @@ export class AutoBack {
     return [tableSequelize, tempSaveTable]
   }
 
+  initSocket(nameTable: string, originRoutePath: string, socketInfo?: SocketInfo): SocketConstructor | undefined {
+    let socket: any | undefined = undefined
+
+    if (socketInfo) {
+      socket = {}
+      if (!socketInfo.path) {
+        socketInfo.path = getPathTable(nameTable, this.serverPath, originRoutePath)
+      }
+      socket.path = socketInfo.path
+      socket.auth = socketInfo.auth
+      socket.io = this.socketIO
+      socket.userTable = this.userTable
+      socket.notif = socketInfo.notif
+      socket.toDoOnSocketConnection = socketInfo.toDoOnSocketConnection
+    }
+    return socket
+  }
+
   defineTable(nameTable: string, table: Table, originRoutePath?: string, description?: string, socketInfo?: SocketInfo): TableClass<any> | undefined {
     const [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
     if (this.socketIO) {
-      let socket: any | undefined = undefined
-
-      if (socketInfo) {
-        socket = {}
-        if (!socketInfo.path) {
-          socketInfo.path = getPathTable(nameTable, this.serverPath, originRoutePath)
-        }
-        socket.path = socketInfo.path
-        socket.auth = socketInfo.auth
-        socket.io = this.socketIO
-        socket.userTable = this.userTable
-        socket.notif = socketInfo.notif
-        socket.toDoOnSocketConnection = socketInfo.toDoOnSocketConnection
-      }
+      let socket = this.initSocket(nameTable, originRoutePath, socketInfo)
       this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.serverPath, this.fileTable, originRoutePath, this.userTable, description, socket)
     } else {
       this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.serverPath, this.fileTable, originRoutePath, this.userTable, description)

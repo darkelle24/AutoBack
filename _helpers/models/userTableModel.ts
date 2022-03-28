@@ -4,6 +4,7 @@ import { Table } from './modelsTable';
 import { basicRouteParams, Route, RouteClass } from './routeModels';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import nodemailer from "nodemailer"
+import { SocketInfo } from './socketModels';
 
 export const userTableDefine: Table = {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
@@ -45,6 +46,7 @@ export interface userTableConfig {
   accountMailRecupBodyText?(token: string, user: any): string,
   accountMailRecupBodyHTML?(token: string, user: any): string,
   accountMailRecupObject?(user: any): string,
+  socketInfo?: SocketInfo
 }
 
 export interface realUserTableConfig {

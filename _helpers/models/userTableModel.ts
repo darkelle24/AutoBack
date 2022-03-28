@@ -36,7 +36,8 @@ export interface userTableConfig {
   roles?: string[],
   basicUser?: {
     [key: string]: any
-  }
+  },
+  toDoOnCreatebasicUser?(user: any): void,
   /**
      * Non undefined will activate route to recup mdp
   */
@@ -54,6 +55,7 @@ export interface realUserTableConfig {
   readonly basicUser?: {
     [key: string]: any
   },
+  toDoOnCreatebasicUser?(user: any): void,
   readonly accountMailRecupMDP?: nodemailer.Transporter<SMTPTransport.SentMessageInfo>,
   accountMailRecupBodyText(token: string, user: any): string,
   accountMailRecupBodyHTML?(token: string, user: any): string,

@@ -193,7 +193,9 @@ export class AutoBack {
       if (this.userTable && this.userTable.config.basicUser) {
         return this.userTable.sequelizeData.create(
           this.userTable.config.basicUser
-        ).then(() => {
+        ).then(async (user) => {
+          if (this.userTable.config.toDoOnCreatebasicUser)
+            await Promise.resolve(this.userTable.config.toDoOnCreatebasicUser(user))
           console.log('Succefully create basic user')
         }).catch((err: any) => {
           if (err.errors !== undefined) {

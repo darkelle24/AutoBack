@@ -41,7 +41,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       accountMailRecupMDP: mailAccount ? mailAccount : undefined,
       accountMailRecupBodyHTML: auth.accountMailRecupBodyHTML ? auth.accountMailRecupBodyHTML : undefined,
       accountMailRecupBodyText: auth.accountMailRecupBodyText ? auth.accountMailRecupBodyText : (token: string, user: any) => 'Token ' + token,
-      accountMailRecupObject: auth.accountMailRecupObject ? auth.accountMailRecupObject : (user: any) => 'Recup Mail'
+      accountMailRecupObject: auth.accountMailRecupObject ? auth.accountMailRecupObject : (user: any) => 'Recup Mail',
+      toDoOnCreatebasicUser: auth.toDoOnCreatebasicUser
     }
     if (table.password && table.password.transformSet)
       this.passwordEncode = table.password.transformSet

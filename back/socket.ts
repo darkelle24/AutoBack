@@ -46,8 +46,8 @@ export class SocketAutobackClass {
 
     }
 
-    params.toDoOnSocketConnection = this.toDoOnSocketConnection
-    params.toDoOnSocketDeConnection = this.toDoOnSocketDeConnection
+    this.toDoOnSocketConnection = params.toDoOnSocketConnection
+    this.toDoOnSocketDeConnection = params.toDoOnSocketDeConnection
 
     this.namespace.on('connection', async (socket: Socket) => {
 

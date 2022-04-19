@@ -265,12 +265,13 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       name: 'Login',
       event: { afterResponse: loginPostmanAfterRequestEvent(this.config.roles) },
       doSomething: async (req, res, route) => {
-        if ((!req.body['username'] && !req.body['email']) || !req.body['password']) {
-          return errorHandling(new Error('Missing a (username or email) or / and a password.'), res)
-        }
         let user
 
         if ('username' in this.table) {
+          if ((!req.body['username'] && !req.body['email']) || !req.body['password']) {
+            return errorHandling(new Error('Missing a (username or email) or / and a password.'), res)
+          }
+
           const { username, password } = req.body;
 
           if (!username) {
@@ -279,6 +280,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
             user = await route.sequelizeData.findOne({ where: { username: username, password: this.passwordEncode(password, this) } })
           }
         } else {
+          if (!req.body['email'] || !req.body['password']) {
+            return errorHandling(new Error('Missing an email or / and a password.'), res)
+          }
           const { email, password } = req.body;
 
           user = await route.sequelizeData.findOne({ where: { email: email, password: this.passwordEncode(password, this) } })

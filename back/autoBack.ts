@@ -516,7 +516,14 @@ export class AutoBack {
     if (!this.userTable) {
       if (mergeUserDefine)
         userDefine = _.merge(userTableDefine, userDefine)
-      const [tableSequelize, saveTableInfo] = this.defineStartTable("User", userDefine)
+      let filtered: any = {}
+
+      for (const key in userDefine) {
+        if (userDefine[key] !== null) {
+          filtered[key] = userDefine[key]
+        }
+      }
+      const [tableSequelize, saveTableInfo] = this.defineStartTable("User", filtered)
 
       let mail: any = undefined
       if (auth.nameAccountMailRecupMDP) {

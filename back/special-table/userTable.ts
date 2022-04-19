@@ -268,14 +268,20 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         if ((!req.body['username'] && !req.body['email']) || !req.body['password']) {
           return errorHandling(new Error('Missing a (username or email) or / and a password.'), res)
         }
-        const { username, password } = req.body;
-
         let user
 
-        if (!username) {
-          user = await route.sequelizeData.findOne({ where: { email: req.body.email, password: this.passwordEncode(password, this) } })
+        if ('username' in this.table) {
+          const { username, password } = req.body;
+
+          if (!username) {
+            user = await route.sequelizeData.findOne({ where: { email: req.body.email, password: this.passwordEncode(password, this) } })
+          } else {
+            user = await route.sequelizeData.findOne({ where: { username: username, password: this.passwordEncode(password, this) } })
+          }
         } else {
-          user = await route.sequelizeData.findOne({ where: { username: username, password: this.passwordEncode(password, this) } })
+          const { email, password } = req.body;
+
+          user = await route.sequelizeData.findOne({ where: { email: email, password: this.passwordEncode(password, this) } })
         }
 
         if (user) {
@@ -288,8 +294,13 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
             ...{ token: accessToken }
           });
         } else {
-          res.status(401).json({ message: 'Username / email or password incorrect' });
-          res.statusMessage = 'Username / email or password incorrect'
+          if ('username' in this.table) {
+            res.status(401).json({ message: 'Username / email or password incorrect' });
+            res.statusMessage = 'Username / email or password incorrect'
+          } else {
+            res.status(401).json({ message: 'Email or password incorrect' });
+            res.statusMessage = 'Email or password incorrect'
+          }
           return
         }
       }

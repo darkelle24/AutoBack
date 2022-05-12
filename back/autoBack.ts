@@ -337,7 +337,88 @@ export class AutoBack {
     return undefined
   }
 
-  private routeBodyToPostmn(postman: any, route: any): any {
+  private docByDataType(oneColumn: any): any {
+    switch (oneColumn.type.autobackDataType) {
+      case 'bigInt': {
+        return 0
+      }
+      case 'int': {
+        return 0
+      }
+      case 'date': {
+        return (new Date()).toISOString()
+      }
+      case 'text': {
+        return ''
+      }
+      case 'string': {
+        return ''
+      }
+      case 'array': {
+        return []
+      }
+      case 'boolean': {
+        return true
+      }
+      case 'float': {
+        return 0.1
+      }
+      default: {
+        return undefined
+      }
+    }
+  }
+
+  private blackDoc(toReturn: any, route: any, columns: saveTable) {
+    if (route.columsAccept.list && route.columsAccept.list.length !== 0) {
+      for (const [key, value] of Object.entries(columns)) {
+        if (!route.columsAccept.list.find((element: any) => element === key)) {
+          toReturn[key] = this.docByDataType(value)
+        }
+      }
+    } else if (route.columsAccept.list !== undefined && (route.columsAccept.list === null || route.columsAccept.list.length === 0)) {
+      for (const [key, value] of Object.entries(columns)) {
+        toReturn[key] = this.docByDataType(value)
+      }
+    } else if (route.columsAccept.list === undefined) {
+      return
+    }
+  }
+
+  private whiteDoc(toReturn: any, route: any, columns: saveTable) {
+    if (route.columsAccept.list && route.columsAccept.list.length !== 0) {
+      for (const [key, value] of Object.entries(columns)) {
+        if (route.columsAccept.list.find((element: any) => element === key)) {
+          toReturn[key] = this.docByDataType(value)
+        }
+      }
+    } else if (route.columsAccept.list !== undefined && (route.columsAccept.list === null || route.columsAccept.list.length === 0)) {
+      return
+    } else if (route.columsAccept.list === undefined) {
+      for (const [key, value] of Object.entries(columns)) {
+        toReturn[key] = this.docByDataType(value)
+      }
+    }
+  }
+
+  private autoDoc(route: any, columns: saveTable): any {
+    let toReturn: any = {}
+
+    if (route.columsAccept) {
+      if (route.columsAccept.inverse) {
+        this.blackDoc(toReturn, route, columns)
+      } else {
+        this.whiteDoc(toReturn, route, columns)
+      }
+    } else {
+      for (const [key, value] of Object.entries(columns)) {
+        toReturn[key] = this.docByDataType(value)
+      }
+    }
+    return toReturn
+  }
+
+  private routeBodyToPostman(postman: any, route: any, column: saveTable): any {
     if (route.type === 'POST' || route.type === 'PUT') {
       postman.request.body = {
         mode: "raw",
@@ -349,10 +430,12 @@ export class AutoBack {
         }
       }
 
+      let bodyDocAuto = this.autoDoc(route, column)
+
       if (route.bodyDoc) {
-        postman.request.body.raw = route.bodyDoc({})
+        postman.request.body.raw = route.bodyDoc(bodyDocAuto)
       } else {
-        postman.request.body.raw = {}
+        postman.request.body.raw = bodyDocAuto
       }
       if (typeof postman.request.body.raw !== 'string') {
         postman.request.body.raw = JSON.stringify(postman.request.body.raw, null, 4)
@@ -362,7 +445,7 @@ export class AutoBack {
     return postman
   }
 
-  private routeInfoToPostman(route: any): any {
+  private routeInfoToPostman(route: any, column: saveTable): any {
     const toReturn: any = {
       name: route.name,
       protocolProfileBehavior: {
@@ -382,7 +465,7 @@ export class AutoBack {
       }
     }
 
-    this.routeBodyToPostmn(toReturn, route)
+    this.routeBodyToPostman(toReturn, route, column)
 
     if (route.limit) {
       this.whereToPostman(toReturn, route.limit)
@@ -487,7 +570,7 @@ export class AutoBack {
       if (valueAny.routes) {
         for (const [, value] of Object.entries(valueAny.routes)) {
           (<any>value).forEach((element: any) => {
-            table.item.push(this.routeInfoToPostman(element))
+            table.item.push(this.routeInfoToPostman(element, valueAny.column))
           });
         }
       }

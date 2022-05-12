@@ -125,12 +125,25 @@ export class TableClass<M extends Model> {
   }
 
   protected basicPost(accessRule?: access): void {
-    this.addRoute({
-      path: '/',
-      type: TypeRoute.POST,
-      auth: accessRule,
-      name: 'Post ' + this.name
-    })
+    if (this.table['id'] && this.table['id'].primaryKey && this.table['id'].autoIncrement) {
+      this.addRoute({
+        path: '/',
+        columsAccept: {
+          list: ['id'],
+          inverse: true
+        },
+        type: TypeRoute.POST,
+        auth: accessRule,
+        name: 'Post ' + this.name
+      })
+    } else {
+      this.addRoute({
+        path: '/',
+        type: TypeRoute.POST,
+        auth: accessRule,
+        name: 'Post ' + this.name
+      })
+    }
   }
 
   protected basicDelete(accessRule?: access): void {
@@ -155,6 +168,10 @@ export class TableClass<M extends Model> {
     this.addRoute({
       path: '/:id',
       type: TypeRoute.PUT,
+      columsAccept: {
+        list: ['id'],
+        inverse: true
+      },
       filters: {
         id: {
           equal: {

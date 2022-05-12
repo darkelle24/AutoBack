@@ -149,7 +149,7 @@ test.addRoute({
   type: TypeRoute.POST,
   path: '/lol',
   bodyDoc: (lol: any) => {
-    return { lol: "" }
+    return { lol: 0 }
   },
   columsAccept: {
     inverse: true,
@@ -166,9 +166,9 @@ test.addRoute({
   },
   auth: {
     checkRole: (user: any) => {
-      if (user.id <= 10) {
-        throw new AutoBackRouteError(410, "DAB", "lol")
-      }
+      /*   if (user.id <= 10) {
+          throw new AutoBackRouteError(410, "DAB", "lol")
+        } */
     }
   },
 })

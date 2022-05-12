@@ -163,6 +163,8 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       route: this.path,
       auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route.",
       filter: {},
+      returnColumns: this.routeInfo.returnColumns,
+      columsAccept: this.routeInfo.columsAccept,
       name: this.routeInfo.name ? this.routeInfo.name : this.path,
       event: this.routeInfo.event,
       description: this.routeInfo.description,

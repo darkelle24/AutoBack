@@ -75,6 +75,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       path: '/sendRecoverMail',
       type: TypeRoute.POST,
       name: 'Send an email to recover password',
+      columsAccept: {
+        list: ['email']
+      },
       doSomething: async (req: any, res: any, route: RouteClass) => {
         if (!req.body['email']) {
           return errorHandling(new Error('Missing an email.'), res)
@@ -105,6 +108,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       path: '/resetForgotPassword',
       type: TypeRoute.POST,
       name: 'Reset forgot password',
+      columsAccept: {
+        list: ['token', 'password']
+      },
       doSomething: async (req, res, route) => {
         let user: any = undefined
 
@@ -196,6 +202,10 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     super.addRoute({
       path: '/:user_id',
       type: TypeRoute.PUT,
+      columsAccept: {
+        list: ['id'],
+        inverse: true
+      },
       filters: {
         id: {
           equal: {
@@ -218,6 +228,10 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     super.addRoute({
       path: '/register',
       type: TypeRoute.POST,
+      columsAccept: {
+        list: ['id'],
+        inverse: true
+      },
       returnColumns: {
         list: ["password"],
         inverse: true
@@ -236,6 +250,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       path: '/jwt',
       type: TypeRoute.POST,
       name: 'JWT check',
+      columsAccept: {
+        list: null
+      },
       doSomething: async (req, res, route) => {
         const authHeader = req.headers.authorization;
 
@@ -259,10 +276,20 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
   }
 
   protected login(): void {
+    let list: any[] = []
+
+    if ('username' in this.table) {
+      list = ['username', 'email', 'password']
+    } else {
+      list = ['email', 'password']
+    }
     super.addRoute({
       path: '/login',
       type: TypeRoute.POST,
       name: 'Login',
+      columsAccept: {
+        list: list
+      },
       event: { afterResponse: loginPostmanAfterRequestEvent(this.config.roles) },
       doSomething: async (req, res, route) => {
         let user

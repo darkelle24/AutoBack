@@ -262,11 +262,11 @@ export function filterOperatorToSequelizeOperator(filterOperatorName: string): F
 }
 
 export function getBasicOperatorFilter(): string[] {
-  return ["equal", "negatif", "is", "not"]
+  return ["equal", "negatif", "is", "not", "substring"]
 }
 
 export function getNumberOperatorFilter(): string[] {
-  return getBasicOperatorFilter().concat(["greater_than", "greater_than_equals", "smaller_than", "smaller_than_equals"])
+  return getBasicOperatorFilter().filter(e => e !== 'substring').concat(["greater_than", "greater_than_equals", "smaller_than", "smaller_than_equals"])
 }
 
 export function getStringToOperatorFilterList(list: string[]): FilterInfoType[] {

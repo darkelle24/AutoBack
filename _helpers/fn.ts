@@ -338,7 +338,7 @@ export function getFileExtansion(filename: string): string | undefined {
 }
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function errorHandling(err: any, res: express.Response, code: number = 400): express.Response {
-  if (err.errors !== undefined && Array.isArray(err.errors)) {
+  if (err.errors !== undefined && Array.isArray(err.errors) && err.errors.lenght > 0) {
     res.status(code).json({ message: err.name + ': ' + err.errors[0].message })
     res.statusMessage = err.name + ': ' + err.errors[0].message
     return res

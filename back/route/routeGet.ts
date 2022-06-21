@@ -7,6 +7,7 @@ import { RouteBasicClass } from "./route";
 import { UserTableClass } from 'back/special-table/userTable';
 import { errorHandling, infoPlaceToString, typeRouteToString } from "../../_helpers/fn";
 import express from 'express';
+import { AutoBackRouteError } from "../../_helpers/error";
 
 export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RouteGet
@@ -19,7 +20,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     this.changeAccess(routeInfo.auth)
     if (routeInfo.limit) {
       routeInfo.limit.name = routeInfo.limit.name ? routeInfo.limit.name : 'limit',
-      routeInfo.limit.where = routeInfo.limit.where !== undefined ? routeInfo.limit.where : InfoPlace.QUERYPARAMS
+        routeInfo.limit.where = routeInfo.limit.where !== undefined ? routeInfo.limit.where : InfoPlace.QUERYPARAMS
       routeInfo.limit.transformValue = routeInfo.limit.transformValue ? routeInfo.limit.transformValue : (value: any) => {
         if (typeof value === 'string')
           return parseInt(value)
@@ -28,7 +29,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
     }
     if (routeInfo.offset) {
       routeInfo.offset.name = routeInfo.offset.name ? routeInfo.offset.name : 'offset',
-      routeInfo.offset.where = routeInfo.offset.where !== undefined ? routeInfo.offset.where : InfoPlace.QUERYPARAMS
+        routeInfo.offset.where = routeInfo.offset.where !== undefined ? routeInfo.offset.where : InfoPlace.QUERYPARAMS
       routeInfo.offset.transformValue = routeInfo.offset.transformValue ? routeInfo.offset.transformValue : (value: any) => {
         if (typeof value === 'string')
           return parseInt(value)
@@ -63,6 +64,9 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       try {
         await Promise.resolve(route.beforeGet(req, res, this, filter))
       } catch (err) {
+        if (err instanceof AutoBackRouteError) {
+          return errorHandling(err, res, err.code)
+        }
         return errorHandling(err, res)
       }
     }
@@ -81,7 +85,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       datas.every((value, index) => {
         toSend.push(value.get())
         if (route.returnColumns)
-          toSend[index]= this.list(toSend[index], route.returnColumns)
+          toSend[index] = this.list(toSend[index], route.returnColumns)
         this.getAllValue(toSend[index])
         return true
       })
@@ -102,8 +106,16 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
             await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
           res.status(StatusCodes.OK).json(toSend[0])
         })
-        .catch(err => errorHandling(err, res))
+        .catch(err => {
+          if (err instanceof AutoBackRouteError) {
+            return errorHandling(err, res, err.code)
+          }
+          return errorHandling(err, res)
+        })
     }).catch(err => {
+      if (err instanceof AutoBackRouteError) {
+        return errorHandling(err, res, err.code)
+      }
       return errorHandling(err, res)
     })
   }
@@ -115,7 +127,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       datas.every((value, index) => {
         toSend.push(value.get())
         if (route.returnColumns)
-          toSend[index]= this.list(toSend[index], route.returnColumns)
+          toSend[index] = this.list(toSend[index], route.returnColumns)
         this.getAllValue(toSend[index])
         return true
       })
@@ -136,8 +148,16 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
             await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
           res.status(StatusCodes.OK).json(toSend)
         })
-        .catch(err => errorHandling(err, res))
+        .catch(err => {
+          if (err instanceof AutoBackRouteError) {
+            return errorHandling(err, res, err.code)
+          }
+          return errorHandling(err, res)
+        })
     }).catch(err => {
+      if (err instanceof AutoBackRouteError) {
+        return errorHandling(err, res, err.code)
+      }
       return errorHandling(err, res)
     })
   }

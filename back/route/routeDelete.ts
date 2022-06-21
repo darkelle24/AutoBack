@@ -6,6 +6,7 @@ import { RouteBasicClass } from "./route";
 import path from 'path';
 import { routeTableInfo } from "../../_helpers/models/models";
 import express from "express";
+import { AutoBackRouteError } from "../../_helpers/error";
 
 export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RouteDelete
@@ -18,7 +19,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
     this.changeAccess(routeInfo.auth)
 
     if (this.routeInfo.socketNotif === undefined) {
-      this.routeInfo.socketNotif = {activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined}
+      this.routeInfo.socketNotif = { activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined }
     }
 
     server.delete(path, this.checkToken(routeInfo), async (req: any, res: any) => {
@@ -67,9 +68,15 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
 
         return res.status(200).json(data)
       }).catch(err => {
+        if (err instanceof AutoBackRouteError) {
+          return errorHandling(err, res, err.code)
+        }
         return errorHandling(err, res)
       }))
     }).catch(err => {
+      if (err instanceof AutoBackRouteError) {
+        return errorHandling(err, res, err.code)
+      }
       return errorHandling(err, res)
     })
   }
@@ -108,7 +115,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
     return toReturn
   }
 
-  protected detectFileDestroy(oldValue: M, takeAll: boolean = false): {fieldName: string, oldId: number | null}[] {
+  protected detectFileDestroy(oldValue: M, takeAll: boolean = false): { fieldName: string, oldId: number | null }[] {
     let toDestroy: any[] = []
 
     if (this.tableClass.haveFile && this.files) {
@@ -118,7 +125,7 @@ export class RouteDeleteClass<M extends Model> extends RouteBasicClass<M> {
           value = parseInt(value)
         }
         if (((<any>this.table[element.name]).type.deleteOldFileOnDelete && !takeAll) || takeAll) {
-          toDestroy.push({fieldName: element.name, oldId: value})
+          toDestroy.push({ fieldName: element.name, oldId: value })
         }
       })
     }

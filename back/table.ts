@@ -29,15 +29,15 @@ export class TableClass<M extends Model> {
   upload?: multer.Multer
   haveFile: boolean = false
   description?: string
-  readonly socket?: SocketAutobackClass
+  socket?: SocketAutobackClass
 
   private _listLinkColumns?: string[] = undefined
-  get listLinkColumns(): string[] | undefined  {
+  get listLinkColumns(): string[] | undefined {
     return this._listLinkColumns
   }
 
   private _tableLinktoThisTable: TableLinktoThisTable[] = []
-  get tableLinktoThisTable(): TableLinktoThisTable[]  {
+  get tableLinktoThisTable(): TableLinktoThisTable[] {
     return this._tableLinktoThisTable
   }
 
@@ -125,12 +125,25 @@ export class TableClass<M extends Model> {
   }
 
   protected basicPost(accessRule?: access): void {
-    this.addRoute({
-      path: '/',
-      type: TypeRoute.POST,
-      auth: accessRule,
-      name: 'Post ' + this.name
-    })
+    if (this.table['id'] && this.table['id'].primaryKey && this.table['id'].autoIncrement) {
+      this.addRoute({
+        path: '/',
+        columsAccept: {
+          list: ['id'],
+          inverse: true
+        },
+        type: TypeRoute.POST,
+        auth: accessRule,
+        name: 'Post ' + this.name
+      })
+    } else {
+      this.addRoute({
+        path: '/',
+        type: TypeRoute.POST,
+        auth: accessRule,
+        name: 'Post ' + this.name
+      })
+    }
   }
 
   protected basicDelete(accessRule?: access): void {
@@ -142,7 +155,7 @@ export class TableClass<M extends Model> {
           equal: {
             name: 'id',
             where: InfoPlace.PARAMS,
-            transformValue: (value: string) => {return parseInt(value)}
+            transformValue: (value: string) => { return parseInt(value) }
           }
         }
       },
@@ -155,12 +168,16 @@ export class TableClass<M extends Model> {
     this.addRoute({
       path: '/:id',
       type: TypeRoute.PUT,
+      columsAccept: {
+        list: ['id'],
+        inverse: true
+      },
       filters: {
         id: {
           equal: {
             name: 'id',
             where: InfoPlace.PARAMS,
-            transformValue: (value: string) => {return parseInt(value)}
+            transformValue: (value: string) => { return parseInt(value) }
           }
         }
       },
@@ -172,22 +189,22 @@ export class TableClass<M extends Model> {
   addRoute(route: Route): RouteClass | undefined {
     switch (route.type) {
       case TypeRoute.POST: {
-        const routeClass = new RoutePostClass({ classTable: this}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
+        const routeClass = new RoutePostClass({ classTable: this }, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePost), this.userTable)
         this.routes.post.push(routeClass)
         return routeClass
       }
       case TypeRoute.GET: {
-        const routeClass = new RouteGetClass({ classTable: this}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
+        const routeClass = new RouteGetClass({ classTable: this }, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteGet), this.userTable)
         this.routes.get.push(routeClass)
         return routeClass
       }
       case TypeRoute.PUT: {
-        const routeClass = new RoutePutClass({ classTable: this}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
+        const routeClass = new RoutePutClass({ classTable: this }, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RoutePut), this.userTable)
         this.routes.put.push(routeClass)
         return routeClass
       }
       case TypeRoute.DELETE: {
-        const routeClass = new RouteDeleteClass({ classTable: this}, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
+        const routeClass = new RouteDeleteClass({ classTable: this }, this.sequelizeData, this.server, addPath(this.routes.originRoutePath, route.path), (route as RouteDelete), this.userTable)
         this.routes.delete.push(routeClass)
         return routeClass
       }
@@ -318,8 +335,8 @@ export class TableClass<M extends Model> {
     }
   }
 
-   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-   protected async checkDataIsArrayRecursive(data: any, depth: number, isMultipleLink: boolean = false): Promise<unknown> {
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+  protected async checkDataIsArrayRecursive(data: any, depth: number, isMultipleLink: boolean = false): Promise<unknown> {
     if (isMultipleLink && Array.isArray(data)) {
       return Promise.all(data.map(async (element: any, index: number) => {
         return this.getSingleLinkDataRecursive(data[index], depth)
@@ -345,7 +362,7 @@ export class TableClass<M extends Model> {
   }
 
   public addLinkToThisTable(table: TableClass<any>, columnsLink: string): void {
-    this.tableLinktoThisTable.push({table: table, columns: columnsLink})
+    this.tableLinktoThisTable.push({ table: table, columns: columnsLink })
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types

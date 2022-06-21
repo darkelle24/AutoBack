@@ -12,6 +12,7 @@ import express from 'express';
 import nodemailer from "nodemailer"
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import { FileTableClass } from './fileTable';
+import { AutoBackRouteError } from '../../_helpers/error';
 
 export class UserTableClass<M extends Model> extends TableClass<M> {
 
@@ -25,7 +26,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     if (table.password.validate && table.password.validate.isStrongPassword) {
       if (table.password.validate.isStrongPassword === true)
         table.password.validate.isStrongPassword = {}
-      table.password.validate.isStrongPassword = _.merge({minLength: 6, minLowercase: 1, minUppercase: 0, minNumbers: 0, minSymbols: 0, maxLength: 15}, table.password.validate.isStrongPassword)
+      table.password.validate.isStrongPassword = _.merge({ minLength: 6, minLowercase: 1, minUppercase: 0, minNumbers: 0, minSymbols: 0, maxLength: 15 }, table.password.validate.isStrongPassword)
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-ignore
       table.password.validate.isStrongPassword.msg = "Wrong password need to have: min length: " + table.password.validate.isStrongPassword.minLength.toString() + ", max length: " + table.password.validate.isStrongPassword.maxLength.toString() + ", min lowercase: " + table.password.validate.isStrongPassword.minLowercase.toString() + ", min uppercase: " + table.password.validate.isStrongPassword.minUppercase.toString() + ", min numbers: " + table.password.validate.isStrongPassword.minNumbers.toString() + ", min symbols: " + table.password.validate.isStrongPassword.minSymbols.toString()
@@ -40,7 +41,8 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       accountMailRecupMDP: mailAccount ? mailAccount : undefined,
       accountMailRecupBodyHTML: auth.accountMailRecupBodyHTML ? auth.accountMailRecupBodyHTML : undefined,
       accountMailRecupBodyText: auth.accountMailRecupBodyText ? auth.accountMailRecupBodyText : (token: string, user: any) => 'Token ' + token,
-      accountMailRecupObject: auth.accountMailRecupObject ? auth.accountMailRecupObject : (user: any) => 'Recup Mail'
+      accountMailRecupObject: auth.accountMailRecupObject ? auth.accountMailRecupObject : (user: any) => 'Recup Mail',
+      toDoOnCreatebasicUser: auth.toDoOnCreatebasicUser
     }
     if (table.password && table.password.transformSet)
       this.passwordEncode = table.password.transformSet
@@ -68,11 +70,14 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     }
   }
 
-  protected sendRecupMail():void {
+  protected sendRecupMail(): void {
     super.addRoute({
       path: '/sendRecoverMail',
       type: TypeRoute.POST,
       name: 'Send an email to recover password',
+      columsAccept: {
+        list: ['email']
+      },
       doSomething: async (req: any, res: any, route: RouteClass) => {
         if (!req.body['email']) {
           return errorHandling(new Error('Missing an email.'), res)
@@ -84,7 +89,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
           return errorHandling(Error("User not found"), res)
         }
 
-        const token = jwt.sign({ email: req.body.email }, this.config.tokenSecret, {expiresIn: this.config.expiresIn})
+        const token = jwt.sign({ email: req.body.email }, this.config.tokenSecret, { expiresIn: this.config.expiresIn })
 
         this.config.accountMailRecupMDP.sendMail({
           from: (<any>this.config.accountMailRecupMDP.transporter).auth.user,
@@ -93,7 +98,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
           text: !this.config.accountMailRecupBodyHTML ? this.config.accountMailRecupBodyText(token, user) : undefined,
           html: this.config.accountMailRecupBodyHTML ? this.config.accountMailRecupBodyHTML(token, user) : undefined,
         })
-        res.status(200).json({message: 'Mail send'});
+        res.status(200).json({ message: 'Mail send' });
       }
     })
   }
@@ -103,6 +108,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       path: '/resetForgotPassword',
       type: TypeRoute.POST,
       name: 'Reset forgot password',
+      columsAccept: {
+        list: ['token', 'password']
+      },
       doSomething: async (req, res, route) => {
         let user: any = undefined
 
@@ -119,6 +127,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
             user = userJwt;
           });
         } catch (e: any) {
+          if (e instanceof AutoBackRouteError) {
+            return errorHandling(e.message, res, e.code)
+          }
           return errorHandling(e.message, res)
         }
 
@@ -136,6 +147,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
           user.password = req.body.password
           await user.save()
         } catch (e: any) {
+          if (e instanceof AutoBackRouteError) {
+            return errorHandling(e.message, res, e.code)
+          }
           return errorHandling(e.message, res)
         }
 
@@ -150,7 +164,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     return toReturn
   }
 
-  protected basicGet(accessRule?: access):void {
+  protected basicGet(accessRule?: access): void {
     super.addRoute({
       path: '/',
       type: TypeRoute.GET,
@@ -166,7 +180,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     })
   }
 
-  protected basicDelete(accessRule?: access):void {
+  protected basicDelete(accessRule?: access): void {
     super.addRoute({
       path: '/:user_id',
       type: TypeRoute.DELETE,
@@ -175,7 +189,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
           equal: {
             name: 'user_id',
             where: InfoPlace.PARAMS,
-            transformValue: (value: string) => {return parseInt(value)}
+            transformValue: (value: string) => { return parseInt(value) }
           }
         }
       },
@@ -188,6 +202,10 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     super.addRoute({
       path: '/:user_id',
       type: TypeRoute.PUT,
+      columsAccept: {
+        list: ['id'],
+        inverse: true
+      },
       filters: {
         id: {
           equal: {
@@ -210,6 +228,10 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     super.addRoute({
       path: '/register',
       type: TypeRoute.POST,
+      columsAccept: {
+        list: ['id'],
+        inverse: true
+      },
       returnColumns: {
         list: ["password"],
         inverse: true
@@ -228,6 +250,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       path: '/jwt',
       type: TypeRoute.POST,
       name: 'JWT check',
+      columsAccept: {
+        list: null
+      },
       doSomething: async (req, res, route) => {
         const authHeader = req.headers.authorization;
 
@@ -244,44 +269,69 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
             res.statusMessage = err.toString()
             return
           }
-          res.status(200).json({"message": "JWT ok"})
+          res.status(200).json({ "message": "JWT ok" })
         }
       }
     })
   }
 
   protected login(): void {
+    let list: any[] = []
+
+    if ('username' in this.table) {
+      list = ['username', 'email', 'password']
+    } else {
+      list = ['email', 'password']
+    }
     super.addRoute({
       path: '/login',
       type: TypeRoute.POST,
       name: 'Login',
-      event: {afterResponse: loginPostmanAfterRequestEvent(this.config.roles)},
+      columsAccept: {
+        list: list
+      },
+      event: { afterResponse: loginPostmanAfterRequestEvent(this.config.roles) },
       doSomething: async (req, res, route) => {
-        if ((!req.body['username'] && !req.body['email']) || !req.body['password']) {
-          return errorHandling(new Error('Missing a (username or email) or / and a password.'), res)
-        }
-        const { username, password } = req.body;
-
         let user
 
-        if (!username) {
-          user = await route.sequelizeData.findOne({ where: { email: req.body.email, password: this.passwordEncode(password, this) } })
+        if ('username' in this.table) {
+          if ((!req.body['username'] && !req.body['email']) || !req.body['password']) {
+            return errorHandling(new Error('Missing a (username or email) or / and a password.'), res)
+          }
+
+          const { username, password } = req.body;
+
+          if (!username) {
+            user = await route.sequelizeData.findOne({ where: { email: req.body.email, password: this.passwordEncode(password, this) } })
+          } else {
+            user = await route.sequelizeData.findOne({ where: { username: username, password: this.passwordEncode(password, this) } })
+          }
         } else {
-          user = await route.sequelizeData.findOne({ where: { username: username, password: this.passwordEncode(password, this) } })
+          if (!req.body['email'] || !req.body['password']) {
+            return errorHandling(new Error('Missing an email or / and a password.'), res)
+          }
+          const { email, password } = req.body;
+
+          user = await route.sequelizeData.findOne({ where: { email: email, password: this.passwordEncode(password, this) } })
         }
 
         if (user) {
           const temp = user.get()
           delete temp.password
-          const accessToken = jwt.sign(temp, this.config.tokenSecret, {expiresIn: this.config.expiresIn});
+          const accessToken = jwt.sign(temp, this.config.tokenSecret, { expiresIn: this.config.expiresIn });
 
           res.json({
             ...temp,
             ...{ token: accessToken }
           });
         } else {
-          res.status(401).json({ message: 'Username / email or password incorrect' });
-          res.statusMessage = 'Username / email or password incorrect'
+          if ('username' in this.table) {
+            res.status(401).json({ message: 'Username / email or password incorrect' });
+            res.statusMessage = 'Username / email or password incorrect'
+          } else {
+            res.status(401).json({ message: 'Email or password incorrect' });
+            res.statusMessage = 'Email or password incorrect'
+          }
           return
         }
       }
@@ -289,7 +339,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
-  protected checkJWT(token: string): any | undefined  {
+  protected checkJWT(token: string): any | undefined {
     let user: any = undefined
 
     jwt.verify(token, this.config.tokenSecret, (err: any, userJwt: any) => {
@@ -310,7 +360,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     if (user) {
       return user
     }
-    throw Error ("The user does not exist")
+    throw Error("The user does not exist")
   }
 
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
@@ -335,18 +385,20 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
     return true
   }
 
-  public async checkToken(token: string, role?: string[], inverse?: boolean): Promise<any> {
+  public async checkToken(token: string, role?: string[], inverse?: boolean, checkRoleDefine?: (user: any) => void): Promise<any> {
     try {
-        let user = this.checkJWT(token);
-        user = await this.checkUserExist(user, this.sequelizeData);
-        this.checkRole(user.role, role, inverse);
-        return user;
+      let user = this.checkJWT(token);
+      user = await this.checkUserExist(user, this.sequelizeData);
+      this.checkRole(user.role, role, inverse);
+      if (checkRoleDefine)
+        checkRoleDefine(user);
+      return user;
     } catch (error) {
-        throw error
+      throw error
     }
   }
 
-  public async checkTokenExpress(req: express.Request, res: express.Response, route: Route): Promise<boolean>{
+  public async checkTokenExpress(req: express.Request, res: express.Response, route: Route): Promise<boolean> {
     if (route.auth) {
       const authHeader = req.headers.authorization;
 
@@ -355,17 +407,21 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         let good: boolean = true;
 
         (<any>req).user = await this.checkToken(token,
-            route.auth && route.auth.role ? route.auth.role : undefined,
-            route.auth && route.auth.inverse ? route.auth.inverse : undefined
+          route.auth && route.auth.role ? route.auth.role : undefined,
+          route.auth && route.auth.inverse ? route.auth.inverse : undefined,
+          route.auth && route.auth.checkRole ? route.auth.checkRole : undefined
         ).catch((err: Error) => {
-            if (err.name === 'TokenExpiredError') {
-              res.status(408).json({ message: err.toString() });
-            } else {
-              res.status(403).json({ message: err.toString() });
-            }
+          if (err instanceof AutoBackRouteError) {
+            errorHandling(err, res, err.code)
+          } else if (err.name === 'TokenExpiredError') {
+            res.status(408).json({ message: err.toString() });
             res.statusMessage = err.toString()
-            good = false
-          })
+          } else {
+            res.status(403).json({ message: err.toString() });
+            res.statusMessage = err.toString()
+          }
+          good = false
+        })
         return good
       } else {
         res.status(401).json({ message: 'Need to be auth to access this route' })

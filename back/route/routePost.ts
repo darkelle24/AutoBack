@@ -5,6 +5,7 @@ import { addPath, errorHandling, infoPlaceToString, typeRouteToString } from "..
 import { routeTableInfo } from "../../_helpers/models/models";
 import { RoutePost } from "../../_helpers/models/routeModels";
 import { RouteBasicClass } from "./route";
+import { AutoBackRouteError } from "../../_helpers/error";
 
 export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
   routeInfo: RoutePost
@@ -17,12 +18,12 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
     this.changeAccess(routeInfo.auth)
 
     if (this.routeInfo.socketNotif === undefined) {
-      this.routeInfo.socketNotif = {activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined}
+      this.routeInfo.socketNotif = { activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined }
     }
 
     if (this.tableClass.upload && this.tableClass.haveFile) {
       let upload = this.tableClass.upload.fields(this.files)
-      server.post(path, this.checkToken(routeInfo), (req, res, next) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: express.Request, res: express.Response) => {
+      server.post(path, this.checkToken(routeInfo), (req, res, next) => { upload(req, res, (err: any) => { if (err) { errorHandling(err, res) } else next() }) }, this.dataToBody(), async (req: express.Request, res: express.Response) => {
         await this.toDo(req, res)
       })
     } else {
@@ -59,6 +60,9 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       try {
         await Promise.resolve(route.beforeSetValue(req, res, this))
       } catch (err) {
+        if (err instanceof AutoBackRouteError) {
+          return errorHandling(err, res, err.code)
+        }
         return errorHandling(err, res)
       }
     }
@@ -96,8 +100,16 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
 
           res.status(201).json(toSend)
         })
-        .catch(err => errorHandling(err, res))
+        .catch(err => {
+          if (err instanceof AutoBackRouteError) {
+            return errorHandling(err, res, err.code)
+          }
+          return errorHandling(err, res)
+        })
     }).catch(err => {
+      if (err instanceof AutoBackRouteError) {
+        return errorHandling(err, res, err.code)
+      }
       return errorHandling(err, res)
     })
   }
@@ -122,6 +134,7 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       columsAccept: this.routeInfo.columsAccept,
       dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined,
       name: this.routeInfo.name ? this.routeInfo.name : this.path,
+      bodyDoc: this.routeInfo.bodyDoc,
       event: this.routeInfo.event
     }
 

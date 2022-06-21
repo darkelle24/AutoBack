@@ -2,6 +2,7 @@ import { UserTableClass } from "back/special-table/userTable";
 import express from "express";
 import { StatusCodes } from "http-status-codes";
 import { Model, ModelCtor } from "sequelize";
+import { AutoBackRouteError } from "../../_helpers/error";
 import { realDataFileTable } from "_helpers/models/modelsTable";
 import { errorHandling, infoPlaceToString, typeRouteToString } from "../../_helpers/fn";
 import { routeTableInfo } from "../../_helpers/models/models";
@@ -20,7 +21,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     this.changeAccess(routeInfo.auth)
 
     if (this.routeInfo.socketNotif === undefined) {
-      this.routeInfo.socketNotif = {activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined}
+      this.routeInfo.socketNotif = { activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined }
     }
     this.createRoute()
   }
@@ -28,7 +29,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
   protected createRoute() {
     if (this.tableClass.upload && this.tableClass.haveFile) {
       let upload = this.tableClass.upload.fields(this.files)
-      this.server.put(this.path, this.checkToken(this.routeInfo), (req: any, res: any, next: any) => {upload(req, res, (err: any) => {if (err) {errorHandling(err, res)} else next()})}, this.dataToBody(), async (req: any, res: any) => {
+      this.server.put(this.path, this.checkToken(this.routeInfo), (req: any, res: any, next: any) => { upload(req, res, (err: any) => { if (err) { errorHandling(err, res) } else next() }) }, this.dataToBody(), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
       })
     } else {
@@ -51,7 +52,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       res.statusMessage = err.toString()
     }
     if (res.statusCode !== 200 && req.files) {
-        this.ereaseAllNewFiles(req)
+      this.ereaseAllNewFiles(req)
     }
   }
 
@@ -89,34 +90,45 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
           await Promise.resolve(route.beforeSend(req, res, this, toSend))
 
         this.tableClass.getLinkData(toSend)
-        .then(async () => {
-          if (route.beforeSendAfterRecursive)
-            await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
+          .then(async () => {
+            if (route.beforeSendAfterRecursive)
+              await Promise.resolve(route.beforeSendAfterRecursive(req, res, this, toSend))
 
-          if (toDestroy.length !== 0) {
-            toDestroy.map((element) => {
-              if (element.oldId !== null)
-                this.tableClass.fileTable.deleteFile(element.oldId)
-            })
-          }
+            if (toDestroy.length !== 0) {
+              toDestroy.map((element) => {
+                if (element.oldId !== null)
+                  this.tableClass.fileTable.deleteFile(element.oldId)
+              })
+            }
 
-          if (this.tableClass.socket) {
-            this.tableClass.socket.sendNotif(req, toSend, 'PUT', this.routeInfo.socketNotif)
-          }
+            if (this.tableClass.socket) {
+              this.tableClass.socket.sendNotif(req, toSend, 'PUT', this.routeInfo.socketNotif)
+            }
 
-          res.status(StatusCodes.OK).json(toSend)
-        })
-        .catch(err => errorHandling(err, res))
+            res.status(StatusCodes.OK).json(toSend)
+          })
+          .catch(err => {
+            if (err instanceof AutoBackRouteError) {
+              return errorHandling(err, res, err.code)
+            }
+            return errorHandling(err, res)
+          })
 
       }).catch(err => {
+        if (err instanceof AutoBackRouteError) {
+          return errorHandling(err, res, err.code)
+        }
         return errorHandling(err, res)
       })
     }).catch(err => {
+      if (err instanceof AutoBackRouteError) {
+        return errorHandling(err, res, err.code)
+      }
       return errorHandling(err, res)
     })
   }
 
-  protected detectFileChange(oldValue: M, currentBody: any, takeAll: boolean = false): {fieldName: string, oldId: number | null, newId: number | null}[] {
+  protected detectFileChange(oldValue: M, currentBody: any, takeAll: boolean = false): { fieldName: string, oldId: number | null, newId: number | null }[] {
     let toDestroy: any[] = []
 
     if (this.tableClass.haveFile && this.files) {
@@ -151,9 +163,12 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       route: this.path,
       auth: this.routeInfo.auth ? this.routeInfo.auth.role : "No need to be login to have access to this route.",
       filter: {},
+      returnColumns: this.routeInfo.returnColumns,
+      columsAccept: this.routeInfo.columsAccept,
       name: this.routeInfo.name ? this.routeInfo.name : this.path,
       event: this.routeInfo.event,
       description: this.routeInfo.description,
+      bodyDoc: this.routeInfo.bodyDoc,
       dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined
     }
 
@@ -166,9 +181,9 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
             name: valueValueFilter.name,
             where: ""
           }
-        
+
           newFilter.where = infoPlaceToString(valueValueFilter.where)
-        
+
           if (newFilter) {
             if (!toReturn.filter[keyFilter])
               toReturn.filter[keyFilter] = {}

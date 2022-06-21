@@ -2,7 +2,7 @@ import { FileTableClass, fileTableDefine } from './special-table/fileTable';
 import { TableClass } from './table';
 import { PostgresDb } from './db/postgres/postgres';
 import express from "express";
-import {StatusCodes} from 'http-status-codes';
+import { StatusCodes } from 'http-status-codes';
 import { ModelAttributes, ModelCtor, Sequelize } from 'sequelize';
 import { defaultSaveDataInfo, removeFile, addPath, formatDate, writeInFile, getPathTable } from '../_helpers/fn';
 import * as _ from "lodash"
@@ -24,6 +24,8 @@ import { SocketConstructor, SocketInfo } from '_helpers/models/socketModels';
 import nodemailer from "nodemailer"
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import Mail from 'nodemailer/lib/mailer';
+import { TypeRoute } from '../_helpers/models/routeModels';
+import { SocketAutobackClass } from './socket';
 
 export class AutoBack {
 
@@ -52,7 +54,7 @@ export class AutoBack {
   private linkTableToProcess: { tableSequelizeInfo: any, tempSaveTable: tempSaveTable, fileInfo: filePathInfo, nameTable: string, linkToProcess: { data: dataLinkTable, nameColumns: string }[] }[] = []
   private saveAuthConfig: authConfigAutoBack
   readonly socketIO?: Server
-  accountToSendMail: { name: string, account: nodemailer.Transporter<SMTPTransport.SentMessageInfo>} [] = []
+  accountToSendMail: { name: string, account: nodemailer.Transporter<SMTPTransport.SentMessageInfo> }[] = []
 
   constructor(connnectionStr: string, db: DB = DB.POSTGRES, activeHealthRoute: boolean = true, fileInfo?: filePathInfo, serverPath: string = "api/", activeLog: boolean = true, resetDb: boolean = false, debug: boolean = false, name: string = "AutoBack", socketActive: boolean = false) {
     this.server.use(compression());
@@ -106,7 +108,7 @@ export class AutoBack {
     this.fileInfo = fileInfo
     this.serverPath = serverPath
 
-    if (!fs.existsSync(this.fileInfo.folderPath)){
+    if (!fs.existsSync(this.fileInfo.folderPath)) {
       fs.mkdirSync(this.fileInfo.folderPath);
     }
 
@@ -192,11 +194,13 @@ export class AutoBack {
       if (this.userTable && this.userTable.config.basicUser) {
         return this.userTable.sequelizeData.create(
           this.userTable.config.basicUser
-        ).then(() => {
+        ).then(async (user) => {
+          if (this.userTable.config.toDoOnCreatebasicUser)
+            await Promise.resolve(this.userTable.config.toDoOnCreatebasicUser(user))
           console.log('Succefully create basic user')
         }).catch((err: any) => {
           if (err.errors !== undefined) {
-            console.warn(err.name + ': ' + err.errors[0].message )
+            console.warn(err.name + ': ' + err.errors[0].message)
           } else {
             console.warn(err.toString())
           }
@@ -232,6 +236,10 @@ export class AutoBack {
       if (userTable) {
         this._userTable = userTable
         this.userTable.userTable = this.userTable
+
+        if (auth.config.socketInfo) {
+          userTable.socket = new SocketAutobackClass(this.initSocket("User", '/auth', auth.config.socketInfo))
+        }
       }
 
       if (this.fileTable) {
@@ -329,12 +337,120 @@ export class AutoBack {
     return undefined
   }
 
-  private routeInfoToPostman(route: any): any {
+  private docByDataType(oneColumn: any): any {
+    switch (oneColumn.type.autobackDataType) {
+      case 'bigInt': {
+        return 0
+      }
+      case 'int': {
+        return 0
+      }
+      case 'date': {
+        return (new Date()).toISOString()
+      }
+      case 'text': {
+        return ''
+      }
+      case 'string': {
+        return ''
+      }
+      case 'array': {
+        return []
+      }
+      case 'boolean': {
+        return true
+      }
+      case 'float': {
+        return 0.1
+      }
+      default: {
+        return undefined
+      }
+    }
+  }
+
+  private blackDoc(toReturn: any, route: any, columns: saveTable) {
+    if (route.columsAccept.list && route.columsAccept.list.length !== 0) {
+      for (const [key, value] of Object.entries(columns)) {
+        if (!route.columsAccept.list.find((element: any) => element === key)) {
+          toReturn[key] = this.docByDataType(value)
+        }
+      }
+    } else if (route.columsAccept.list !== undefined && (route.columsAccept.list === null || route.columsAccept.list.length === 0)) {
+      for (const [key, value] of Object.entries(columns)) {
+        toReturn[key] = this.docByDataType(value)
+      }
+    } else if (route.columsAccept.list === undefined) {
+      return
+    }
+  }
+
+  private whiteDoc(toReturn: any, route: any, columns: saveTable) {
+    if (route.columsAccept.list && route.columsAccept.list.length !== 0) {
+      for (const [key, value] of Object.entries(columns)) {
+        if (route.columsAccept.list.find((element: any) => element === key)) {
+          toReturn[key] = this.docByDataType(value)
+        }
+      }
+    } else if (route.columsAccept.list !== undefined && (route.columsAccept.list === null || route.columsAccept.list.length === 0)) {
+      return
+    } else if (route.columsAccept.list === undefined) {
+      for (const [key, value] of Object.entries(columns)) {
+        toReturn[key] = this.docByDataType(value)
+      }
+    }
+  }
+
+  private autoDoc(route: any, columns: saveTable): any {
+    let toReturn: any = {}
+
+    if (route.columsAccept) {
+      if (route.columsAccept.inverse) {
+        this.blackDoc(toReturn, route, columns)
+      } else {
+        this.whiteDoc(toReturn, route, columns)
+      }
+    } else {
+      for (const [key, value] of Object.entries(columns)) {
+        toReturn[key] = this.docByDataType(value)
+      }
+    }
+    return toReturn
+  }
+
+  private routeBodyToPostman(postman: any, route: any, column: saveTable): any {
+    if (route.type === 'POST' || route.type === 'PUT') {
+      postman.request.body = {
+        mode: "raw",
+        raw: "",
+        options: {
+          raw: {
+            language: "json"
+          }
+        }
+      }
+
+      let bodyDocAuto = this.autoDoc(route, column)
+
+      if (route.bodyDoc) {
+        postman.request.body.raw = route.bodyDoc(bodyDocAuto)
+      } else {
+        postman.request.body.raw = bodyDocAuto
+      }
+      if (typeof postman.request.body.raw !== 'string') {
+        postman.request.body.raw = JSON.stringify(postman.request.body.raw, null, 4)
+      }
+    }
+
+    return postman
+  }
+
+  private routeInfoToPostman(route: any, column: saveTable): any {
     const toReturn: any = {
       name: route.name,
-			protocolProfileBehavior: {
-				disableBodyPruning: true
-			},
+      protocolProfileBehavior: {
+        disableBodyPruning: true
+      },
       event: [],
       request: {
         method: route.type,
@@ -345,9 +461,11 @@ export class AutoBack {
           query: [],
           variable: []
         },
-        header: []
+        header: [],
       }
     }
+
+    this.routeBodyToPostman(toReturn, route, column)
 
     if (route.limit) {
       this.whereToPostman(toReturn, route.limit)
@@ -361,19 +479,19 @@ export class AutoBack {
       if (route.event.afterResponse) {
         toReturn.event.push({
           listen: "test",
-					script: {
-						exec: route.event.afterResponse,
-						type: "text/javascript"
-					}
+          script: {
+            exec: route.event.afterResponse,
+            type: "text/javascript"
+          }
         })
       }
       if (route.event.preRequest) {
         toReturn.event.push({
           listen: "prerequest",
-					script: {
-						exec: route.event.preRequest,
-						type: "text/javascript"
-					}
+          script: {
+            exec: route.event.preRequest,
+            type: "text/javascript"
+          }
         })
       }
     }
@@ -391,7 +509,7 @@ export class AutoBack {
         type: "bearer",
         bearer: [{
           key: "token",
-          value: route.auth ? "{{role_token_" + route.auth[0] +"}}" : "",
+          value: route.auth ? "{{role_token_" + route.auth[0] + "}}" : "",
           type: "string"
         }]
       }
@@ -420,7 +538,7 @@ export class AutoBack {
         value: 'http',
         name: 'protocole',
         type: 'string'
-      },{
+      }, {
         id: 'domaine',
         key: 'domaine',
         value: 'localhost:' + this.port,
@@ -450,9 +568,9 @@ export class AutoBack {
         description: (valueAny.description ? valueAny.description + '\n\n' : '') + 'Table columns:\n\`\`\`json\n' + JSON.stringify(valueAny.column, null, 4) + '\n\`\`\`'
       }
       if (valueAny.routes) {
-        for (const [,value] of Object.entries(valueAny.routes)) {
+        for (const [, value] of Object.entries(valueAny.routes)) {
           (<any>value).forEach((element: any) => {
-            table.item.push(this.routeInfoToPostman(element))
+            table.item.push(this.routeInfoToPostman(element, valueAny.column))
           });
         }
       }
@@ -481,7 +599,14 @@ export class AutoBack {
     if (!this.userTable) {
       if (mergeUserDefine)
         userDefine = _.merge(userTableDefine, userDefine)
-      const [tableSequelize, saveTableInfo] = this.defineStartTable("User", userDefine)
+      let filtered: any = {}
+
+      for (const key in userDefine) {
+        if (userDefine[key] !== null) {
+          filtered[key] = userDefine[key]
+        }
+      }
+      const [tableSequelize, saveTableInfo] = this.defineStartTable("User", filtered)
 
       let mail: any = undefined
       if (auth.nameAccountMailRecupMDP) {
@@ -524,24 +649,30 @@ export class AutoBack {
     return [tableSequelize, tempSaveTable]
   }
 
+  initSocket(nameTable: string, originRoutePath: string, socketInfo?: SocketInfo): SocketConstructor | undefined {
+    let socket: any | undefined = undefined
+
+    if (socketInfo) {
+      socket = {}
+      if (!socketInfo.path) {
+        socketInfo.path = getPathTable(nameTable, this.serverPath, originRoutePath)
+      }
+      socket.path = socketInfo.path
+      socket.auth = socketInfo.auth
+      socket.io = this.socketIO
+      socket.userTable = this.userTable
+      socket.notif = socketInfo.notif
+      socket.toDoOnSocketConnection = socketInfo.toDoOnSocketConnection
+      socket.toDoOnSocketDeConnection = socketInfo.toDoOnSocketDeConnection
+    }
+    return socket
+  }
+
   defineTable(nameTable: string, table: Table, originRoutePath?: string, description?: string, socketInfo?: SocketInfo): TableClass<any> | undefined {
     const [tableSequelize, saveTableInfo] = this.defineStartTable(nameTable, table)
 
     if (this.socketIO) {
-      let socket: any | undefined = undefined
-
-      if (socketInfo) {
-        socket = {}
-        if (!socketInfo.path) {
-          socketInfo.path = getPathTable(nameTable, this.serverPath, originRoutePath)
-        }
-        socket.path = socketInfo.path
-        socket.auth = socketInfo.auth
-        socket.io = this.socketIO
-        socket.userTable = this.userTable
-        socket.notif = socketInfo.notif
-        socket.toDoOnSocketConnection = socketInfo.toDoOnSocketConnection
-      }
+      let socket = this.initSocket(nameTable, originRoutePath, socketInfo)
       this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.serverPath, this.fileTable, originRoutePath, this.userTable, description, socket)
     } else {
       this.tables[nameTable] = new TableClass(nameTable, saveTableInfo.saveTable, this.server, this.serverPath, this.fileTable, originRoutePath, this.userTable, description)
@@ -598,7 +729,7 @@ export class AutoBack {
   */
 
   public setUpTables(): void {
-    for(const tableToProcess of this.linkTableToProcess) {
+    for (const tableToProcess of this.linkTableToProcess) {
       for (const columnsToProcess of tableToProcess.linkToProcess) {
         this.tableLink(columnsToProcess.data, tableToProcess.nameTable, columnsToProcess.nameColumns, tableToProcess.tableSequelizeInfo, tableToProcess.tempSaveTable.saveTable, tableToProcess.tempSaveTable, tableToProcess.fileInfo)
       }
@@ -608,7 +739,7 @@ export class AutoBack {
     }
     this.linkTableToProcess = []
     if (this.userTable)
-        this.userTable.basicRouting(this.saveAuthConfig.getRoute, this.saveAuthConfig.postRoute, this.saveAuthConfig.putRoute, this.saveAuthConfig.deleteRoute)
+      this.userTable.basicRouting(this.saveAuthConfig.getRoute, this.saveAuthConfig.postRoute, this.saveAuthConfig.putRoute, this.saveAuthConfig.deleteRoute)
   }
 
   private tableLink(data: dataLinkTable, nameTable: string, key: string, tableSequelizeInfo: any, saveTableInfo: saveTable, tempSaveTable: tempSaveTable, fileInfo: filePathInfo) {
@@ -726,8 +857,8 @@ export class AutoBack {
   private setUpIo(): Server {
     const io = new Server(this.httpServer);
 
-    io.use(async (_socket, next) => {
-        next(new Error('Cannot be connected outside namespace'));
+    io.use(async (_socket: any, next: (arg0: Error) => void) => {
+      next(new Error('Cannot be connected outside namespace'));
     })
     return io
   }

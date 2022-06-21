@@ -1,17 +1,18 @@
 import { UserTableClass } from 'back/special-table/userTable';
 import { ABDataType } from './modelsType';
 import { Table } from './modelsTable';
-import { basicRouteParams } from './routeModels';
+import { basicRouteParams, Route, RouteClass } from './routeModels';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import nodemailer from "nodemailer"
+import { SocketInfo } from './socketModels';
 
 export const userTableDefine: Table = {
   id: { type: ABDataType.BIGINT, primaryKey: true, autoIncrement: true },
   username: { type: ABDataType.STRING, unique: true },
-  password: { type: ABDataType.STRING, neverShow: true, validate: { isStrongPassword: { minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 }}, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
-  email: { type: ABDataType.STRING, validate: {isEmail: true}, unique: true },
+  password: { type: ABDataType.STRING, neverShow: true, validate: { isStrongPassword: { minLength: 6, maxLength: 20, minLowercase: 1, minUppercase: 0, minNumbers: 1, minSymbols: 0 } }, transformSet: (value: string, table: UserTableClass<any>) => { return table.getHash().update(value).digest('hex') } },
+  email: { type: ABDataType.STRING, validate: { isEmail: true }, unique: true },
   phone: { type: ABDataType.STRING, allowNull: true },
-  role: {type: ABDataType.STRING, validate: { equals: {comparaison: ["Admin", "SuperAdmin"]}}}
+  role: { type: ABDataType.STRING, validate: { equals: { comparaison: ["Admin", "SuperAdmin"] } } }
 }
 
 export interface access {
@@ -19,7 +20,8 @@ export interface access {
      * If undefined accept all
   */
   role?: string[],
-  inverse?: boolean
+  inverse?: boolean,
+  checkRole?: (user: any) => void
 }
 
 export const basicRole: string[] = [
@@ -35,7 +37,8 @@ export interface userTableConfig {
   roles?: string[],
   basicUser?: {
     [key: string]: any
-  }
+  },
+  toDoOnCreatebasicUser?(user: any): void,
   /**
      * Non undefined will activate route to recup mdp
   */
@@ -43,6 +46,7 @@ export interface userTableConfig {
   accountMailRecupBodyText?(token: string, user: any): string,
   accountMailRecupBodyHTML?(token: string, user: any): string,
   accountMailRecupObject?(user: any): string,
+  socketInfo?: SocketInfo
 }
 
 export interface realUserTableConfig {
@@ -53,6 +57,7 @@ export interface realUserTableConfig {
   readonly basicUser?: {
     [key: string]: any
   },
+  toDoOnCreatebasicUser?(user: any): void,
   readonly accountMailRecupMDP?: nodemailer.Transporter<SMTPTransport.SentMessageInfo>,
   accountMailRecupBodyText(token: string, user: any): string,
   accountMailRecupBodyHTML?(token: string, user: any): string,

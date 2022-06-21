@@ -65,8 +65,8 @@ export class TableClass<M extends Model> {
   }
 
   private addHook() {
-    this.sequelizeData.addHook('afterDestroy', 'onDestroyLinks', (instance: any): void => {
-      this.onDeletedAction(instance.dataValues)
+    this.sequelizeData.addHook('afterDestroy', 'onDestroyLinks', async (instance: any): Promise<void> => {
+      await this.onDeletedAction(instance.dataValues)
     })
 
     if (this._listLinkColumns && this._listLinkColumns.length !== 0) {

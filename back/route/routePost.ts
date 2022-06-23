@@ -21,16 +21,16 @@ export class RoutePostClass<M extends Model> extends RouteBasicClass<M> {
       this.routeInfo.socketNotif = { activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined }
     }
 
-    if (this.tableClass.upload && this.tableClass.haveFile) {
+    /* if (this.tableClass.upload && this.tableClass.haveFile) {
       let upload = this.tableClass.upload.fields(this.files)
       server.post(path, this.checkToken(routeInfo), (req, res, next) => { upload(req, res, (err: any) => { if (err) { errorHandling(err, res) } else next() }) }, this.dataToBody(), async (req: express.Request, res: express.Response) => {
         await this.toDo(req, res)
       })
-    } else {
+    } else { */
       server.post(path, this.checkToken(routeInfo), async (req: express.Request, res: express.Response) => {
         await this.toDo(req, res)
       })
-    }
+   /*  } */
   }
 
   protected async toDo(req: express.Request, res: express.Response): Promise<any> {

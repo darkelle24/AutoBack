@@ -9,7 +9,7 @@ import { realDataFileTable, saveTable, Table } from '../../_helpers/models/model
 import { addPath, errorHandling, getFileExtansion, removeFile } from '../../_helpers/fn';
 import { UserTableClass } from './userTable';
 import { TableClass } from '../table';
-import { basicRouteParams, InfoPlace, RoutePost, RoutePut, TypeRoute } from '../../_helpers/models/routeModels';
+import { basicPostPutRouteParams, basicRouteParams, InfoPlace, RoutePost, RoutePut, TypeRoute } from '../../_helpers/models/routeModels';
 import { access } from '../../_helpers/models/userTableModel';
 import { RoutePutClass } from '../route/routePut';
 import { routeTableInfo } from '../../_helpers/models/models';
@@ -183,7 +183,7 @@ export class FileTableClass<M extends Model> extends TableClass<M> {
     return undefined
   }
 
-  basicRouting(getRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}, postRoute: basicRouteParams = { active: false }, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}): void {
+  basicRouting(getRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}, postRoute: basicPostPutRouteParams = { active: false }, putRoute: basicPostPutRouteParams = { }, deleteRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}): void {
     super.basicRouting(getRoute, postRoute, putRoute, deleteRoute)
     //this.changeFile()
     this.downloadFile()

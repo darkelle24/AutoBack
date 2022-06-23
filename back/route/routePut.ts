@@ -20,6 +20,10 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
     this.changeDataAsList(routeInfo.dataAs)
     this.changeAccess(routeInfo.auth)
 
+    if (this.routeInfo.uploadFile === undefined) {
+      this.routeInfo.uploadFile = false
+    }
+
     if (this.routeInfo.socketNotif === undefined) {
       this.routeInfo.socketNotif = { activate: true, toSendForNotif: undefined, selectUserSendNotifs: undefined }
     }
@@ -27,7 +31,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
   }
 
   protected createRoute() {
-    if (this.tableClass.upload && this.tableClass.haveFile) {
+    if (this.routeInfo.uploadFile && this.tableClass.upload && this.tableClass.haveFile) {
       let upload = this.tableClass.upload.fields(this.files)
       this.server.put(this.path, this.checkToken(this.routeInfo), (req: any, res: any, next: any) => { upload(req, res, (err: any) => { if (err) { errorHandling(err, res) } else next() }) }, this.dataToBody(), async (req: any, res: any) => {
         await Promise.resolve(this.toDo(req, res))
@@ -169,7 +173,9 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       event: this.routeInfo.event,
       description: this.routeInfo.description,
       bodyDoc: this.routeInfo.bodyDoc,
-      dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined
+      dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined,
+      uploadFile: this.routeInfo.uploadFile && this.tableClass.upload && this.tableClass.haveFile,
+      files: this.files
     }
 
     if (this.filterlist) {

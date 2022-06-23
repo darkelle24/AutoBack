@@ -1,7 +1,7 @@
 import { UserTableClass } from 'back/special-table/userTable';
 import { ABDataType } from './modelsType';
 import { Table } from './modelsTable';
-import { basicRouteParams, Route, RouteClass } from './routeModels';
+import { basicPostPutRouteParams, basicRouteParams, Route, RouteClass } from './routeModels';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 import nodemailer from "nodemailer"
 import { SocketInfo } from './socketModels';
@@ -67,7 +67,7 @@ export interface realUserTableConfig {
 export interface authConfigAutoBack {
   config?: userTableConfig,
   getRoute?: basicRouteParams,
-  postRoute?: basicRouteParams,
-  putRoute?: basicRouteParams,
+  postRoute?: basicPostPutRouteParams,
+  putRoute?: basicPostPutRouteParams,
   deleteRoute?: basicRouteParams
 }

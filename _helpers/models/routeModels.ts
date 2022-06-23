@@ -86,7 +86,8 @@ export type RoutePost = {
    beforeSend?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
    beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePostClass<any>, data: any): void,
    bodyDoc?(autoGenerateBodyDoc: any): any,
-   socketNotif?: SocketNotifInfo
+   socketNotif?: SocketNotifInfo,
+   uploadFile?: boolean
 } & RouteBasic
 
 export type RoutePut = {
@@ -105,7 +106,8 @@ export type RoutePut = {
    beforeSend?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
    beforeSendAfterRecursive?(request: any, respond: any, routeClass: RoutePutClass<any>, data: any): void,
    bodyDoc?(autoGenerateBodyDoc: any): any,
-   socketNotif?: SocketNotifInfo
+   socketNotif?: SocketNotifInfo,
+   uploadFile?: boolean
 } & RouteBasic
 
 export type RouteDelete = {
@@ -262,4 +264,10 @@ export interface RealValueInfo {
 export interface basicRouteParams {
    active?: boolean,
    auth?: access
+}
+
+export interface basicPostPutRouteParams {
+   active?: boolean,
+   auth?: access,
+   uploadFile?: boolean
 }

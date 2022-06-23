@@ -445,9 +445,49 @@ export class AutoBack {
     return postman
   }
 
-  private routeInfoToPostman(route: any, column: saveTable): any {
+  private routeBodyUploadToPostman(postman: any, route: any, column: saveTable): any {
+    if (route.type === 'POST' || route.type === 'PUT') {
+      postman.request.body = {
+        mode: "formdata",
+        formdata: [
+        ]
+      }
+
+      route.files.forEach((element: any) => {
+        postman.request.body.formdata.push({
+          "key": element.name,
+          "type": "file",
+        })
+      });
+
+      let bodyDocAuto = this.autoDoc(route, column)
+
+      let data: any = {}
+
+      if (route.bodyDoc) {
+        data = route.bodyDoc(bodyDocAuto)
+      } else {
+        data = bodyDocAuto
+      }
+      if (typeof data !== 'string') {
+        data = JSON.stringify(data, null, 4)
+      }
+
+      postman.request.body.formdata.push({
+        "key": "data",
+        "value": data,
+        "type": "text",
+      })
+    }
+
+    return postman
+  }
+
+  private routeInfoToPostman(route: any, column: saveTable, upload: boolean): any {
+    const name = upload ? route.name + ' (version upload file)' : route.name
+
     const toReturn: any = {
-      name: route.name,
+      name: name,
       protocolProfileBehavior: {
         disableBodyPruning: true
       },
@@ -465,7 +505,11 @@ export class AutoBack {
       }
     }
 
-    this.routeBodyToPostman(toReturn, route, column)
+    if (upload) {
+      this.routeBodyUploadToPostman(toReturn, route, column)
+    } else {
+      this.routeBodyToPostman(toReturn, route, column)
+    }
 
     if (route.limit) {
       this.whereToPostman(toReturn, route.limit)
@@ -570,7 +614,10 @@ export class AutoBack {
       if (valueAny.routes) {
         for (const [, value] of Object.entries(valueAny.routes)) {
           (<any>value).forEach((element: any) => {
-            table.item.push(this.routeInfoToPostman(element, valueAny.column))
+            table.item.push(this.routeInfoToPostman(element, valueAny.column, false))
+            if (element.type !== 'GET' && element.type !== 'DELETE' && element.uploadFile) {
+              table.item.push(this.routeInfoToPostman(element, valueAny.column, true))
+            }
           });
         }
       }

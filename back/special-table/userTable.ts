@@ -1,4 +1,4 @@
-import { ListFilter, Route, RouteClass, acceptData } from './../../_helpers/models/routeModels';
+import { ListFilter, Route, RouteClass, acceptData, basicPostPutRouteParams } from './../../_helpers/models/routeModels';
 import { basicRole, userTableConfig, realUserTableConfig, access } from './../../_helpers/models/userTableModel';
 import { Model, ModelCtor } from 'sequelize';
 import { activeAllFiltersForAllCols, errorHandling, loginPostmanAfterRequestEvent } from '../../_helpers/fn';
@@ -48,7 +48,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       this.passwordEncode = table.password.transformSet
   }
 
-  basicRouting(getRoute: basicRouteParams = {}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
+  basicRouting(getRoute: basicRouteParams = {}, postRoute: basicPostPutRouteParams = {}, putRoute: basicPostPutRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
     if (!this.activeBasicRouting) {
       this.activeBasicRouting = true
       if (getRoute && (getRoute.active || getRoute.active === undefined))

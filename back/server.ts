@@ -144,7 +144,7 @@ patient.addRoute({
   }
 })
 
-test.basicRouting({ auth: { role: ["Admin"] } })
+test.basicRouting({ auth: { role: ["Admin"] } }, {uploadFile: true}, {uploadFile: true})
 test.addRoute({
   type: TypeRoute.POST,
   path: '/lol',

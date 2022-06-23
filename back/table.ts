@@ -1,7 +1,7 @@
 import { FileTableClass } from './special-table/fileTable';
 import { UserTableClass } from './special-table/userTable';
 import { RoutePostClass } from './route/routePost';
-import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass, InfoPlace, basicRouteParams } from './../_helpers/models/routeModels';
+import { allRoutes, RouteDelete, RoutePut, RouteGet, RoutePost, RouteClass, InfoPlace, basicRouteParams, basicPostPutRouteParams } from './../_helpers/models/routeModels';
 import { Model, ModelCtor, Op } from "sequelize";
 import { Route, TypeRoute } from "../_helpers/models/routeModels";
 import { activeAllFiltersForAllCols, addPath, getFileExtansion, getPathTable, getRowInTableLink, getRowInTableMultipleLink } from '../_helpers/fn';
@@ -96,15 +96,16 @@ export class TableClass<M extends Model> {
     }
   }
 
-  basicRouting(getRoute: basicRouteParams = {}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
+  basicRouting(getRoute: basicRouteParams = {}, postRoute: basicPostPutRouteParams = {}, putRoute: basicPostPutRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
     if (!this.activeBasicRouting) {
       this.activeBasicRouting = true
+
       if (getRoute && (getRoute.active || getRoute.active === undefined))
         this.basicGet(getRoute.auth)
       if (postRoute && (postRoute.active || postRoute.active === undefined))
-        this.basicPost(postRoute.auth)
+        this.basicPost(postRoute.auth, postRoute.uploadFile)
       if (putRoute && (putRoute.active || putRoute.active === undefined))
-        this.basicPut(putRoute.auth)
+        this.basicPut(putRoute.auth, putRoute.uploadFile)
       if (deleteRoute && (deleteRoute.active || deleteRoute.active === undefined))
         this.basicDelete(deleteRoute.auth)
     } else {
@@ -124,7 +125,7 @@ export class TableClass<M extends Model> {
     })
   }
 
-  protected basicPost(accessRule?: access): void {
+  protected basicPost(accessRule?: access, uploadFile?: boolean): void {
     if (this.table['id'] && this.table['id'].primaryKey && this.table['id'].autoIncrement) {
       this.addRoute({
         path: '/',
@@ -134,6 +135,7 @@ export class TableClass<M extends Model> {
         },
         type: TypeRoute.POST,
         auth: accessRule,
+        uploadFile: uploadFile,
         name: 'Post ' + this.name
       })
     } else {
@@ -141,7 +143,8 @@ export class TableClass<M extends Model> {
         path: '/',
         type: TypeRoute.POST,
         auth: accessRule,
-        name: 'Post ' + this.name
+        name: 'Post ' + this.name,
+        uploadFile: uploadFile
       })
     }
   }
@@ -164,7 +167,7 @@ export class TableClass<M extends Model> {
     })
   }
 
-  protected basicPut(accessRule?: access): void {
+  protected basicPut(accessRule?: access, uploadFile?: boolean): void {
     this.addRoute({
       path: '/:id',
       type: TypeRoute.PUT,
@@ -182,7 +185,8 @@ export class TableClass<M extends Model> {
         }
       },
       auth: accessRule,
-      name: 'Put ' + this.name
+      name: 'Put ' + this.name,
+      uploadFile: uploadFile
     })
   }
 

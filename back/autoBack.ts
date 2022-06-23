@@ -453,16 +453,18 @@ export class AutoBack {
         ]
       }
 
+      let bodyDocAuto = this.autoDoc(route, column)
+
+      let data: any = {}
+
       route.files.forEach((element: any) => {
         postman.request.body.formdata.push({
           "key": element.name,
           "type": "file",
         })
+
+        delete bodyDocAuto[element.name]
       });
-
-      let bodyDocAuto = this.autoDoc(route, column)
-
-      let data: any = {}
 
       if (route.bodyDoc) {
         data = route.bodyDoc(bodyDocAuto)

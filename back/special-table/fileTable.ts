@@ -183,9 +183,9 @@ export class FileTableClass<M extends Model> extends TableClass<M> {
     return undefined
   }
 
-  basicRouting(getRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}, postRoute: basicRouteParams = {}, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {}): void {
+  basicRouting(getRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}, postRoute: basicRouteParams = { active: false }, putRoute: basicRouteParams = {}, deleteRoute: basicRouteParams = {auth: {role: ['Admin', 'SuperAdmin']}}): void {
     super.basicRouting(getRoute, postRoute, putRoute, deleteRoute)
-    this.changeFile()
+    //this.changeFile()
     this.downloadFile()
     this.showFile()
   }

@@ -111,6 +111,9 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
       columsAccept: {
         list: ['token', 'password']
       },
+      bodyDoc(autoGenerateBodyDoc) {
+          return {token: "", password: ""}
+      },
       doSomething: async (req, res, route) => {
         let user: any = undefined
 

@@ -61,6 +61,7 @@ export type RouteGet = {
    limit?: FilterInfo,
    offset?: FilterInfo,
    returnColumns?: acceptData,
+   filtersDoc?: ListFilterDoc,
    filters?: ListFilter,
    /**
      * Default true
@@ -98,6 +99,7 @@ export type RoutePut = {
      * Set value in body, can act as transfrom before validate
     */
    dataAs?: ListValueInfo,
+   filtersDoc?: ListFilterDoc,
    filters?: ListFilter,
    /**
      * Default true
@@ -112,6 +114,7 @@ export type RoutePut = {
 
 export type RouteDelete = {
    readonly type: TypeRoute.DELETE,
+   filtersDoc?: ListFilterDoc,
    filters?: ListFilter,
    beforeDelete?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void,
    beforeSend?(request: any, respond: any, routeClass: RouteDeleteClass<any>, data: any): void,
@@ -121,6 +124,26 @@ export type RouteDelete = {
 export type Route = RouteGet | RoutePost | RoutePut | RouteDelete
 
 export type RouteClass = RouteGetClass<any> | RoutePostClass<any> | RoutePutClass<any> | RouteDeleteClass<any>
+
+export interface ListFilterDoc {
+   [name: string]: FilterInfoDoc
+}
+
+export interface FilterInfoDoc {
+   /**
+      * Default name is name of columns + "_" + name of the filter operator
+   */
+   name?: string
+   /**
+      * The place to find the info of the filter
+      *
+      * You have the choice between InfoPlace.BODY, InfoPlace.PARAMS, InfoPlace.QUERYPARAMS, InfoPlace.HEADER
+      *
+      * Default value InfoPlace.QUERYPARAMS
+   */
+   where?: InfoPlace,
+   description?: string
+}
 
 export interface ListFilter {
    [columnsName: string]: FilterOperators
@@ -188,6 +211,16 @@ export interface FilterInfo {
     * Replace transform with transform from dataTypeInfo if transformValue === undefined && dataTypeInfo.transform !== undefined
     */
    transformValue?(value: any): any
+}
+
+export interface RealListFilterDoc {
+   [name: string]: RealFilterInfoDoc
+}
+
+export interface RealFilterInfoDoc {
+   name: string
+   where: InfoPlace,
+   description: string
 }
 
 export interface RealListFilter {

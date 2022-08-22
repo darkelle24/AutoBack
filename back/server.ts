@@ -135,6 +135,9 @@ adresse.basicRouting()
 patient.addRoute({
   type: TypeRoute.GET,
   path: '/lol',
+  filtersDoc: {
+    lol: { name: "lol", where: InfoPlace.QUERYPARAMS, description: "qsdqdsdqsdq"}
+  },
   beforeSendAfterRecursive: async (req, res, routeClass, datas) => {
     return Promise.all(datas.map(async (element: any) => {
       return autoback.tables['adresse'].sequelizeData.findAll({ where: { patient_id: element.id } }).then((result: any[]) => {

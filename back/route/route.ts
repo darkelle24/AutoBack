@@ -1,7 +1,7 @@
 import { TableClass } from 'back/table';
 import { UserTableClass } from './../special-table/userTable';
 import { access } from './../../_helpers/models/userTableModel';
-import { acceptData, InfoPlace, ListFilter, ListValueInfo, RealFilterInfo, RealListFilter, RealListValueInfo, Route } from './../../_helpers/models/routeModels';
+import { acceptData, InfoPlace, ListFilter, ListFilterDoc, ListValueInfo, RealFilterInfo, RealListFilter, RealListFilterDoc, RealListValueInfo, Route } from './../../_helpers/models/routeModels';
 import { Model, ModelCtor } from "sequelize/types"
 import { autorizeFilterOperator, filterOperatorToSequelizeOperator, removeFile } from "../../_helpers/fn"
 import { routeTableInfo } from '../../_helpers/models/models';
@@ -16,6 +16,7 @@ export class RouteBasicClass<M extends Model> {
   readonly table: saveTable
   readonly tableClass: TableClass<any>
   protected server: any
+  public filterListDoc?: RealListFilterDoc = undefined
   protected filterlist?: RealListFilter = undefined
   protected dataAsList?: RealListValueInfo = undefined
   protected userTable?: UserTableClass<any> = undefined
@@ -140,6 +141,23 @@ export class RouteBasicClass<M extends Model> {
       this.filterlist = toReturn
     } else {
       this.filterlist = undefined
+    }
+  }
+
+  public changeFilterDocList(filters?: ListFilterDoc): void {
+    if (filters) {
+      const toReturn: RealListFilterDoc = {}
+
+      Object.entries(filters).forEach(([keyCol, valueCol]) => {
+              toReturn[keyCol] = {
+                name: valueCol.name ? valueCol.name : keyCol,
+                where: valueCol.where !== undefined ? valueCol.where : InfoPlace.QUERYPARAMS,
+                description: valueCol.description ? valueCol.description : ""
+              }
+      })
+      this.filterListDoc = toReturn
+    } else {
+      this.filterListDoc = undefined
     }
   }
 

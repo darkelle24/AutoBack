@@ -17,6 +17,7 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
 
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
+    this.changeFilterDocList(routeInfo.filtersDoc)
     this.changeDataAsList(routeInfo.dataAs)
     this.changeAccess(routeInfo.auth)
 
@@ -176,6 +177,27 @@ export class RoutePutClass<M extends Model> extends RouteBasicClass<M> {
       dataAs: this.routeInfo.dataAs ? JSON.parse(JSON.stringify(this.routeInfo.dataAs, this.transformDataAsInfo)) : undefined,
       uploadFile: this.routeInfo.uploadFile && this.tableClass.upload && this.tableClass.haveFile,
       files: this.files
+    }
+
+    if (this.filterListDoc) {
+      for (const [keyFilter, valueFilter] of Object.entries(this.filterListDoc)) {
+        let newFilter: any = undefined
+
+          newFilter = {
+            filter: valueFilter.description,
+            name: valueFilter.name,
+            where: ""
+          }
+
+          newFilter.where = infoPlaceToString(valueFilter.where)
+
+          if (newFilter) {
+            if (!toReturn.filter[keyFilter])
+              toReturn.filter[keyFilter] = {}
+            toReturn.filter[keyFilter][valueFilter.name] = newFilter
+          }
+
+      }
     }
 
     if (this.filterlist) {

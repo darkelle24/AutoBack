@@ -17,6 +17,7 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
 
     this.routeInfo = routeInfo
     this.changeFilterList(routeInfo.filters)
+    this.changeFilterDocList(routeInfo.filtersDoc)
     this.changeAccess(routeInfo.auth)
     if (routeInfo.limit) {
       routeInfo.limit.name = routeInfo.limit.name ? routeInfo.limit.name : 'limit',
@@ -179,6 +180,27 @@ export class RouteGetClass<M extends Model> extends RouteBasicClass<M> {
       description: this.routeInfo.description,
       name: this.routeInfo.name ? this.routeInfo.name : this.path,
       event: this.routeInfo.event
+    }
+
+    if (this.filterListDoc) {
+      for (const [keyFilter, valueFilter] of Object.entries(this.filterListDoc)) {
+        let newFilter: any = undefined
+
+          newFilter = {
+            filter: valueFilter.description,
+            name: valueFilter.name,
+            where: ""
+          }
+
+          newFilter.where = infoPlaceToString(valueFilter.where)
+
+          if (newFilter) {
+            if (!toReturn.filter[keyFilter])
+              toReturn.filter[keyFilter] = {}
+            toReturn.filter[keyFilter][valueFilter.name] = newFilter
+          }
+
+      }
     }
 
     if (this.filterlist) {

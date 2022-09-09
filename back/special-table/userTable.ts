@@ -112,7 +112,7 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
         list: ['token', 'password']
       },
       bodyDoc(autoGenerateBodyDoc) {
-          return {token: "", password: ""}
+        return { token: "", password: "" }
       },
       doSomething: async (req, res, route) => {
         let user: any = undefined
@@ -251,12 +251,14 @@ export class UserTableClass<M extends Model> extends TableClass<M> {
   protected routeCheckJWT(): void {
     super.addRoute({
       path: '/jwt',
-      type: TypeRoute.POST,
+      type: TypeRoute.GET,
       name: 'JWT check',
-      columsAccept: {
-        list: null
-      },
+      auth: {},
       doSomething: async (req, res, route) => {
+        if (!req.headers.authorization) {
+          res.status(400).json({ message: "You don't have a bearer token in the request." });
+        }
+
         const authHeader = req.headers.authorization;
 
         if (authHeader) {
